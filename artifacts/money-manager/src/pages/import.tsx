@@ -49,6 +49,8 @@ export default function Import() {
   const [pdfFile, setPdfFile] = useState<File | null>(null);
   const [pdfResult, setPdfResult] = useState<PdfParseResult | null>(null);
   const [isPdfParsing, setIsPdfParsing] = useState(false);
+  const [pdfParseStage, setPdfParseStage] = useState("");
+  const [pdfParsePercent, setPdfParsePercent] = useState(0);
   const [pdfRows, setPdfRows] = useState<(MappedTransaction & { id: string; selected: boolean })[]>([]);
   const [isImportingPdf, setIsImportingPdf] = useState(false);
   const [pdfProgress, setPdfProgress] = useState(0);
@@ -208,9 +210,14 @@ export default function Import() {
     setPdfSuccessCount(0);
     setPdfErrorCount(0);
     setPdfProgress(0);
+    setPdfParseStage("");
+    setPdfParsePercent(0);
     setIsPdfParsing(true);
     try {
-      const result = await parsePdfFile(file);
+      const result = await parsePdfFile(file, (stage, percent) => {
+        setPdfParseStage(stage);
+        setPdfParsePercent(percent);
+      });
       setPdfResult(result);
       setPdfRows(result.transactions.map((tx, i) => ({ ...tx, id: `pdf-${i}`, selected: true })));
     } catch (err) {
@@ -597,6 +604,15 @@ export default function Import() {
                     : (language === "fr" ? "Parcourir" : "Browse files")}
                 </Button>
               </div>
+              {pdfFile && isPdfParsing && pdfParseStage && (
+                <div className="mt-4 pt-4 border-t space-y-2 px-2">
+                  <div className="flex justify-between text-xs text-muted-foreground">
+                    <span>{pdfParseStage}</span>
+                    <span>{pdfParsePercent}%</span>
+                  </div>
+                  <Progress value={pdfParsePercent} className="h-1.5" />
+                </div>
+              )}
               {pdfFile && !isPdfParsing && (
                 <div className="mt-4 pt-4 border-t text-sm font-medium flex flex-wrap items-center justify-center gap-2">
                   <span>{pdfFile.name}</span>
@@ -604,6 +620,9 @@ export default function Import() {
                     <>
                       <Badge variant="secondary">{pdfResult.detectedFormat}</Badge>
                       <Badge variant="outline">{pdfResult.pageCount} {language === "fr" ? "pages" : "pages"}</Badge>
+                      {pdfResult.ocrUsed && (
+                        <Badge variant="outline" className="text-blue-600 border-blue-300">OCR</Badge>
+                      )}
                     </>
                   )}
                 </div>
