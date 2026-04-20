@@ -15,36 +15,33 @@ export interface PdfParseResult {
 
 function cleanAmount(raw: string): number {
   // Handle French number formats: 5 000,50 → 5000.50 or 5.000 → 5000
-  const s = raw.trim().replace(/\s/g, "");
-  // If both . and , present, the one appearing last is the decimal separator
-  const dotIdx = s.lastIndexOf(".");
-  const comIdx = s.lastIndexOf(",");
+  // Also handle tab-separated digits from PDF reconstruction: "5\t000"
+  const s = raw.trim().replace(/[\s\t]/g, " ").trim();
+  // Remove all whitespace for pure digit groups (formatted numbers like "5 000")
+  const noSpaces = s.replace(/\s/g, "");
+  const dotIdx = noSpaces.lastIndexOf(".");
+  const comIdx = noSpaces.lastIndexOf(",");
   let normalised: string;
   if (dotIdx > comIdx) {
-    // dot is decimal → remove commas (thousands)
-    normalised = s.replace(/,/g, "");
+    normalised = noSpaces.replace(/,/g, "");
   } else if (comIdx > dotIdx) {
-    // comma is decimal → remove dots (thousands), replace comma with dot
-    normalised = s.replace(/\./g, "").replace(",", ".");
+    normalised = noSpaces.replace(/\./g, "").replace(",", ".");
   } else {
-    normalised = s;
+    normalised = noSpaces;
   }
   return parseFloat(normalised) || 0;
 }
 
 function parseDate(raw: string): string {
   const today = new Date().toISOString().slice(0, 10);
-  // ISO: YYYY-MM-DD
   const iso = raw.match(/\b(\d{4})-(\d{2})-(\d{2})\b/);
   if (iso) return iso[0];
-  // DD/MM/YYYY or DD-MM-YYYY
   const dmy = raw.match(/\b(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{2,4})\b/);
   if (dmy) {
     const [, d, m, y] = dmy;
     const year = y.length === 2 ? `20${y}` : y;
     return `${year}-${m.padStart(2, "0")}-${d.padStart(2, "0")}`;
   }
-  // Textual month: "20 avril 2026" or "20 Apr 2026"
   const monthNames: Record<string, string> = {
     jan: "01", fév: "02", feb: "02", mar: "03", avr: "04", apr: "04",
     mai: "05", may: "05", jun: "06", jui: "07", jul: "07", aoû: "08",
@@ -102,13 +99,16 @@ interface TextItem {
   str: string;
   x: number;
   y: number;
+  width: number; // actual rendered width from pdfjs
 }
 
 function reconstructLines(items: TextItem[]): string[] {
   if (items.length === 0) return [];
 
-  // Group items into rows by proximity of y coordinate
-  const Y_TOLERANCE = 3; // px — items within this range are on the same line
+  // Group items into rows by proximity of y coordinate.
+  // Use a higher tolerance (6px) because sub-pixel rendering in PDFs can shift
+  // items on the same visual line by more than 3px.
+  const Y_TOLERANCE = 6;
   const rows: TextItem[][] = [];
 
   for (const item of items) {
@@ -121,22 +121,32 @@ function reconstructLines(items: TextItem[]): string[] {
     }
   }
 
-  // Sort rows top-to-bottom (y increases downward in PDF coordinates, but
-  // pdfjs uses a coordinate system where y=0 is the bottom of the page, so
-  // higher y = higher on page → sort descending)
+  // Sort rows top-to-bottom (higher y = higher on page in pdfjs coords → descending)
   rows.sort((a, b) => b[0].y - a[0].y);
 
   return rows.map((row) => {
-    // Sort items in the row left-to-right
     row.sort((a, b) => a.x - b.x);
-    // Join with appropriate spacing
     let line = "";
     for (let i = 0; i < row.length; i++) {
       if (i === 0) {
         line = row[i].str;
       } else {
-        const gap = row[i].x - (row[i - 1].x + row[i - 1].str.length * 5); // approx char width
-        line += gap > 20 ? "\t" + row[i].str : " " + row[i].str;
+        const prevItem = row[i - 1];
+        // Use actual rendered width from pdfjs (falls back to char-length estimate)
+        const prevWidth = prevItem.width > 0 ? prevItem.width : prevItem.str.length * 6;
+        const gap = row[i].x - (prevItem.x + prevWidth);
+
+        // If both sides look like parts of a number (digits/commas/dots),
+        // keep them joined with a space even if gap is large — avoids breaking
+        // formatted numbers like "5 000" that become "5\t000".
+        const prevEndsDigit = /[\d,.]$/.test(prevItem.str.trim());
+        const currStartsDigit = /^[\d,.]/.test(row[i].str.trim());
+
+        if (gap > 15 && !(prevEndsDigit && currStartsDigit)) {
+          line += "\t" + row[i].str;
+        } else {
+          line += " " + row[i].str;
+        }
       }
     }
     return line.trim();
@@ -146,7 +156,8 @@ function reconstructLines(items: TextItem[]): string[] {
 // ─── transaction parsers ─────────────────────────────────────────────────────
 
 const DATE_RE = /\b(\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{2,4}|\d{4}-\d{2}-\d{2})\b/;
-const AMOUNT_RE = /([\d][\d\s]*(?:[.,]\d{2,3})?)/;
+// Flexible amount: digits with optional spaces/tabs as thousands sep, optional decimal
+const AMOUNT_RE = /(\d[\d\s\t]*(?:[.,]\d{2,3})?)/;
 const CURRENCY_RE = /(?:FCFA|XOF|XAF|NGN|GHS|CFA)\b/i;
 
 // Pattern: sentence-style mobile money ("Vous avez reçu 5 000 FCFA de X")
@@ -184,10 +195,9 @@ function parseSentenceStyle(text: string, format: string): MappedTransaction[] {
 function parseTableRows(lines: string[], format: string): MappedTransaction[] {
   const results: MappedTransaction[] = [];
   const pm = detectPaymentMethod(format);
-  const defCurrency = /ngn|naira/i.test(lines.join(" ")) ? "NGN" : /ghs|ghana/i.test(lines.join(" ")) ? "GHS" : /xaf|cameroun/i.test(lines.join(" ")) ? "XAF" : "XOF";
+  const allText = lines.join(" ");
+  const defCurrency = /ngn|naira/i.test(allText) ? "NGN" : /ghs|ghana/i.test(allText) ? "GHS" : /xaf|cameroun/i.test(allText) ? "XAF" : "XOF";
 
-  // Detect header row to understand column positions
-  // e.g. "Date\tLibellé\tDébit\tCrédit\tSolde"
   let debitFirst = false;
   for (const line of lines.slice(0, 10)) {
     const l = line.toLowerCase();
@@ -198,18 +208,15 @@ function parseTableRows(lines: string[], format: string): MappedTransaction[] {
   }
 
   for (const line of lines) {
-    // Must contain a date
     const dateMatch = line.match(DATE_RE);
     if (!dateMatch) continue;
 
-    // Split on tabs (from coordinate reconstruction) or multiple spaces
     const parts = line.split(/\t+|\s{2,}/).map(s => s.trim()).filter(Boolean);
     if (parts.length < 2) continue;
 
-    // Find all numeric parts that could be amounts
+    // Match amounts including those with internal spaces (formatted thousands)
     const numericParts = parts.filter(p => /^[-+]?[\d][\d\s,.]*$/.test(p));
 
-    // Find description (non-date, non-numeric, non-currency parts)
     const descParts = parts.filter(p =>
       !DATE_RE.test(p) &&
       !/^[-+]?[\d][\d\s,.]+$/.test(p) &&
@@ -226,7 +233,6 @@ function parseTableRows(lines: string[], format: string): MappedTransaction[] {
     const isCreditLine = /crédit|credit|entrée|re[çc]u|received|dépôt|deposit/i.test(lineL);
 
     if (numericParts.length >= 2 && (debitFirst || isCreditLine || isDebitLine)) {
-      // Separate debit/credit columns
       const v1 = cleanAmount(numericParts[0]);
       const v2 = cleanAmount(numericParts[1]);
       if (isDebitLine || (debitFirst && v1 > 0 && v2 === 0)) {
@@ -236,7 +242,6 @@ function parseTableRows(lines: string[], format: string): MappedTransaction[] {
         amount = v2 || v1;
         type = "income";
       } else {
-        // Use the first non-zero
         amount = v1 || v2;
         type = "income";
       }
@@ -248,7 +253,6 @@ function parseTableRows(lines: string[], format: string): MappedTransaction[] {
       else if (isCreditLine) type = "income";
       else type = "income";
     } else if (numericParts.length > 2) {
-      // Last two are likely debit/credit, skip last (balance)
       const v1 = cleanAmount(numericParts[numericParts.length - 3] || "0");
       const v2 = cleanAmount(numericParts[numericParts.length - 2] || "0");
       if (v1 > 0 && v2 === 0) { amount = v1; type = "expense"; }
@@ -257,8 +261,6 @@ function parseTableRows(lines: string[], format: string): MappedTransaction[] {
     }
 
     if (amount <= 0 || amount > 1_000_000_000) continue;
-
-    // Skip header-like rows
     if (/date|libellé|montant|débit|crédit|solde|description/i.test(description) && amount === 0) continue;
 
     results.push({
@@ -276,17 +278,20 @@ function parseTableRows(lines: string[], format: string): MappedTransaction[] {
   return results;
 }
 
-// Fallback: scan every line for any amount + approximate type signal
+// Fallback: scan lines for amount + optional date
 function parseLoose(lines: string[], format: string): MappedTransaction[] {
   const results: MappedTransaction[] = [];
   const pm = detectPaymentMethod(format);
-  const defCurrency = "XOF";
+  const defCurrency = /ngn|naira/i.test(lines.join(" ")) ? "NGN" : /ghs|ghana/i.test(lines.join(" ")) ? "GHS" : /xaf|cameroun/i.test(lines.join(" ")) ? "XAF" : "XOF";
+  const today = new Date().toISOString().slice(0, 10);
 
   for (const line of lines) {
     const dateMatch = line.match(DATE_RE);
-    const amtMatch = line.match(new RegExp(AMOUNT_RE.source + "\\s*" + CURRENCY_RE.source, "i")) ||
-      line.match(/([\d][\d\s,.]{2,})/);
-    if (!dateMatch || !amtMatch) continue;
+    // Try to find amount + currency first, then fall back to any number ≥ 3 digits
+    const amtMatch =
+      line.match(new RegExp(AMOUNT_RE.source + "\\s*" + CURRENCY_RE.source, "i")) ||
+      line.match(/(\d[\d\s\t,.]{2,})(?=\s|$|\t)/);
+    if (!amtMatch) continue;
 
     const amount = cleanAmount(amtMatch[1]);
     if (amount <= 0 || amount > 1_000_000_000) continue;
@@ -310,11 +315,58 @@ function parseLoose(lines: string[], format: string): MappedTransaction[] {
       category: autoCategory(description, type),
       paymentMethod: pm,
       referenceNote: description,
-      date: parseDate(dateMatch[0]),
+      date: dateMatch ? parseDate(dateMatch[0]) : today,
       rawRow: {},
     });
   }
 
+  return results;
+}
+
+// Strategy 4: find any amount+currency in raw text — handles tables where amounts
+// appear inline with FCFA/XOF markers but dates may be on a different line.
+function parseCurrencyAnchored(rawText: string, format: string): MappedTransaction[] {
+  const results: MappedTransaction[] = [];
+  const pm = detectPaymentMethod(format);
+  const defCurrency = /ngn|naira/i.test(rawText) ? "NGN" : /ghs|ghana/i.test(rawText) ? "GHS" : /xaf|cameroun/i.test(rawText) ? "XAF" : "XOF";
+  const today = new Date().toISOString().slice(0, 10);
+
+  // Find all "amount CURRENCY" or "CURRENCY amount" occurrences with surrounding context
+  const pattern = /(\d[\d\s,.]{1,12})\s*(?:FCFA|XOF|XAF|NGN|GHS|CFA)\b/gi;
+  let m: RegExpExecArray | null;
+  while ((m = pattern.exec(rawText)) !== null) {
+    const amount = cleanAmount(m[1]);
+    if (amount <= 0 || amount > 1_000_000_000) continue;
+
+    // Extract a window of context around the match to find date/type clues
+    const start = Math.max(0, m.index - 200);
+    const end = Math.min(rawText.length, m.index + m[0].length + 100);
+    const ctx = rawText.slice(start, end);
+
+    const dateMatch = ctx.match(DATE_RE);
+    const ctxL = ctx.toLowerCase();
+    const type: "income" | "expense" = /débit|debit|retrait|envoy|sortie|paiement|achat|sent/i.test(ctxL)
+      ? "expense" : "income";
+
+    // Description: text near the amount excluding digits/currency
+    const desc = ctx
+      .replace(/\d[\d\s,.]+(?:FCFA|XOF|XAF|NGN|GHS|CFA)\b/gi, "")
+      .replace(DATE_RE, "")
+      .replace(/\s+/g, " ")
+      .trim()
+      .slice(0, 150);
+
+    results.push({
+      type,
+      amount,
+      currency: defCurrency,
+      category: autoCategory(desc, type),
+      paymentMethod: pm,
+      referenceNote: desc,
+      date: dateMatch ? parseDate(dateMatch[0]) : today,
+      rawRow: {},
+    });
+  }
   return results;
 }
 
@@ -337,16 +389,16 @@ export async function parsePdfFile(file: File): Promise<PdfParseResult> {
       if (!("str" in item)) return;
       const str = item.str;
       if (!str.trim()) return;
-      // Transform matrix: [scaleX, skewX, skewY, scaleY, x, y]
       const tx = (item as any).transform as number[] | undefined;
       const x = tx ? tx[4] : 0;
       const y = tx ? tx[5] : 0;
-      allItems.push({ str, x, y });
+      // pdfjs provides actual rendered width on the item object
+      const width = (item as any).width as number ?? 0;
+      allItems.push({ str, x, y, width });
       rawTextParts.push(str);
     });
 
-    // Add page separator
-    allItems.push({ str: "\n", x: 0, y: -9999 - i });
+    allItems.push({ str: "\n", x: 0, y: -9999 - i, width: 0 });
   }
 
   const rawText = rawTextParts.join(" ");
@@ -361,9 +413,14 @@ export async function parsePdfFile(file: File): Promise<PdfParseResult> {
     transactions = parseTableRows(reconstructedLines, detectedFormat);
   }
 
-  // Strategy 3: loose scan
+  // Strategy 3: loose scan of reconstructed lines (date optional)
   if (transactions.length === 0) {
     transactions = parseLoose(reconstructedLines, detectedFormat);
+  }
+
+  // Strategy 4: currency-anchored scan of raw text
+  if (transactions.length === 0) {
+    transactions = parseCurrencyAnchored(rawText, detectedFormat);
   }
 
   // Deduplicate by (date + amount + type)
