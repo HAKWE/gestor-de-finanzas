@@ -5,7 +5,7 @@ import { queryClient } from "../lib/queryClient";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
-import { Plus, ArrowUpRight, ArrowDownRight, Trash2 } from "lucide-react";
+import { Plus, ArrowUpRight, ArrowDownRight, Trash2, UploadCloud } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 export default function Transactions() {
@@ -45,12 +45,20 @@ export default function Transactions() {
             <h1 className="text-3xl font-bold tracking-tight">{t("nav.transactions")}</h1>
             <p className="text-muted-foreground">Gérez toutes vos entrées et sorties.</p>
           </div>
-          <Link href="/transactions/new">
-            <Button size="lg" className="w-full sm:w-auto rounded-xl">
-              <Plus className="w-5 h-5 mr-2" />
-              Nouvelle transaction
-            </Button>
-          </Link>
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <Link href="/import" className="flex-1 sm:flex-none">
+              <Button size="lg" variant="outline" className="w-full rounded-xl">
+                <UploadCloud className="w-5 h-5 mr-2" />
+                Importer
+              </Button>
+            </Link>
+            <Link href="/transactions/new" className="flex-1 sm:flex-none">
+              <Button size="lg" className="w-full rounded-xl">
+                <Plus className="w-5 h-5 mr-2" />
+                Nouvelle transaction
+              </Button>
+            </Link>
+          </div>
         </div>
 
         <div className="bg-card rounded-2xl border shadow-sm overflow-hidden">
