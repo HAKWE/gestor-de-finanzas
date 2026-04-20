@@ -611,12 +611,19 @@ export default function Import() {
             </div>
 
             {pdfResult && pdfRows.length === 0 && !isPdfParsing && (
-              <div className="bg-card p-6 rounded-2xl border shadow-sm text-center space-y-2">
-                <p className="text-muted-foreground">
+              <div className="bg-card p-6 rounded-2xl border shadow-sm space-y-4">
+                <p className="text-muted-foreground text-center">
                   {language === "fr"
-                    ? "Aucune transaction détectée dans ce PDF. Essayez un relevé CSV ou copiez le texte dans l'onglet SMS."
-                    : "No transactions detected in this PDF. Try a CSV statement or copy the text into the SMS tab."}
+                    ? "Aucune transaction détectée automatiquement. Voici le texte extrait du PDF — copiez-le dans l'onglet SMS si c'est un relevé mobile money."
+                    : "No transactions detected automatically. Here is the text extracted from the PDF — paste it into the SMS tab if it's a mobile money statement."}
                 </p>
+                {pdfResult.reconstructedLines.length > 0 && (
+                  <div className="bg-muted rounded-xl p-4 max-h-64 overflow-y-auto">
+                    <p className="text-xs font-mono text-muted-foreground whitespace-pre-wrap break-words">
+                      {pdfResult.reconstructedLines.slice(0, 100).join("\n")}
+                    </p>
+                  </div>
+                )}
               </div>
             )}
 
