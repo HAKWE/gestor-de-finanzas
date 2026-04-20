@@ -612,17 +612,43 @@ export default function Import() {
 
             {pdfResult && pdfRows.length === 0 && !isPdfParsing && (
               <div className="bg-card p-6 rounded-2xl border shadow-sm space-y-4">
-                <p className="text-muted-foreground text-center">
-                  {language === "fr"
-                    ? "Aucune transaction détectée automatiquement. Voici le texte extrait du PDF — copiez-le dans l'onglet SMS si c'est un relevé mobile money."
-                    : "No transactions detected automatically. Here is the text extracted from the PDF — paste it into the SMS tab if it's a mobile money statement."}
-                </p>
-                {pdfResult.reconstructedLines.length > 0 && (
-                  <div className="bg-muted rounded-xl p-4 max-h-64 overflow-y-auto">
-                    <p className="text-xs font-mono text-muted-foreground whitespace-pre-wrap break-words">
-                      {pdfResult.reconstructedLines.slice(0, 100).join("\n")}
+                {pdfResult.rawText.trim().length === 0 ? (
+                  <div className="text-center space-y-2">
+                    <p className="font-semibold text-destructive">
+                      {language === "fr" ? "PDF scanné détecté" : "Scanned PDF detected"}
+                    </p>
+                    <p className="text-muted-foreground text-sm">
+                      {language === "fr"
+                        ? "Ce PDF est une image — aucun texte ne peut être extrait automatiquement. Retapez les transactions manuellement ou utilisez l'onglet SMS."
+                        : "This PDF is an image — no text can be extracted automatically. Enter transactions manually or use the SMS tab."}
                     </p>
                   </div>
+                ) : (
+                  <>
+                    <p className="text-muted-foreground text-center text-sm">
+                      {language === "fr"
+                        ? "Aucune transaction détectée. Voici le texte brut extrait — copiez-le dans l'onglet SMS si c'est un relevé mobile money."
+                        : "No transactions detected. Here is the raw extracted text — paste it into the SMS tab if it's a mobile money statement."}
+                    </p>
+                    <div className="flex items-center justify-between text-xs text-muted-foreground px-1">
+                      <span>{pdfResult.rawText.length} {language === "fr" ? "caractères extraits" : "characters extracted"}, {pdfResult.reconstructedLines.length} {language === "fr" ? "lignes" : "lines"}</span>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-7 text-xs"
+                        onClick={() => {
+                          navigator.clipboard.writeText(pdfResult.reconstructedLines.join("\n"));
+                        }}
+                      >
+                        {language === "fr" ? "Copier le texte" : "Copy text"}
+                      </Button>
+                    </div>
+                    <div className="bg-muted rounded-xl p-4 max-h-64 overflow-y-auto">
+                      <p className="text-xs font-mono text-muted-foreground whitespace-pre-wrap break-words">
+                        {pdfResult.reconstructedLines.slice(0, 150).join("\n")}
+                      </p>
+                    </div>
+                  </>
                 )}
               </div>
             )}
