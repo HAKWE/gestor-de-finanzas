@@ -1,0 +1,39 @@
+Build a clean, mobile-first Progressive Web App (PWA) called "MobileMoney Manager" – a simple finance and sales tracker for micro-businesses in Africa (especially Francophone West and Central Africa like Senegal, Côte d’Ivoire, Cameroon, and Nigeria).
+
+Target users: coiffeuses (beauty salon owners), vendeuses en ligne, food vendors, tailors, and small side-hustlers who use Orange Money, Wave, MTN MoMo, and cash daily.
+
+Tech stack: Use Next.js 14+ (App Router) with TypeScript, Tailwind CSS for styling, and shadcn/ui components for a clean, simple UI. For the database, use Replit's built-in PostgreSQL (or connect Supabase if easier). Use Replit Auth or simple email/password auth for user accounts. Make it offline-friendly where possible.
+
+Core MVP features (build these first, keep it minimal and fast):
+
+1. User authentication: Sign up / Login / Logout. Each user has their own private data.
+
+2. Dashboard: Simple home screen showing today's balance, this week's profit/loss, and quick stats (total income, expenses, number of transactions). Use simple charts (Chart.js or Recharts).
+
+3. Transaction logging: Easy form to add income or expense.
+   - Type: Income or Expense
+   - Amount (in local currency, e.g., XOF, CFA, NGN)
+   - Category (e.g., Vente produit, Service coiffeuse, Achat stock, Transport, Orange Money reçu, etc.)
+   - Payment method: Orange Money, Wave, MTN MoMo, Cash, Other
+   - Reference / Note (e.g., transaction ID or customer name)
+   - Date (default to today)
+   - Support quick voice-to-text note if possible, but at least simple text.
+
+4. History: List of all transactions with search/filter by date or category. Users can only see their own data.
+
+5. Weekly/Monthly summary: Simple report page showing total income, total expenses, profit, and basic breakdown by category or payment method. Allow export as PDF (use jsPDF).
+
+6. Basic inventory notes: Optional section to log simple stock (e.g., "Tissus: 12 pièces restantes").
+
+Design requirements:
+- Very simple, intuitive, icon-heavy UI (use Lucide icons).
+- Support French as primary language + English toggle.
+- Mobile-optimized (large buttons, works well on cheap Android phones with slow connections).
+- Low-data usage: minimal images, fast loading.
+- Professional but friendly African-friendly colors (vibrant but clean).
+
+Security: Users can only access their own data. No public routes for sensitive info.
+
+After building the initial version, deploy it so I can test it. Then summarize what was built and suggest the next 2-3 improvements I should ask for.
+
+Start by planning the database schema (users table, transactions table, optional inventory table) and show me the plan before coding everything.
