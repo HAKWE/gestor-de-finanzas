@@ -3,13 +3,19 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: MobileMoney Manager API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: transactions
+    description: Transaction operations
+  - name: inventory
+    description: Inventory operations
+  - name: dashboard
+    description: Dashboard and summary operations
 paths:
   /healthz:
     get:
@@ -24,6 +30,300 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /transactions:
+    get:
+      operationId: listTransactions
+      tags: [transactions]
+      summary: List transactions for the authenticated user
+      parameters:
+        - name: startDate
+          in: query
+          schema:
+            type: ["string", "null"]
+        - name: endDate
+          in: query
+          schema:
+            type: ["string", "null"]
+        - name: type
+          in: query
+          schema:
+            type: ["string", "null"]
+        - name: category
+          in: query
+          schema:
+            type: ["string", "null"]
+        - name: paymentMethod
+          in: query
+          schema:
+            type: ["string", "null"]
+        - name: search
+          in: query
+          schema:
+            type: ["string", "null"]
+      responses:
+        "200":
+          description: List of transactions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Transaction"
+        "401":
+          description: Unauthorized
+    post:
+      operationId: createTransaction
+      tags: [transactions]
+      summary: Create a new transaction
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateTransactionBody"
+      responses:
+        "201":
+          description: Created transaction
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Transaction"
+        "400":
+          description: Invalid input
+        "401":
+          description: Unauthorized
+
+  /transactions/{id}:
+    get:
+      operationId: getTransaction
+      tags: [transactions]
+      summary: Get a transaction by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Transaction
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Transaction"
+        "404":
+          description: Not found
+        "401":
+          description: Unauthorized
+    patch:
+      operationId: updateTransaction
+      tags: [transactions]
+      summary: Update a transaction
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateTransactionBody"
+      responses:
+        "200":
+          description: Updated transaction
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Transaction"
+        "400":
+          description: Invalid input
+        "401":
+          description: Unauthorized
+        "404":
+          description: Not found
+    delete:
+      operationId: deleteTransaction
+      tags: [transactions]
+      summary: Delete a transaction
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "401":
+          description: Unauthorized
+        "404":
+          description: Not found
+
+  /dashboard/summary:
+    get:
+      operationId: getDashboardSummary
+      tags: [dashboard]
+      summary: Get dashboard summary stats
+      responses:
+        "200":
+          description: Dashboard summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardSummary"
+        "401":
+          description: Unauthorized
+
+  /dashboard/weekly:
+    get:
+      operationId: getWeeklySummary
+      tags: [dashboard]
+      summary: Get weekly income/expense breakdown
+      responses:
+        "200":
+          description: Weekly summary
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DailyBreakdown"
+        "401":
+          description: Unauthorized
+
+  /dashboard/by-category:
+    get:
+      operationId: getSummaryByCategory
+      tags: [dashboard]
+      summary: Get summary grouped by category
+      parameters:
+        - name: period
+          in: query
+          schema:
+            type: ["string", "null"]
+            description: "week, month, or all"
+      responses:
+        "200":
+          description: Category breakdown
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CategoryBreakdown"
+        "401":
+          description: Unauthorized
+
+  /dashboard/by-payment-method:
+    get:
+      operationId: getSummaryByPaymentMethod
+      tags: [dashboard]
+      summary: Get summary grouped by payment method
+      parameters:
+        - name: period
+          in: query
+          schema:
+            type: ["string", "null"]
+      responses:
+        "200":
+          description: Payment method breakdown
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PaymentMethodBreakdown"
+        "401":
+          description: Unauthorized
+
+  /inventory:
+    get:
+      operationId: listInventoryItems
+      tags: [inventory]
+      summary: List inventory items for the authenticated user
+      responses:
+        "200":
+          description: List of inventory items
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/InventoryItem"
+        "401":
+          description: Unauthorized
+    post:
+      operationId: createInventoryItem
+      tags: [inventory]
+      summary: Create an inventory item
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateInventoryItemBody"
+      responses:
+        "201":
+          description: Created inventory item
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InventoryItem"
+        "400":
+          description: Invalid input
+        "401":
+          description: Unauthorized
+
+  /inventory/{id}:
+    patch:
+      operationId: updateInventoryItem
+      tags: [inventory]
+      summary: Update an inventory item
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateInventoryItemBody"
+      responses:
+        "200":
+          description: Updated inventory item
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InventoryItem"
+        "401":
+          description: Unauthorized
+        "404":
+          description: Not found
+    delete:
+      operationId: deleteInventoryItem
+      tags: [inventory]
+      summary: Delete an inventory item
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "401":
+          description: Unauthorized
+        "404":
+          description: Not found
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +334,232 @@ components:
       required:
         - status
 
+    Transaction:
+      type: object
+      properties:
+        id:
+          type: integer
+        userId:
+          type: string
+        type:
+          type: string
+          enum: [income, expense]
+        amount:
+          type: number
+        currency:
+          type: string
+        category:
+          type: string
+        paymentMethod:
+          type: string
+        referenceNote:
+          type: ["string", "null"]
+        date:
+          type: string
+          format: date
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - userId
+        - type
+        - amount
+        - currency
+        - category
+        - paymentMethod
+        - date
+        - createdAt
+        - updatedAt
+
+    CreateTransactionBody:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [income, expense]
+        amount:
+          type: number
+        currency:
+          type: string
+        category:
+          type: string
+        paymentMethod:
+          type: string
+        referenceNote:
+          type: ["string", "null"]
+        date:
+          type: string
+          format: date
+      required:
+        - type
+        - amount
+        - currency
+        - category
+        - paymentMethod
+        - date
+
+    UpdateTransactionBody:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [income, expense]
+        amount:
+          type: number
+        currency:
+          type: string
+        category:
+          type: string
+        paymentMethod:
+          type: string
+        referenceNote:
+          type: ["string", "null"]
+        date:
+          type: string
+          format: date
+
+    DashboardSummary:
+      type: object
+      properties:
+        todayBalance:
+          type: number
+        todayIncome:
+          type: number
+        todayExpenses:
+          type: number
+        weekIncome:
+          type: number
+        weekExpenses:
+          type: number
+        weekProfit:
+          type: number
+        monthIncome:
+          type: number
+        monthExpenses:
+          type: number
+        monthProfit:
+          type: number
+        totalTransactions:
+          type: integer
+        currency:
+          type: string
+      required:
+        - todayBalance
+        - todayIncome
+        - todayExpenses
+        - weekIncome
+        - weekExpenses
+        - weekProfit
+        - monthIncome
+        - monthExpenses
+        - monthProfit
+        - totalTransactions
+        - currency
+
+    DailyBreakdown:
+      type: object
+      properties:
+        date:
+          type: string
+        income:
+          type: number
+        expenses:
+          type: number
+        profit:
+          type: number
+      required:
+        - date
+        - income
+        - expenses
+        - profit
+
+    CategoryBreakdown:
+      type: object
+      properties:
+        category:
+          type: string
+        type:
+          type: string
+        total:
+          type: number
+        count:
+          type: integer
+      required:
+        - category
+        - type
+        - total
+        - count
+
+    PaymentMethodBreakdown:
+      type: object
+      properties:
+        paymentMethod:
+          type: string
+        total:
+          type: number
+        count:
+          type: integer
+      required:
+        - paymentMethod
+        - total
+        - count
+
+    InventoryItem:
+      type: object
+      properties:
+        id:
+          type: integer
+        userId:
+          type: string
+        name:
+          type: string
+        quantity:
+          type: number
+        unit:
+          type: ["string", "null"]
+        notes:
+          type: ["string", "null"]
+        updatedAt:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - userId
+        - name
+        - quantity
+        - createdAt
+        - updatedAt
+
+    CreateInventoryItemBody:
+      type: object
+      properties:
+        name:
+          type: string
+        quantity:
+          type: number
+        unit:
+          type: ["string", "null"]
+        notes:
+          type: ["string", "null"]
+      required:
+        - name
+        - quantity
+
+    UpdateInventoryItemBody:
+      type: object
+      properties:
+        name:
+          type: string
+        quantity:
+          type: number
+        unit:
+          type: ["string", "null"]
+        notes:
+          type: ["string", "null"]

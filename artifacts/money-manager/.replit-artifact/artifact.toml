@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "MobileMoney Manager"
+version = "1.0.0"
+id = "artifacts/money-manager"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 19291
+
+[services.development]
+run = "pnpm --filter @workspace/money-manager run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/money-manager", "run", "build" ]
+publicDir = "artifacts/money-manager/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "19291"
+BASE_PATH = "/"
