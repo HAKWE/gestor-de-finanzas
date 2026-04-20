@@ -14,7 +14,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import { parseMultipleSms, type ParsedSmsTransaction } from "../lib/smsParser";
 import { parseCsvFile, mapRows, type ParsedCsv, type MappedTransaction, type ColumnMapping } from "../lib/csvImporter";
-import { Loader2, Trash2, UploadCloud, CheckCircle, FileUp } from "lucide-react";
+import { parsePdfFile, type PdfParseResult } from "../lib/pdfImporter";
+import { Loader2, Trash2, UploadCloud, CheckCircle, FileUp, FileText } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -44,7 +45,18 @@ export default function Import() {
   const [csvSuccessCount, setCsvSuccessCount] = useState(0);
   const [csvErrorCount, setCsvErrorCount] = useState(0);
 
+  // PDF State
+  const [pdfFile, setPdfFile] = useState<File | null>(null);
+  const [pdfResult, setPdfResult] = useState<PdfParseResult | null>(null);
+  const [isPdfParsing, setIsPdfParsing] = useState(false);
+  const [pdfRows, setPdfRows] = useState<(MappedTransaction & { id: string; selected: boolean })[]>([]);
+  const [isImportingPdf, setIsImportingPdf] = useState(false);
+  const [pdfProgress, setPdfProgress] = useState(0);
+  const [pdfSuccessCount, setPdfSuccessCount] = useState(0);
+  const [pdfErrorCount, setPdfErrorCount] = useState(0);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const pdfInputRef = useRef<HTMLInputElement>(null);
 
   const categoriesFr = ["Vente produit", "Service coiffure", "Achat stock", "Transport", "Orange Money reçu", "Wave reçu", "MTN MoMo reçu", "Nourriture", "Loyer", "Eau/Électricité", "Autre"];
   const categoriesEn = ["Product sale", "Beauty service", "Stock purchase", "Transport", "Orange Money received", "Wave received", "MTN MoMo received", "Food", "Rent", "Water/Electricity", "Other"];
@@ -186,20 +198,87 @@ export default function Import() {
     });
   };
 
+  // --- PDF Logic ---
+  const handlePdfSelect = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setPdfFile(file);
+    setPdfResult(null);
+    setPdfRows([]);
+    setPdfSuccessCount(0);
+    setPdfErrorCount(0);
+    setPdfProgress(0);
+    setIsPdfParsing(true);
+    try {
+      const result = await parsePdfFile(file);
+      setPdfResult(result);
+      setPdfRows(result.transactions.map((tx, i) => ({ ...tx, id: `pdf-${i}`, selected: true })));
+    } catch (err) {
+      toast({ title: "Erreur PDF", description: language === "fr" ? "Impossible de lire ce fichier PDF." : "Could not read this PDF file.", variant: "destructive" });
+    } finally {
+      setIsPdfParsing(false);
+    }
+  };
+
+  const togglePdfRowSelection = (id: string) => {
+    setPdfRows(prev => prev.map(r => r.id === id ? { ...r, selected: !r.selected } : r));
+  };
+
+  const handleImportPdf = async () => {
+    const toImport = pdfRows.filter(r => r.selected);
+    if (toImport.length === 0) return;
+    setIsImportingPdf(true);
+    setPdfProgress(0);
+    let success = 0;
+    let errors = 0;
+
+    for (let i = 0; i < toImport.length; i++) {
+      const tx = toImport[i];
+      try {
+        await createTx.mutateAsync({
+          data: {
+            type: tx.type,
+            amount: Number(tx.amount),
+            currency: tx.currency || "XOF",
+            category: tx.category || "Autre",
+            paymentMethod: tx.paymentMethod || "Other",
+            referenceNote: tx.referenceNote || "",
+            date: tx.date || new Date().toISOString().split("T")[0],
+          },
+        });
+        success++;
+      } catch {
+        errors++;
+      }
+      setPdfProgress(Math.round(((i + 1) / toImport.length) * 100));
+    }
+
+    setPdfSuccessCount(success);
+    setPdfErrorCount(errors);
+    setIsImportingPdf(false);
+    queryClient.invalidateQueries({ queryKey: getListTransactionsQueryKey() });
+    queryClient.invalidateQueries({ queryKey: getGetDashboardSummaryQueryKey() });
+    toast({
+      title: language === "fr" ? "Import terminé" : "Import completed",
+      description: `${success} ${language === "fr" ? "importées" : "imported"}${errors > 0 ? `, ${errors} erreurs` : ""}.`,
+    });
+  };
+
   return (
     <Layout>
       <div className="max-w-4xl mx-auto w-full space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
         <div className="flex flex-col gap-1">
           <h1 className="text-3xl font-bold tracking-tight">{language === "fr" ? "Importer des transactions" : "Import Transactions"}</h1>
           <p className="text-muted-foreground">
-            {language === "fr" ? "Importez depuis vos SMS ou un fichier CSV." : "Import from your SMS or a CSV file."}
+            {language === "fr" ? "Importez depuis vos SMS, un fichier CSV ou un relevé PDF." : "Import from SMS, a CSV file, or a PDF statement."}
           </p>
         </div>
 
         <Tabs defaultValue="sms" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-8">
+          <TabsList className="grid w-full grid-cols-3 mb-8">
             <TabsTrigger value="sms" className="text-base py-3">SMS</TabsTrigger>
             <TabsTrigger value="csv" className="text-base py-3">CSV</TabsTrigger>
+            <TabsTrigger value="pdf" className="text-base py-3">PDF</TabsTrigger>
           </TabsList>
           
           <TabsContent value="sms" className="space-y-6">
@@ -479,6 +558,163 @@ export default function Import() {
                   >
                     {isImportingCsv && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
                     {language === "fr" ? "Importer" : "Import"} {mappedCsvRows.filter(r => r.selected).length} transactions
+                  </Button>
+                </div>
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="pdf" className="space-y-6">
+            <div className="bg-card p-8 rounded-2xl border shadow-sm border-dashed text-center space-y-4">
+              <div className="mx-auto w-16 h-16 bg-primary/10 text-primary rounded-full flex items-center justify-center">
+                <FileText className="h-8 w-8" />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold mb-2">
+                  {language === "fr" ? "Sélectionner un relevé PDF" : "Select a PDF statement"}
+                </h3>
+                <p className="text-muted-foreground mb-1">
+                  {language === "fr"
+                    ? "Relevé bancaire, historique Orange Money, Wave ou MTN MoMo"
+                    : "Bank statement, Orange Money, Wave or MTN MoMo history"}
+                </p>
+                <p className="text-xs text-muted-foreground mb-6">
+                  {language === "fr"
+                    ? "Le fichier est analysé directement sur votre appareil, aucune donnée n'est envoyée."
+                    : "The file is processed directly on your device — nothing is uploaded."}
+                </p>
+                <input
+                  type="file"
+                  accept=".pdf,application/pdf"
+                  ref={pdfInputRef}
+                  className="hidden"
+                  onChange={handlePdfSelect}
+                />
+                <Button onClick={() => pdfInputRef.current?.click()} size="lg" variant="outline" className="rounded-xl" disabled={isPdfParsing}>
+                  {isPdfParsing ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : null}
+                  {isPdfParsing
+                    ? (language === "fr" ? "Analyse en cours..." : "Analyzing...")
+                    : (language === "fr" ? "Parcourir" : "Browse files")}
+                </Button>
+              </div>
+              {pdfFile && !isPdfParsing && (
+                <div className="mt-4 pt-4 border-t text-sm font-medium flex flex-wrap items-center justify-center gap-2">
+                  <span>{pdfFile.name}</span>
+                  {pdfResult && (
+                    <>
+                      <Badge variant="secondary">{pdfResult.detectedFormat}</Badge>
+                      <Badge variant="outline">{pdfResult.pageCount} {language === "fr" ? "pages" : "pages"}</Badge>
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {pdfResult && pdfRows.length === 0 && !isPdfParsing && (
+              <div className="bg-card p-6 rounded-2xl border shadow-sm text-center space-y-2">
+                <p className="text-muted-foreground">
+                  {language === "fr"
+                    ? "Aucune transaction détectée dans ce PDF. Essayez un relevé CSV ou copiez le texte dans l'onglet SMS."
+                    : "No transactions detected in this PDF. Try a CSV statement or copy the text into the SMS tab."}
+                </p>
+              </div>
+            )}
+
+            {pdfRows.length > 0 && (
+              <div className="space-y-4">
+                <div className="bg-card rounded-2xl border shadow-sm overflow-hidden">
+                  <div className="p-4 border-b bg-muted/30 flex items-center justify-between">
+                    <h3 className="font-bold">
+                      {pdfRows.filter(r => r.selected).length} / {pdfRows.length} {language === "fr" ? "transactions sélectionnées" : "transactions selected"}
+                    </h3>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setPdfRows(prev => {
+                        const allSelected = prev.every(r => r.selected);
+                        return prev.map(r => ({ ...r, selected: !allSelected }));
+                      })}
+                    >
+                      {language === "fr" ? "Tout sélectionner / désélectionner" : "Select / deselect all"}
+                    </Button>
+                  </div>
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="w-[50px]"></TableHead>
+                          <TableHead>Date</TableHead>
+                          <TableHead>Type</TableHead>
+                          <TableHead>{language === "fr" ? "Montant" : "Amount"}</TableHead>
+                          <TableHead>{language === "fr" ? "Devise" : "Currency"}</TableHead>
+                          <TableHead>{language === "fr" ? "Catégorie" : "Category"}</TableHead>
+                          <TableHead>Reference</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {pdfRows.slice(0, 50).map((row) => (
+                          <TableRow key={row.id} className={!row.selected ? "opacity-40" : ""}>
+                            <TableCell>
+                              <Checkbox checked={row.selected} onCheckedChange={() => togglePdfRowSelection(row.id)} />
+                            </TableCell>
+                            <TableCell>{row.date}</TableCell>
+                            <TableCell>
+                              <Badge
+                                variant={row.type === "income" ? "default" : "secondary"}
+                                className={row.type === "income" ? "bg-green-500 hover:bg-green-600 text-white" : ""}
+                              >
+                                {row.type === "income" ? (language === "fr" ? "Revenu" : "Income") : (language === "fr" ? "Dépense" : "Expense")}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="font-bold">{row.amount.toLocaleString()}</TableCell>
+                            <TableCell>{row.currency}</TableCell>
+                            <TableCell>{row.category}</TableCell>
+                            <TableCell className="max-w-[180px] truncate" title={row.referenceNote}>{row.referenceNote}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                  {pdfRows.length > 50 && (
+                    <div className="p-4 text-center text-sm text-muted-foreground border-t">
+                      {language === "fr" ? "Et" : "And"} {pdfRows.length - 50} {language === "fr" ? "autres lignes..." : "more rows..."}
+                    </div>
+                  )}
+                </div>
+
+                <div className="bg-card p-6 rounded-2xl border shadow-sm space-y-4 sticky bottom-4 z-10">
+                  {isImportingPdf || pdfSuccessCount > 0 ? (
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span>{language === "fr" ? "Progression" : "Progress"}</span>
+                        <span className="font-bold">{pdfProgress}%</span>
+                      </div>
+                      <Progress value={pdfProgress} className="h-2" />
+                      {(pdfSuccessCount > 0 || pdfErrorCount > 0) && (
+                        <div className="flex items-center gap-4 mt-2">
+                          {pdfSuccessCount > 0 && (
+                            <div className="flex items-center gap-2 text-green-600 dark:text-green-500">
+                              <CheckCircle className="h-5 w-5" />
+                              <span>{pdfSuccessCount} {language === "fr" ? "succès" : "success"}</span>
+                            </div>
+                          )}
+                          {pdfErrorCount > 0 && (
+                            <div className="flex items-center gap-2 text-destructive">
+                              <span>{pdfErrorCount} {language === "fr" ? "erreurs" : "errors"}</span>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  ) : null}
+                  <Button
+                    onClick={handleImportPdf}
+                    disabled={isImportingPdf || pdfRows.filter(r => r.selected).length === 0}
+                    size="lg"
+                    className="w-full rounded-xl h-14 text-lg"
+                  >
+                    {isImportingPdf && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
+                    {language === "fr" ? "Importer" : "Import"} {pdfRows.filter(r => r.selected).length} transactions
                   </Button>
                 </div>
               </div>

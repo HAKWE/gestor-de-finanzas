@@ -38,6 +38,7 @@ A mobile-first PWA finance and sales tracker for micro-businesses in Francophone
 5. **Reports**: Weekly/monthly summaries with charts by category and payment method.
 6. **Inventory**: Stock notes with name, quantity, unit.
 7. **Settings**: Language toggle (French/English), currency preference.
+8. **Import**: Bulk import transactions from SMS messages (Orange Money, Wave, MTN MoMo), CSV files, or PDF bank/mobile money statements. PDF parsing done entirely client-side via pdfjs-dist (no data uploaded).
 
 ## Database Schema
 
