@@ -14,7 +14,7 @@ export default function SignUpPage() {
 
   useEffect(() => {
     if (isLoaded) return;
-    const t = setTimeout(() => setClerkTimedOut(true), 8000);
+    const t = setTimeout(() => setClerkTimedOut(true), 30000);
     return () => clearTimeout(t);
   }, [isLoaded]);
 
