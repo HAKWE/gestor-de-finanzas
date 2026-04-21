@@ -16,10 +16,15 @@
  * Usage in app.ts:
  *   import { CLERK_PROXY_PATH, clerkProxyMiddleware } from "./middlewares/clerkProxyMiddleware";
  *   app.use(CLERK_PROXY_PATH, clerkProxyMiddleware());
+ *
+ * ROUTING RULES:
+ *   /api/__clerk/npm/...   → https://npm.clerk.dev/npm/...   (JS bundle CDN)
+ *   /api/__clerk/v1/...    → https://<fapi-decoded-from-key>/v1/...  (Auth FAPI)
  */
 
 import { createProxyMiddleware } from "http-proxy-middleware";
 import type { RequestHandler } from "express";
+import type { IncomingMessage } from "http";
 
 export const CLERK_PROXY_PATH = "/api/__clerk";
 
@@ -34,11 +39,11 @@ function getClerkFAPI(): string {
   if (!pubKey) return "https://frontend-api.clerk.dev";
 
   try {
-    // Strip the pk_test_ / pk_live_ prefix
     const b64 = pubKey.replace(/^pk_(test|live)_/, "");
-    // Base64url → standard base64
     const standard = b64.replace(/-/g, "+").replace(/_/g, "/");
-    const decoded = Buffer.from(standard, "base64").toString("utf8").replace(/\$$/, "");
+    const decoded = Buffer.from(standard, "base64")
+      .toString("utf8")
+      .replace(/\$$/, "");
     if (decoded && decoded.includes(".")) {
       return `https://${decoded}`;
     }
@@ -58,26 +63,42 @@ export function clerkProxyMiddleware(): RequestHandler {
   const clerkFAPI = getClerkFAPI();
 
   return createProxyMiddleware({
-    target: clerkFAPI,
+    // Dynamic router: /npm/* goes to npm CDN, everything else to FAPI
+    router: (req: IncomingMessage) => {
+      const url = (req as any).url as string;
+      // Strip the proxy path prefix to check the sub-path
+      const subPath = url.replace(new RegExp(`^${CLERK_PROXY_PATH}`), "");
+      if (subPath.startsWith("/npm/")) {
+        return "https://npm.clerk.dev";
+      }
+      return clerkFAPI;
+    },
     changeOrigin: true,
     pathRewrite: (path: string) =>
       path.replace(new RegExp(`^${CLERK_PROXY_PATH}`), ""),
     on: {
       proxyReq: (proxyReq, req) => {
-        const protocol = req.headers["x-forwarded-proto"] || "https";
-        const host = req.headers.host || "";
-        const proxyUrl = `${protocol}://${host}${CLERK_PROXY_PATH}`;
+        const subPath = (req.url || "").replace(
+          new RegExp(`^${CLERK_PROXY_PATH}`),
+          ""
+        );
+        // Only inject Clerk auth headers for FAPI requests, not CDN requests
+        if (!subPath.startsWith("/npm/")) {
+          const protocol = req.headers["x-forwarded-proto"] || "https";
+          const host = req.headers.host || "";
+          const proxyUrl = `${protocol}://${host}${CLERK_PROXY_PATH}`;
 
-        proxyReq.setHeader("Clerk-Proxy-Url", proxyUrl);
-        proxyReq.setHeader("Clerk-Secret-Key", secretKey);
+          proxyReq.setHeader("Clerk-Proxy-Url", proxyUrl);
+          proxyReq.setHeader("Clerk-Secret-Key", secretKey);
 
-        const xff = req.headers["x-forwarded-for"];
-        const clientIp =
-          (Array.isArray(xff) ? xff[0] : xff)?.split(",")[0]?.trim() ||
-          req.socket?.remoteAddress ||
-          "";
-        if (clientIp) {
-          proxyReq.setHeader("X-Forwarded-For", clientIp);
+          const xff = req.headers["x-forwarded-for"];
+          const clientIp =
+            (Array.isArray(xff) ? xff[0] : xff)?.split(",")[0]?.trim() ||
+            req.socket?.remoteAddress ||
+            "";
+          if (clientIp) {
+            proxyReq.setHeader("X-Forwarded-For", clientIp);
+          }
         }
       },
     },
