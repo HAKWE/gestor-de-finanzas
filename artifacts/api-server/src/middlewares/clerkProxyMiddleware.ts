@@ -12,9 +12,10 @@
  *
  * IMPORTANT:
  * - Must be mounted BEFORE express.json() middleware
- * - The ClerkProvider in the frontend sets clerkJSUrl directly to npm.clerk.dev
- *   so the browser loads the JS bundle without going through this proxy.
- *   This proxy only handles FAPI calls (/v1/*).
+ *
+ * Routing strategy:
+ *   /api/__clerk/npm/* → 302 redirect to FAPI CDN (browser downloads JS directly)
+ *   /api/__clerk/*     → proxy to FAPI (auth API calls)
  *
  * Usage in app.ts:
  *   import { CLERK_PROXY_PATH, clerkProxyMiddleware } from "./middlewares/clerkProxyMiddleware";
@@ -22,7 +23,7 @@
  */
 
 import { createProxyMiddleware } from "http-proxy-middleware";
-import type { RequestHandler } from "express";
+import type { RequestHandler, Request, Response, NextFunction } from "express";
 
 export const CLERK_PROXY_PATH = "/api/__clerk";
 
@@ -32,7 +33,7 @@ export const CLERK_PROXY_PATH = "/api/__clerk";
  * For dev keys  → main-XXXX.clerk.accounts.dev
  * For live keys → frontend-api.clerk.dev (or custom FAPI)
  */
-function getClerkFAPI(): string {
+export function getClerkFAPI(): string {
   const pubKey = process.env.CLERK_PUBLISHABLE_KEY || "";
   if (!pubKey) return "https://frontend-api.clerk.dev";
 
@@ -60,7 +61,7 @@ export function clerkProxyMiddleware(): RequestHandler {
 
   const clerkFAPI = getClerkFAPI();
 
-  return createProxyMiddleware({
+  const fapiProxy = createProxyMiddleware({
     target: clerkFAPI,
     changeOrigin: true,
     pathRewrite: (path: string) =>
@@ -85,4 +86,14 @@ export function clerkProxyMiddleware(): RequestHandler {
       },
     },
   }) as RequestHandler;
+
+  return (req: Request, res: Response, next: NextFunction) => {
+    // The request path here is relative to the mount point (Express strips CLERK_PROXY_PATH).
+    // npm bundle requests: redirect the browser directly to the FAPI CDN so the
+    // browser (not the server) downloads the file. The server cannot reach npm.clerk.dev.
+    if (req.path.startsWith("/npm/")) {
+      return res.redirect(302, `${clerkFAPI}${req.path}`);
+    }
+    return fapiProxy(req, res, next);
+  };
 }
