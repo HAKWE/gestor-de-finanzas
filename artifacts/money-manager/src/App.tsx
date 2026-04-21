@@ -22,12 +22,8 @@ import NotFound from "@/pages/not-found";
 
 const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
-// In production the proxy middleware forwards to the correct Clerk FAPI
-// (decoded from the key itself), so always use the proxy in production.
-// In development the proxy middleware is bypassed, so leave it undefined.
-const clerkProxyUrl: string | undefined = import.meta.env.PROD
-  ? (import.meta.env.VITE_CLERK_PROXY_URL || `${window.location.origin}/api/__clerk`)
-  : undefined;
+// NOTE: in dev this env var will be empty, in prod it will be automatically set
+const clerkProxyUrl = import.meta.env.VITE_CLERK_PROXY_URL;
 
 function stripBase(path: string): string {
   return basePath && path.startsWith(basePath)
