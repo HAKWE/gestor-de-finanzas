@@ -14,8 +14,8 @@
  * - Must be mounted BEFORE express.json() middleware
  *
  * Routing strategy:
- *   /api/__clerk/npm/* → 302 redirect to FAPI CDN (browser downloads JS directly)
- *   /api/__clerk/*     → proxy to FAPI (auth API calls)
+ *   /api/__clerk/npm/* → stream JS bundle from FAPI (follow redirects, served from our domain)
+ *   /api/__clerk/*     → proxy auth API calls to FAPI
  *
  * Usage in app.ts:
  *   import { CLERK_PROXY_PATH, clerkProxyMiddleware } from "./middlewares/clerkProxyMiddleware";
@@ -23,15 +23,18 @@
  */
 
 import { createProxyMiddleware } from "http-proxy-middleware";
+import * as https from "https";
+import * as http from "http";
 import type { RequestHandler, Request, Response, NextFunction } from "express";
 
 export const CLERK_PROXY_PATH = "/api/__clerk";
 
+// In-memory cache for the Clerk JS bundle (immutable, long-lived CDN asset)
+const bundleCache = new Map<string, { body: Buffer; contentType: string }>();
+
 /**
  * Decode the Clerk Frontend API URL from the publishable key.
  * Key format: pk_[test|live]_[base64url(fapi_host + "$")]
- * For dev keys  → main-XXXX.clerk.accounts.dev
- * For live keys → frontend-api.clerk.dev (or custom FAPI)
  */
 export function getClerkFAPI(): string {
   const pubKey = process.env.CLERK_PUBLISHABLE_KEY || "";
@@ -47,10 +50,59 @@ export function getClerkFAPI(): string {
       return `https://${decoded}`;
     }
   } catch {
-    // fall through to default
+    // fall through
   }
 
   return "https://frontend-api.clerk.dev";
+}
+
+/**
+ * Fetch a URL with manual redirect following (up to maxRedirects hops).
+ * Returns the final response body and content-type.
+ */
+function fetchWithRedirects(
+  url: string,
+  maxRedirects = 5,
+): Promise<{ body: Buffer; contentType: string }> {
+  return new Promise((resolve, reject) => {
+    const parsedUrl = new URL(url);
+    const lib = parsedUrl.protocol === "https:" ? https : http;
+
+    lib
+      .get(url, (res) => {
+        if (
+          res.statusCode &&
+          res.statusCode >= 300 &&
+          res.statusCode < 400 &&
+          res.headers.location
+        ) {
+          if (maxRedirects <= 0) {
+            return reject(new Error("Too many redirects"));
+          }
+          // Resolve relative redirects
+          const next = new URL(res.headers.location, url).href;
+          res.resume();
+          return resolve(fetchWithRedirects(next, maxRedirects - 1));
+        }
+
+        if (!res.statusCode || res.statusCode >= 400) {
+          res.resume();
+          return reject(new Error(`Upstream status ${res.statusCode}`));
+        }
+
+        const chunks: Buffer[] = [];
+        res.on("data", (c: Buffer) => chunks.push(c));
+        res.on("end", () => {
+          resolve({
+            body: Buffer.concat(chunks),
+            contentType:
+              res.headers["content-type"] || "application/javascript",
+          });
+        });
+        res.on("error", reject);
+      })
+      .on("error", reject);
+  });
 }
 
 export function clerkProxyMiddleware(): RequestHandler {
@@ -88,11 +140,32 @@ export function clerkProxyMiddleware(): RequestHandler {
   }) as RequestHandler;
 
   return (req: Request, res: Response, next: NextFunction) => {
-    // The request path here is relative to the mount point (Express strips CLERK_PROXY_PATH).
-    // npm bundle requests: redirect the browser directly to the FAPI CDN so the
-    // browser (not the server) downloads the file. The server cannot reach npm.clerk.dev.
     if (req.path.startsWith("/npm/")) {
-      return res.redirect(302, `${clerkFAPI}${req.path}`);
+      // The Clerk JS bundle must be served from our domain (not redirected).
+      // If the browser gets a redirect, Clerk detects the origin mismatch and
+      // loops. We fetch it server-side (the FAPI IS reachable) and stream it.
+      const bundleUrl = `${clerkFAPI}${req.path}`;
+      const cached = bundleCache.get(req.path);
+      if (cached) {
+        res.setHeader("Content-Type", cached.contentType);
+        res.setHeader("Cache-Control", "public, max-age=86400");
+        res.setHeader("Access-Control-Allow-Origin", "*");
+        return res.end(cached.body);
+      }
+
+      fetchWithRedirects(bundleUrl)
+        .then(({ body, contentType }) => {
+          bundleCache.set(req.path, { body, contentType });
+          res.setHeader("Content-Type", contentType);
+          res.setHeader("Cache-Control", "public, max-age=86400");
+          res.setHeader("Access-Control-Allow-Origin", "*");
+          res.end(body);
+        })
+        .catch((err: Error) => {
+          console.error("[ClerkProxy] bundle fetch failed:", err.message);
+          next(err);
+        });
+      return;
     }
     return fapiProxy(req, res, next);
   };
