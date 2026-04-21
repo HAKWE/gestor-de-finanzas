@@ -21,8 +21,11 @@ import Import from "./pages/import";
 import NotFound from "@/pages/not-found";
 
 const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
-const clerkProxyUrl = import.meta.env.VITE_CLERK_PROXY_URL;
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
+// Proxy only active in production — dev instances don't use the proxy
+const clerkProxyUrl = import.meta.env.PROD
+  ? `${window.location.origin}${basePath}/api/__clerk`
+  : undefined;
 
 function stripBase(path: string): string {
   return basePath && path.startsWith(basePath)
