@@ -1,15 +1,22 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSignUp } from "@clerk/react";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ShieldCheck, Eye, EyeOff, Loader2, AlertCircle } from "lucide-react";
+import { ShieldCheck, Eye, EyeOff, Loader2, AlertCircle, RefreshCw } from "lucide-react";
 
 export default function SignUpPage() {
   const { isLoaded, signUp, setActive } = useSignUp();
   const [, setLocation] = useLocation();
   const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
+  const [clerkTimedOut, setClerkTimedOut] = useState(false);
+
+  useEffect(() => {
+    if (isLoaded) return;
+    const t = setTimeout(() => setClerkTimedOut(true), 8000);
+    return () => clearTimeout(t);
+  }, [isLoaded]);
 
   const [step, setStep] = useState<"form" | "verify">("form");
   const [showPassword, setShowPassword] = useState(false);
@@ -233,19 +240,37 @@ export default function SignUpPage() {
                 {errors.confirmPassword && <p className="text-xs text-red-500">{errors.confirmPassword}</p>}
               </div>
 
-              <Button
-                type="submit"
-                className="w-full rounded-xl h-12 text-base font-semibold mt-2"
-                disabled={submitting || !isLoaded}
-              >
-                {submitting ? (
-                  <><Loader2 className="w-4 h-4 animate-spin mr-2" />Création en cours…</>
-                ) : !isLoaded ? (
-                  <><Loader2 className="w-4 h-4 animate-spin mr-2" />Chargement…</>
-                ) : (
-                  "Créer mon compte"
-                )}
-              </Button>
+              {clerkTimedOut && !isLoaded ? (
+                <div className="space-y-3">
+                  <div className="flex items-start gap-3 bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl px-4 py-3">
+                    <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                    <span>Le service d'authentification n'a pas pu démarrer. Veuillez recharger la page.</span>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full rounded-xl h-12 text-base font-semibold"
+                    onClick={() => window.location.reload()}
+                  >
+                    <RefreshCw className="w-4 h-4 mr-2" />
+                    Recharger la page
+                  </Button>
+                </div>
+              ) : (
+                <Button
+                  type="submit"
+                  className="w-full rounded-xl h-12 text-base font-semibold mt-2"
+                  disabled={submitting || !isLoaded}
+                >
+                  {submitting ? (
+                    <><Loader2 className="w-4 h-4 animate-spin mr-2" />Création en cours…</>
+                  ) : !isLoaded ? (
+                    <><Loader2 className="w-4 h-4 animate-spin mr-2" />Chargement…</>
+                  ) : (
+                    "Créer mon compte"
+                  )}
+                </Button>
+              )}
             </form>
 
             <div className="flex items-start gap-2 bg-muted/50 rounded-xl px-4 py-3">
