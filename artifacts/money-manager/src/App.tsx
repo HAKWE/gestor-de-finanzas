@@ -22,11 +22,10 @@ import NotFound from "@/pages/not-found";
 
 const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
-// In production the proxy middleware is active; derive the proxy URL from the
-// current origin as a reliable fallback if the env var is not injected.
+// In production the proxy middleware is active; always derive from the current
+// origin so the proxy URL exactly matches where the browser is talking to.
 const clerkProxyUrl: string | undefined =
-  import.meta.env.VITE_CLERK_PROXY_URL ||
-  (import.meta.env.PROD ? `${window.location.origin}/api/__clerk` : undefined);
+  import.meta.env.PROD ? `${window.location.origin}/api/__clerk` : undefined;
 
 function stripBase(path: string): string {
   return basePath && path.startsWith(basePath)
