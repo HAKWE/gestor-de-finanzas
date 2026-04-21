@@ -22,11 +22,10 @@ import NotFound from "@/pages/not-found";
 
 const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
-// Proxy ONLY works with live (production) Clerk keys — pk_live_*.
-// Test/dev keys (pk_test_*) don't support the proxy and will loop forever if
-// proxyUrl is set. Leave it undefined for dev keys so Clerk connects directly.
-const isLiveKey = clerkPubKey?.startsWith("pk_live_");
-const clerkProxyUrl: string | undefined = isLiveKey
+// In production the proxy middleware forwards to the correct Clerk FAPI
+// (decoded from the key itself), so always use the proxy in production.
+// In development the proxy middleware is bypassed, so leave it undefined.
+const clerkProxyUrl: string | undefined = import.meta.env.PROD
   ? (import.meta.env.VITE_CLERK_PROXY_URL || `${window.location.origin}/api/__clerk`)
   : undefined;
 

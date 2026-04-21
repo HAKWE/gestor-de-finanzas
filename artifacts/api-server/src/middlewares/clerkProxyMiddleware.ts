@@ -11,7 +11,6 @@
  * dashboard — all auth configuration is done through the Auth pane.
  *
  * IMPORTANT:
- * - Only active in production (Clerk proxying doesn't work for dev instances)
  * - Must be mounted BEFORE express.json() middleware
  *
  * Usage in app.ts:
@@ -22,22 +21,44 @@
 import { createProxyMiddleware } from "http-proxy-middleware";
 import type { RequestHandler } from "express";
 
-const CLERK_FAPI = "https://frontend-api.clerk.dev";
 export const CLERK_PROXY_PATH = "/api/__clerk";
 
-export function clerkProxyMiddleware(): RequestHandler {
-  // Only run proxy in production — Clerk proxying doesn't work for dev instances
-  if (process.env.NODE_ENV !== "production") {
-    return (_req, _res, next) => next();
+/**
+ * Decode the Clerk Frontend API URL from the publishable key.
+ * Key format: pk_[test|live]_[base64url(fapi_host + "$")]
+ * For dev keys  → main-XXXX.clerk.accounts.dev
+ * For live keys → frontend-api.clerk.dev (or custom FAPI)
+ */
+function getClerkFAPI(): string {
+  const pubKey = process.env.CLERK_PUBLISHABLE_KEY || "";
+  if (!pubKey) return "https://frontend-api.clerk.dev";
+
+  try {
+    // Strip the pk_test_ / pk_live_ prefix
+    const b64 = pubKey.replace(/^pk_(test|live)_/, "");
+    // Base64url → standard base64
+    const standard = b64.replace(/-/g, "+").replace(/_/g, "/");
+    const decoded = Buffer.from(standard, "base64").toString("utf8").replace(/\$$/, "");
+    if (decoded && decoded.includes(".")) {
+      return `https://${decoded}`;
+    }
+  } catch {
+    // fall through to default
   }
 
+  return "https://frontend-api.clerk.dev";
+}
+
+export function clerkProxyMiddleware(): RequestHandler {
   const secretKey = process.env.CLERK_SECRET_KEY;
   if (!secretKey) {
     return (_req, _res, next) => next();
   }
 
+  const clerkFAPI = getClerkFAPI();
+
   return createProxyMiddleware({
-    target: CLERK_FAPI,
+    target: clerkFAPI,
     changeOrigin: true,
     pathRewrite: (path: string) =>
       path.replace(new RegExp(`^${CLERK_PROXY_PATH}`), ""),
