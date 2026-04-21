@@ -71,14 +71,17 @@ export default function SignUpPage() {
         lastName: form.lastName.trim(),
         emailAddress: form.email.trim(),
         password: form.password,
+        unsafeMetadata: {
+          firstName: form.firstName.trim(),
+          lastName: form.lastName.trim(),
+        },
       });
       await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
       setStep("verify");
     } catch (err: any) {
-      const msg =
-        err?.errors?.[0]?.longMessage ||
-        err?.errors?.[0]?.message ||
-        "Une erreur est survenue. Veuillez réessayer.";
+      console.error("Signup error:", JSON.stringify(err?.errors ?? err));
+      const clerkMsg = err?.errors?.[0]?.longMessage || err?.errors?.[0]?.message;
+      const msg = clerkMsg || "Une erreur est survenue. Veuillez réessayer.";
       setGlobalError(msg);
     } finally {
       setLoading(false);
