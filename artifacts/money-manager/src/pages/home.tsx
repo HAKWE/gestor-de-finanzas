@@ -2,8 +2,8 @@ import { Link } from "wouter";
 import { useLanguage } from "../lib/language-context";
 import { Button } from "@/components/ui/button";
 import { usePwaInstall } from "../hooks/use-pwa-install";
+import { SignUpForm } from "@/components/sign-up-form";
 import {
-  ArrowRight,
   Wallet,
   TrendingUp,
   ShieldCheck,
@@ -79,34 +79,40 @@ export default function Home() {
     <div className="min-h-screen bg-background flex flex-col">
 
       {/* ── Hero ── */}
-      <section className="flex flex-col items-center justify-center flex-1 text-center px-4 py-20 md:py-32 space-y-8">
-        <div className="flex justify-center">
-          <img src="/logo.svg" alt="MobileMoney Manager" className="w-20 h-20 md:w-28 md:h-28 drop-shadow-md" />
-        </div>
+      <section className="flex-1 px-4 py-12 md:py-20">
+        <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-10 items-center">
 
-        <div className="space-y-4 max-w-3xl mx-auto">
-          <h1 className="text-4xl md:text-6xl font-bold text-foreground tracking-tight leading-tight">
-            {fr ? "Gérez votre argent avec fierté." : "Manage your money with pride."}
-          </h1>
-          <p className="text-xl md:text-2xl text-muted-foreground">
-            {fr
-              ? "Le compagnon financier des entrepreneurs africains."
-              : "The financial companion for African entrepreneurs."}
-          </p>
-        </div>
+          {/* Left: headline */}
+          <div className="flex flex-col items-center md:items-start text-center md:text-left space-y-6">
+            <img src="/logo.svg" alt="MobileMoney Manager" className="w-16 h-16 md:w-20 md:h-20 drop-shadow-md" />
+            <h1 className="text-4xl md:text-5xl font-bold text-foreground tracking-tight leading-tight">
+              {fr ? "Gérez votre argent avec fierté." : "Manage your money with pride."}
+            </h1>
+            <p className="text-lg md:text-xl text-muted-foreground">
+              {fr
+                ? "Le compagnon financier des entrepreneurs africains. Orange Money, Wave, MTN MoMo — tout en un."
+                : "The financial companion for African entrepreneurs. Orange Money, Wave, MTN MoMo — all in one."}
+            </p>
+            <p className="text-sm text-muted-foreground">
+              {fr ? "Déjà un compte ?" : "Already have an account?"}{" "}
+              <Link href="/sign-in" className="text-primary font-medium hover:underline">
+                {fr ? "Se connecter" : "Sign in"}
+              </Link>
+            </p>
+          </div>
 
-        <div className="flex flex-col sm:flex-row gap-4 pt-4">
-          <Link href="/sign-up">
-            <Button size="lg" className="w-full sm:w-auto text-lg px-8 py-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow">
-              {fr ? "Commencer gratuitement" : "Get started for free"}
-              <ArrowRight className="ml-2 w-5 h-5" />
-            </Button>
-          </Link>
-          <Link href="/sign-in">
-            <Button variant="outline" size="lg" className="w-full sm:w-auto text-lg px-8 py-6 rounded-xl">
-              {fr ? "Se connecter" : "Sign in"}
-            </Button>
-          </Link>
+          {/* Right: sign-up form */}
+          <div className="bg-card border border-border rounded-2xl shadow-lg p-6 md:p-8">
+            <div className="mb-5">
+              <h2 className="text-xl font-bold text-foreground">
+                {fr ? "Créer un compte gratuit" : "Create a free account"}
+              </h2>
+              <p className="text-sm text-muted-foreground mt-1">
+                {fr ? "Inscription en 30 secondes. Aucune carte bancaire." : "Sign up in 30 seconds. No credit card."}
+              </p>
+            </div>
+            <SignUpForm />
+          </div>
         </div>
       </section>
 
