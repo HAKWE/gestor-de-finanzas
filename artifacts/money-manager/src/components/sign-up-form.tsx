@@ -52,9 +52,10 @@ function FieldError({ message }: { message?: string }) {
 
 interface SignUpFormProps {
   showTitle?: boolean;
+  fullForm?: boolean;
 }
 
-export function SignUpForm({ showTitle = false }: SignUpFormProps) {
+export function SignUpForm({ showTitle = false, fullForm = false }: SignUpFormProps) {
   const { isLoaded, signUp, setActive } = useSignUp();
   const [, setLocation] = useLocation();
 
@@ -76,8 +77,8 @@ export function SignUpForm({ showTitle = false }: SignUpFormProps) {
 
   function validate() {
     const e: typeof errors = {};
-    if (!form.firstName.trim()) e.firstName = "Prénom requis.";
-    if (!form.lastName.trim()) e.lastName = "Nom requis.";
+    if (fullForm && !form.firstName.trim()) e.firstName = "Prénom requis.";
+    if (fullForm && !form.lastName.trim()) e.lastName = "Nom requis.";
     if (!form.email.trim()) e.email = "Email requis.";
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = "Email invalide.";
     if (!form.password) e.password = "Mot de passe requis.";
@@ -101,8 +102,8 @@ export function SignUpForm({ showTitle = false }: SignUpFormProps) {
     setLoading(true);
     try {
       await signUp.create({
-        firstName: form.firstName.trim(),
-        lastName: form.lastName.trim(),
+        ...(form.firstName.trim() ? { firstName: form.firstName.trim() } : {}),
+        ...(form.lastName.trim() ? { lastName: form.lastName.trim() } : {}),
         emailAddress: form.email.trim(),
         password: form.password,
       });
@@ -193,30 +194,32 @@ export function SignUpForm({ showTitle = false }: SignUpFormProps) {
         </div>
       )}
 
-      <div className="grid grid-cols-2 gap-2">
-        <div>
-          <Label htmlFor="sf-firstName">Prénom</Label>
-          <Input
-            id="sf-firstName"
-            value={form.firstName}
-            onChange={(e) => setForm({ ...form, firstName: e.target.value })}
-            className={errors.firstName ? "border-red-400" : ""}
-            autoComplete="given-name"
-          />
-          <FieldError message={errors.firstName} />
+      {fullForm && (
+        <div className="grid grid-cols-2 gap-2">
+          <div>
+            <Label htmlFor="sf-firstName">Prénom</Label>
+            <Input
+              id="sf-firstName"
+              value={form.firstName}
+              onChange={(e) => setForm({ ...form, firstName: e.target.value })}
+              className={errors.firstName ? "border-red-400" : ""}
+              autoComplete="given-name"
+            />
+            <FieldError message={errors.firstName} />
+          </div>
+          <div>
+            <Label htmlFor="sf-lastName">Nom</Label>
+            <Input
+              id="sf-lastName"
+              value={form.lastName}
+              onChange={(e) => setForm({ ...form, lastName: e.target.value })}
+              className={errors.lastName ? "border-red-400" : ""}
+              autoComplete="family-name"
+            />
+            <FieldError message={errors.lastName} />
+          </div>
         </div>
-        <div>
-          <Label htmlFor="sf-lastName">Nom</Label>
-          <Input
-            id="sf-lastName"
-            value={form.lastName}
-            onChange={(e) => setForm({ ...form, lastName: e.target.value })}
-            className={errors.lastName ? "border-red-400" : ""}
-            autoComplete="family-name"
-          />
-          <FieldError message={errors.lastName} />
-        </div>
-      </div>
+      )}
 
       <div>
         <Label htmlFor="sf-email">Adresse e-mail</Label>

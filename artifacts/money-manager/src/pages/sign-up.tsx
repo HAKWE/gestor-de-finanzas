@@ -12,7 +12,7 @@ export default function SignUpPage() {
             <p className="mt-1 text-sm opacity-80">Gérez votre argent comme un pro</p>
           </div>
           <div className="px-8 py-6">
-            <SignUpForm />
+            <SignUpForm fullForm />
           </div>
         </div>
       </div>
