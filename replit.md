@@ -31,7 +31,8 @@ A mobile-first PWA finance and sales tracker for micro-businesses in Francophone
 
 ## Features
 
-1. **Authentication**: Clerk-powered sign up/login/logout. Each user has private data.
+1. **Authentication**: Clerk-powered sign up/login/logout. Custom sign-up form with password strength indicator and confirm password field. Each user has private data.
+2. **Onboarding wizard**: 3-step post-signup flow collecting account type (personal/business), primary currency (14 African + global currencies), and mobile money provider (MTN, Orange, Moov, Airtel, M-Pesa, Wave, Free, etc.).
 2. **Dashboard**: Today's balance, weekly profit/loss, stats, 7-day chart.
 3. **Transaction logging**: Income/expense with category, payment method (Orange Money, Wave, MTN MoMo, Cash), reference note, date.
 4. **Transaction history**: Filterable/searchable list.
@@ -44,6 +45,7 @@ A mobile-first PWA finance and sales tracker for micro-businesses in Francophone
 
 - `transactions`: id, user_id, type, amount, currency, category, payment_method, reference_note, date, created_at, updated_at
 - `inventory_items`: id, user_id, name, quantity, unit, notes, created_at, updated_at
+- `user_profiles`: id, user_id (unique), account_type, currency, mobile_money_provider, onboarding_completed, created_at, updated_at
 
 ## Architecture Notes
 

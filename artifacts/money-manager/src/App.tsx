@@ -1,15 +1,17 @@
-import { useEffect, useRef } from "react";
-import { ClerkProvider, SignIn, SignUp, Show, useClerk } from '@clerk/react';
+import { useEffect, useRef, useState } from "react";
+import { ClerkProvider, Show, useClerk, useAuth } from '@clerk/react';
 import { Switch, Route, useLocation, Router as WouterRouter, Redirect } from 'wouter';
 import { queryClient } from "./lib/queryClient";
-import { QueryClientProvider, useQueryClient } from "@tanstack/react-query";
+import { QueryClientProvider, useQueryClient, useQuery } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { LanguageProvider } from "./lib/language-context";
+import { Loader2 } from "lucide-react";
 
 import Home from "./pages/home";
 import SignInPage from "./pages/sign-in";
 import SignUpPage from "./pages/sign-up";
+import OnboardingPage from "./pages/onboarding";
 import Dashboard from "./pages/dashboard";
 import Transactions from "./pages/transactions";
 import NewTransaction from "./pages/new-transaction";
@@ -83,17 +85,40 @@ function HomeRedirect() {
   );
 }
 
+async function fetchProfile() {
+  const res = await fetch(`${basePath}/api/profile`, { credentials: "include" });
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error("Failed to fetch profile");
+  return res.json();
+}
+
 function ProtectedRoute({ component: Component }: { component: any }) {
-  return (
-    <>
-      <Show when="signed-in">
-        <Component />
-      </Show>
-      <Show when="signed-out">
-        <Redirect to="/" />
-      </Show>
-    </>
-  );
+  const { isSignedIn, isLoaded } = useAuth();
+  const [, setLocation] = useLocation();
+
+  const { data: profile, isLoading: profileLoading } = useQuery({
+    queryKey: ["profile"],
+    queryFn: fetchProfile,
+    enabled: !!isSignedIn,
+    retry: false,
+    staleTime: 1000 * 60 * 5,
+  });
+
+  if (!isLoaded || (isSignedIn && profileLoading)) {
+    return (
+      <div className="flex min-h-[100dvh] items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!isSignedIn) return <Redirect to="/" />;
+
+  if (profile === null || (profile && !profile.onboardingCompleted)) {
+    return <Redirect to="/onboarding" />;
+  }
+
+  return <Component />;
 }
 
 function ClerkQueryClientCacheInvalidator() {
@@ -149,6 +174,7 @@ function ClerkProviderWithRoutes() {
           <Route path="/" component={HomeRedirect} />
           <Route path="/sign-in/*?" component={SignInPage} />
           <Route path="/sign-up/*?" component={SignUpPage} />
+          <Route path="/onboarding" component={OnboardingPage} />
           <Route path="/dashboard"><ProtectedRoute component={Dashboard} /></Route>
           <Route path="/transactions"><ProtectedRoute component={Transactions} /></Route>
           <Route path="/transactions/new"><ProtectedRoute component={NewTransaction} /></Route>
