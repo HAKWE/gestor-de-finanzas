@@ -221,8 +221,19 @@ export default function SignUpPage() {
                       id="confirmPassword"
                       type={showConfirm ? "text" : "password"}
                       value={form.confirmPassword}
-                      onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })}
-                      className={`pr-10 ${errors.confirmPassword ? "border-red-400" : ""}`}
+                      onChange={(e) => {
+                        setForm({ ...form, confirmPassword: e.target.value });
+                        if (errors.confirmPassword) setErrors({ ...errors, confirmPassword: undefined });
+                      }}
+                      className={`pr-10 ${
+                        form.confirmPassword && form.password !== form.confirmPassword
+                          ? "border-red-400"
+                          : form.confirmPassword && form.password === form.confirmPassword
+                          ? "border-green-500"
+                          : errors.confirmPassword
+                          ? "border-red-400"
+                          : ""
+                      }`}
                       autoComplete="new-password"
                     />
                     <button
@@ -239,7 +250,12 @@ export default function SignUpPage() {
                       <CheckCircle2 className="h-3 w-3" /> Les mots de passe correspondent
                     </p>
                   )}
-                  <FieldError message={errors.confirmPassword} />
+                  {form.confirmPassword && form.password !== form.confirmPassword && (
+                    <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
+                      <XCircle className="h-3 w-3" /> Les mots de passe ne correspondent pas
+                    </p>
+                  )}
+                  {!form.confirmPassword && <FieldError message={errors.confirmPassword} />}
                 </div>
 
                 <Button type="submit" className="w-full h-11 text-base" disabled={loading}>
