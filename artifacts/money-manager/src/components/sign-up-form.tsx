@@ -94,10 +94,7 @@ export function SignUpForm({ showTitle = false, fullForm = false }: SignUpFormPr
     setErrors(errs);
     if (Object.keys(errs).length > 0) return;
 
-    if (!isLoaded || !signUp) {
-      setErrors({ global: "Le service d'authentification se charge encore. Réessayez dans un instant." });
-      return;
-    }
+    if (!isLoaded || !signUp) return;
 
     setLoading(true);
     try {
@@ -302,8 +299,8 @@ export function SignUpForm({ showTitle = false, fullForm = false }: SignUpFormPr
         {!form.confirmPassword && <FieldError message={errors.confirmPassword} />}
       </div>
 
-      <Button type="submit" className="w-full h-11 text-base mt-1" disabled={loading}>
-        {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Créer mon compte"}
+      <Button type="submit" className="w-full h-11 text-base mt-1" disabled={loading || !isLoaded}>
+        {loading || !isLoaded ? <Loader2 className="h-4 w-4 animate-spin" /> : "Créer mon compte"}
       </Button>
 
       <p className="text-center text-sm text-muted-foreground">
