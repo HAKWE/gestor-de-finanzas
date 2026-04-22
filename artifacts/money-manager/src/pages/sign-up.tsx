@@ -85,9 +85,14 @@ export default function SignUpPage() {
     setErrors(errs);
     if (Object.keys(errs).length > 0) return;
 
+    if (!isLoaded || !signUp) {
+      setErrors({ global: "Le service d'authentification se charge encore. Réessayez dans un instant." });
+      return;
+    }
+
     setLoading(true);
     try {
-      await signUp!.create({
+      await signUp.create({
         firstName: form.firstName.trim(),
         lastName: form.lastName.trim(),
         emailAddress: form.email.trim(),
@@ -106,12 +111,13 @@ export default function SignUpPage() {
   async function handleVerify(e: React.FormEvent) {
     e.preventDefault();
     if (!code.trim()) { setCodeError("Entrez le code de vérification."); return; }
+    if (!signUp || !setActive) { setCodeError("Service non prêt. Rechargez la page."); return; }
     setLoading(true);
     setCodeError("");
     try {
-      const result = await signUp!.attemptEmailAddressVerification({ code });
+      const result = await signUp.attemptEmailAddressVerification({ code });
       if (result.status === "complete") {
-        await setActive!({ session: result.createdSessionId });
+        await setActive({ session: result.createdSessionId });
         setLocation(`${basePath}/onboarding`);
       } else {
         setCodeError("Vérification incomplète. Veuillez réessayer.");
@@ -122,14 +128,6 @@ export default function SignUpPage() {
     } finally {
       setLoading(false);
     }
-  }
-
-  if (!isLoaded) {
-    return (
-      <div className="flex min-h-[100dvh] items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
   }
 
   return (
