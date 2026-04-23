@@ -117,7 +117,7 @@ router.post("/stripe/checkout", requireAuth, async (req: any, res): Promise<void
   }
 });
 
-router.get("/stripe/subscription", requireAuth, async (req: any, res): Promise<void> => {
+router.get("/stripe/subscription-status", requireAuth, async (req: any, res): Promise<void> => {
   const userId = req.userId;
   try {
     const profiles = await db
@@ -127,18 +127,49 @@ router.get("/stripe/subscription", requireAuth, async (req: any, res): Promise<v
       .limit(1);
 
     const profile = profiles[0];
-    if (!profile?.stripeSubscriptionId) {
-      res.json({ subscription: null });
+
+    if (!profile?.stripeCustomerId) {
+      res.json({ plan: "free", planLabel: "Gratuit" });
       return;
     }
 
     const rows = await db.execute(sql`
-      SELECT * FROM stripe.subscriptions WHERE id = ${profile.stripeSubscriptionId}
+      SELECT
+        s.id AS subscription_id,
+        s.status,
+        p.name AS product_name,
+        pr.unit_amount,
+        pr.currency
+      FROM stripe.subscriptions s
+      JOIN stripe.subscription_items si ON si.subscription = s.id
+      JOIN stripe.prices pr ON pr.id = si.price
+      JOIN stripe.products p ON p.id = pr.product
+      WHERE s.customer = ${profile.stripeCustomerId}
+        AND s.status IN ('active', 'trialing')
+      ORDER BY pr.unit_amount DESC
+      LIMIT 1
     `);
-    res.json({ subscription: rows.rows[0] || null });
+
+    if (rows.rows.length === 0) {
+      res.json({ plan: "free", planLabel: "Gratuit" });
+      return;
+    }
+
+    const row = rows.rows[0] as any;
+    const name: string = row.product_name || "";
+    const plan = name.toLowerCase().includes("pro") ? "pro"
+      : name.toLowerCase().includes("starter") ? "starter"
+      : "paid";
+
+    res.json({
+      plan,
+      planLabel: name,
+      status: row.status,
+      subscriptionId: row.subscription_id,
+    });
   } catch (err: any) {
-    console.error("Subscription error:", err.message);
-    res.status(500).json({ error: "Erreur lors de la récupération de l'abonnement" });
+    console.error("Subscription status error:", err.message);
+    res.status(500).json({ error: "Erreur lors de la récupération du statut" });
   }
 });
 

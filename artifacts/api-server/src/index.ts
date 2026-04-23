@@ -24,7 +24,7 @@ async function initStripe() {
       logger.info("Stripe webhook configured");
     }
 
-    stripeSync.syncBackfill()
+    stripeSync.syncBackfill({ object: "all" })
       .then(() => logger.info("Stripe data synced"))
       .catch((err: any) => logger.error({ err }, "Stripe backfill error"));
   } catch (err: any) {

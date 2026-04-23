@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { Link } from "wouter";
 import { useLanguage } from "../lib/language-context";
 import { Layout } from "../components/layout";
@@ -5,27 +6,74 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useGetDashboardSummary, useGetWeeklySummary } from "@workspace/api-client-react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Wallet, ArrowDownRight, ArrowUpRight, Activity, Zap } from "lucide-react";
+import { Wallet, ArrowDownRight, ArrowUpRight, Activity, Zap, Star, Crown } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer } from "recharts";
+
+const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
+
+interface SubscriptionStatus {
+  plan: "free" | "starter" | "pro" | "paid";
+  planLabel: string;
+  status?: string;
+}
+
+function PlanBadge({ plan, label }: { plan: string; label: string }) {
+  if (plan === "free") {
+    return (
+      <span className="inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full bg-muted text-muted-foreground">
+        Gratuit
+      </span>
+    );
+  }
+  if (plan === "pro") {
+    return (
+      <span className="inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full bg-primary text-white">
+        <Crown className="w-3 h-3" />
+        {label}
+      </span>
+    );
+  }
+  return (
+    <span className="inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full bg-orange-100 text-primary border border-primary/20">
+      <Star className="w-3 h-3" />
+      {label}
+    </span>
+  );
+}
 
 export default function Dashboard() {
   const { t, language } = useLanguage();
   const { data: summary, isLoading: isLoadingSummary } = useGetDashboardSummary();
   const { data: weekly, isLoading: isLoadingWeekly } = useGetWeeklySummary();
+  const [subStatus, setSubStatus] = useState<SubscriptionStatus | null>(null);
+
+  useEffect(() => {
+    fetch(`${basePath}/api/stripe/subscription-status`, { credentials: "include" })
+      .then((r) => r.json())
+      .then((d) => setSubStatus(d))
+      .catch(() => setSubStatus({ plan: "free", planLabel: "Gratuit" }));
+  }, []);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat(language === "fr" ? "fr-FR" : "en-US", {
       style: "currency",
       currency: summary?.currency || "XOF",
-      maximumFractionDigits: 0
+      maximumFractionDigits: 0,
     }).format(amount);
   };
+
+  const isPaid = subStatus && subStatus.plan !== "free";
 
   return (
     <Layout>
       <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
         <div className="flex flex-col gap-2">
-          <h1 className="text-3xl font-bold tracking-tight">{t("nav.dashboard")}</h1>
+          <div className="flex items-center gap-3">
+            <h1 className="text-3xl font-bold tracking-tight">{t("nav.dashboard")}</h1>
+            {subStatus && (
+              <PlanBadge plan={subStatus.plan} label={subStatus.planLabel} />
+            )}
+          </div>
           <p className="text-muted-foreground">Voici le résumé de votre activité.</p>
         </div>
 
@@ -91,22 +139,22 @@ export default function Dashboard() {
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={weekly} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
-                  <XAxis 
-                    dataKey="date" 
-                    tickFormatter={(val) => new Date(val).toLocaleDateString(language === "fr" ? "fr-FR" : "en-US", { weekday: 'short' })}
+                  <XAxis
+                    dataKey="date"
+                    tickFormatter={(val) => new Date(val).toLocaleDateString(language === "fr" ? "fr-FR" : "en-US", { weekday: "short" })}
                     axisLine={false}
                     tickLine={false}
                     tick={{ fill: "hsl(var(--muted-foreground))" }}
                   />
-                  <YAxis 
+                  <YAxis
                     axisLine={false}
                     tickLine={false}
                     tick={{ fill: "hsl(var(--muted-foreground))" }}
-                    tickFormatter={(val) => val >= 1000 ? `${(val/1000).toFixed(0)}k` : val}
+                    tickFormatter={(val) => val >= 1000 ? `${(val / 1000).toFixed(0)}k` : val}
                   />
-                  <RechartsTooltip 
+                  <RechartsTooltip
                     formatter={(value: number) => formatCurrency(value)}
-                    labelFormatter={(label) => new Date(label).toLocaleDateString(language === "fr" ? "fr-FR" : "en-US", { weekday: 'long', month: 'short', day: 'numeric' })}
+                    labelFormatter={(label) => new Date(label).toLocaleDateString(language === "fr" ? "fr-FR" : "en-US", { weekday: "long", month: "short", day: "numeric" })}
                   />
                   <Bar dataKey="income" name="Revenus" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
                   <Bar dataKey="expenses" name="Dépenses" fill="hsl(var(--destructive))" radius={[4, 4, 0, 0]} />
@@ -119,22 +167,37 @@ export default function Dashboard() {
             )}
           </CardContent>
         </Card>
-        <div className="rounded-2xl bg-gradient-to-r from-primary/10 to-orange-100 border border-primary/20 p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shrink-0">
-              <Zap className="w-5 h-5 text-white" />
+
+        {!isPaid && (
+          <div className="rounded-2xl bg-gradient-to-r from-primary/10 to-orange-100 border border-primary/20 p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shrink-0">
+                <Zap className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <p className="font-semibold text-foreground">Passez à Starter ou Pro</p>
+                <p className="text-sm text-muted-foreground">Transactions illimitées, rapports avancés, import SMS et bien plus.</p>
+              </div>
+            </div>
+            <Link href="/pricing" className="shrink-0 sm:ml-auto">
+              <Button size="sm" className="rounded-xl whitespace-nowrap">
+                Voir les offres
+              </Button>
+            </Link>
+          </div>
+        )}
+
+        {isPaid && (
+          <div className="rounded-2xl bg-green-50 border border-green-200 p-5 flex items-center gap-4">
+            <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center shrink-0">
+              <Crown className="w-5 h-5 text-green-600" />
             </div>
             <div>
-              <p className="font-semibold text-foreground">Passez à Pro pour débloquer tout le potentiel</p>
-              <p className="text-sm text-muted-foreground">Transactions illimitées, rapports avancés, import SMS et bien plus.</p>
+              <p className="font-semibold text-foreground">Abonnement {subStatus?.planLabel} actif</p>
+              <p className="text-sm text-muted-foreground">Vous bénéficiez de toutes les fonctionnalités incluses dans votre offre.</p>
             </div>
           </div>
-          <Link href="/pricing" className="shrink-0 sm:ml-auto">
-            <Button size="sm" className="rounded-xl whitespace-nowrap">
-              Voir les offres
-            </Button>
-          </Link>
-        </div>
+        )}
       </div>
     </Layout>
   );
