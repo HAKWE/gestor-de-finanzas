@@ -20,6 +20,8 @@ import Reports from "./pages/reports";
 import Inventory from "./pages/inventory";
 import Settings from "./pages/settings";
 import Import from "./pages/import";
+import Pricing from "./pages/pricing";
+import Success from "./pages/success";
 import NotFound from "@/pages/not-found";
 
 const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
@@ -183,6 +185,8 @@ function ClerkProviderWithRoutes() {
           <Route path="/reports"><ProtectedRoute component={Reports} /></Route>
           <Route path="/inventory"><ProtectedRoute component={Inventory} /></Route>
           <Route path="/settings"><ProtectedRoute component={Settings} /></Route>
+          <Route path="/pricing"><ProtectedRoute component={Pricing} /></Route>
+          <Route path="/success" component={Success} />
           <Route component={NotFound} />
         </Switch>
       </QueryClientProvider>

@@ -9,6 +9,9 @@ export const userProfilesTable = pgTable("user_profiles", {
   currency: text("currency").notNull().default("XOF"),
   mobileMoneyProvider: text("mobile_money_provider"),
   onboardingCompleted: boolean("onboarding_completed").notNull().default(false),
+  stripeCustomerId: text("stripe_customer_id"),
+  stripeSubscriptionId: text("stripe_subscription_id"),
+  stripePriceId: text("stripe_price_id"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
 });

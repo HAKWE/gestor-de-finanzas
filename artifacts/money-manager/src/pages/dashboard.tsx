@@ -1,9 +1,11 @@
+import { Link } from "wouter";
 import { useLanguage } from "../lib/language-context";
 import { Layout } from "../components/layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { useGetDashboardSummary, useGetWeeklySummary } from "@workspace/api-client-react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Wallet, ArrowDownRight, ArrowUpRight, Activity } from "lucide-react";
+import { Wallet, ArrowDownRight, ArrowUpRight, Activity, Zap } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer } from "recharts";
 
 export default function Dashboard() {
@@ -117,6 +119,22 @@ export default function Dashboard() {
             )}
           </CardContent>
         </Card>
+        <div className="rounded-2xl bg-gradient-to-r from-primary/10 to-orange-100 border border-primary/20 p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shrink-0">
+              <Zap className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <p className="font-semibold text-foreground">Passez à Pro pour débloquer tout le potentiel</p>
+              <p className="text-sm text-muted-foreground">Transactions illimitées, rapports avancés, import SMS et bien plus.</p>
+            </div>
+          </div>
+          <Link href="/pricing" className="shrink-0 sm:ml-auto">
+            <Button size="sm" className="rounded-xl whitespace-nowrap">
+              Voir les offres
+            </Button>
+          </Link>
+        </div>
       </div>
     </Layout>
   );
