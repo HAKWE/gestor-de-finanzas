@@ -1,4 +1,5 @@
 import { Link } from "wouter";
+import { useState, useEffect } from "react";
 import { useLanguage } from "../lib/language-context";
 import { Button } from "@/components/ui/button";
 import { usePwaInstall } from "../hooks/use-pwa-install";
@@ -12,13 +13,29 @@ import {
   BarChart2,
   Smartphone,
   CheckCircle,
+  X,
 } from "lucide-react";
 
 export default function Home() {
   const { language } = useLanguage();
   const { canInstall, isInstalled, install } = usePwaInstall();
+  const [bannerDismissed, setBannerDismissed] = useState(false);
 
   const fr = language === "fr";
+
+  const isAndroid = /android/i.test(navigator.userAgent);
+  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  const isMobile = isAndroid || isIOS;
+
+  useEffect(() => {
+    const dismissed = sessionStorage.getItem("install-banner-dismissed");
+    if (dismissed) setBannerDismissed(true);
+  }, []);
+
+  const dismissBanner = () => {
+    setBannerDismissed(true);
+    sessionStorage.setItem("install-banner-dismissed", "1");
+  };
 
   const steps = [
     {
@@ -257,6 +274,10 @@ export default function Home() {
                     <span>
                       {fr ? "Choisissez" : "Select"}{" "}
                       <span className="font-semibold text-foreground">
+                        {fr ? "« Installer l'application »" : '"Install app"'}
+                      </span>
+                      {" "}{fr ? "ou" : "or"}{" "}
+                      <span className="font-semibold text-foreground">
                         {fr ? "« Ajouter à l'écran d'accueil »" : '"Add to Home screen"'}
                       </span>
                     </span>
@@ -273,13 +294,78 @@ export default function Home() {
       </section>
 
       {/* ── Footer ── */}
-      <footer className="border-t border-border/50 text-center py-8 px-4 text-sm text-muted-foreground">
+      <footer className="border-t border-border/50 text-center py-8 px-4 text-sm text-muted-foreground pb-28 md:pb-8">
         <div className="flex items-center justify-center gap-2 mb-2">
           <img src="/logo.svg" alt="MobileMoney" className="w-5 h-5" />
           <span className="font-semibold text-foreground">MobileMoney Manager</span>
         </div>
         <p>© {new Date().getFullYear()} — {fr ? "Tous droits réservés." : "All rights reserved."}</p>
       </footer>
+
+      {/* ── Sticky Install Banner (mobile only) ── */}
+      {isMobile && !isInstalled && !bannerDismissed && (
+        <div className="fixed bottom-0 left-0 right-0 z-50 p-3 bg-background border-t border-primary/30 shadow-[0_-4px_24px_rgba(0,0,0,0.10)]">
+          <div className="max-w-lg mx-auto">
+            {canInstall ? (
+              /* Android: install prompt is ready — show a direct button */
+              <div className="flex items-center gap-3">
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-sm text-foreground truncate">
+                    {fr ? "Installez l'application" : "Install the app"}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {fr ? "Accès rapide, fonctionne hors ligne" : "Fast access, works offline"}
+                  </p>
+                </div>
+                <Button size="sm" className="shrink-0 rounded-lg px-4" onClick={install}>
+                  {fr ? "Installer" : "Install"}
+                </Button>
+                <button onClick={dismissBanner} className="shrink-0 p-1 text-muted-foreground hover:text-foreground">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            ) : isAndroid ? (
+              /* Android: no prompt yet — guide them to Chrome menu */
+              <div className="flex items-start gap-3">
+                <Smartphone className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+                <div className="flex-1 min-w-0 text-sm">
+                  <p className="font-semibold text-foreground">
+                    {fr ? "Ajouter à l'écran d'accueil" : "Add to Home Screen"}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {fr
+                      ? <>Chrome menu <span className="font-mono bg-muted px-1 rounded">⋮</span> → <strong>« Installer l'application »</strong> ou <strong>« Ajouter à l'écran d'accueil »</strong></>
+                      : <>Chrome menu <span className="font-mono bg-muted px-1 rounded">⋮</span> → <strong>"Install app"</strong> or <strong>"Add to Home screen"</strong></>
+                    }
+                  </p>
+                </div>
+                <button onClick={dismissBanner} className="shrink-0 p-1 text-muted-foreground hover:text-foreground">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            ) : (
+              /* iOS: guide them to Safari share button */
+              <div className="flex items-start gap-3">
+                <Smartphone className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+                <div className="flex-1 min-w-0 text-sm">
+                  <p className="font-semibold text-foreground">
+                    {fr ? "Ajouter à l'écran d'accueil" : "Add to Home Screen"}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {fr
+                      ? <>Safari → bouton Partager <span className="font-mono bg-muted px-1 rounded">⬆</span> → <strong>« Sur l'écran d'accueil »</strong></>
+                      : <>Safari → Share button <span className="font-mono bg-muted px-1 rounded">⬆</span> → <strong>"Add to Home Screen"</strong></>
+                    }
+                  </p>
+                </div>
+                <button onClick={dismissBanner} className="shrink-0 p-1 text-muted-foreground hover:text-foreground">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
