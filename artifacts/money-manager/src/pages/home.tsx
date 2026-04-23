@@ -254,12 +254,12 @@ export default function Home() {
               <div className="bg-card rounded-xl border border-border p-5 space-y-3">
                 <div className="flex items-center gap-2">
                   <span className="text-2xl">🤖</span>
-                  <span className="font-semibold">{fr ? "Android (Chrome)" : "Android (Chrome)"}</span>
+                  <span className="font-semibold">{fr ? "Android (Chrome ou Brave)" : "Android (Chrome or Brave)"}</span>
                 </div>
                 <ol className="space-y-2 text-sm text-muted-foreground">
                   <li className="flex items-start gap-2">
                     <span className="w-5 h-5 rounded-full bg-primary text-white text-xs flex items-center justify-center shrink-0 mt-0.5 font-bold">1</span>
-                    <span>{fr ? "Ouvrez Chrome et allez sur ce site" : "Open Chrome and visit this site"}</span>
+                    <span>{fr ? "Ouvrez Chrome ou Brave et allez sur ce site" : "Open Chrome or Brave and visit this site"}</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="w-5 h-5 rounded-full bg-primary text-white text-xs flex items-center justify-center shrink-0 mt-0.5 font-bold">2</span>
@@ -334,8 +334,8 @@ export default function Home() {
                   </p>
                   <p className="text-xs text-muted-foreground mt-0.5">
                     {fr
-                      ? <>Chrome menu <span className="font-mono bg-muted px-1 rounded">⋮</span> → <strong>« Installer l'application »</strong> ou <strong>« Ajouter à l'écran d'accueil »</strong></>
-                      : <>Chrome menu <span className="font-mono bg-muted px-1 rounded">⋮</span> → <strong>"Install app"</strong> or <strong>"Add to Home screen"</strong></>
+                      ? <>Chrome / Brave menu <span className="font-mono bg-muted px-1 rounded">⋮</span> → <strong>« Installer l'application »</strong> ou <strong>« Ajouter à l'écran d'accueil »</strong></>
+                      : <>Chrome / Brave menu <span className="font-mono bg-muted px-1 rounded">⋮</span> → <strong>"Install app"</strong> or <strong>"Add to Home screen"</strong></>
                     }
                   </p>
                 </div>
