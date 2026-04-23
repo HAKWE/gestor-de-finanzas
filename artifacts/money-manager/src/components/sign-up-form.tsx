@@ -94,9 +94,22 @@ export function SignUpForm({ showTitle = false, fullForm = false }: SignUpFormPr
     setErrors(errs);
     if (Object.keys(errs).length > 0) return;
 
-    if (!isLoaded || !signUp) return;
-
     setLoading(true);
+
+    // Wait up to 6s for Clerk to become ready
+    let ready = isLoaded && !!signUp;
+    if (!ready) {
+      for (let i = 0; i < 12; i++) {
+        await new Promise((r) => setTimeout(r, 500));
+        if (isLoaded && signUp) { ready = true; break; }
+      }
+    }
+    if (!ready || !signUp) {
+      setErrors({ global: "Impossible de joindre le service d'authentification. Rechargez la page et réessayez." });
+      setLoading(false);
+      return;
+    }
+
     try {
       await signUp.create({
         ...(form.firstName.trim() ? { firstName: form.firstName.trim() } : {}),
@@ -299,8 +312,8 @@ export function SignUpForm({ showTitle = false, fullForm = false }: SignUpFormPr
         {!form.confirmPassword && <FieldError message={errors.confirmPassword} />}
       </div>
 
-      <Button type="submit" className="w-full h-11 text-base mt-1" disabled={loading || !isLoaded}>
-        {loading || !isLoaded ? <Loader2 className="h-4 w-4 animate-spin" /> : "Créer mon compte"}
+      <Button type="submit" className="w-full h-11 text-base mt-1" disabled={loading}>
+        {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Créer mon compte"}
       </Button>
 
       <p className="text-center text-sm text-muted-foreground">
