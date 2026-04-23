@@ -169,43 +169,104 @@ export default function Home() {
 
       {/* ── Install CTA ── */}
       <section className="px-4 pb-16 md:pb-24 max-w-4xl mx-auto w-full">
-        <div className="bg-primary/5 border border-primary/20 rounded-2xl p-8 md:p-10 text-center space-y-5">
-          <div className="w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto">
-            <Smartphone className="w-7 h-7 text-primary" />
+        <div className="rounded-2xl border border-primary/20 bg-primary/5 p-8 md:p-10 space-y-6">
+          <div className="text-center space-y-3">
+            <div className="w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto">
+              <Smartphone className="w-7 h-7 text-primary" />
+            </div>
+            <h2 className="text-2xl md:text-3xl font-bold">
+              {fr ? "Installez l'app sur votre téléphone" : "Install app on your phone"}
+            </h2>
+            <p className="text-muted-foreground max-w-xl mx-auto text-sm md:text-base">
+              {fr
+                ? "Gratuit, sans App Store. Fonctionne même hors ligne."
+                : "Free, no App Store needed. Works offline too."}
+            </p>
           </div>
-          <h2 className="text-2xl md:text-3xl font-bold">
-            {fr ? "Toujours avec vous" : "Always with you"}
-          </h2>
-          <p className="text-muted-foreground max-w-xl mx-auto">
-            {fr
-              ? "Installez MobileMoney sur votre téléphone comme une app native — sans passer par un App Store. Accès rapide, même sans connexion internet."
-              : "Install MobileMoney on your phone like a native app — no App Store needed. Fast access, even without internet."}
-          </p>
 
           {isInstalled ? (
-            <div className="inline-flex items-center gap-2 text-green-600 font-medium">
+            <div className="flex items-center justify-center gap-2 text-green-600 font-semibold py-2">
               <CheckCircle className="w-5 h-5" />
               {fr ? "Application déjà installée !" : "App already installed!"}
             </div>
           ) : canInstall ? (
-            <Button size="lg" className="rounded-xl px-8 py-6 text-lg shadow" onClick={install}>
-              <Smartphone className="mr-2 w-5 h-5" />
-              {fr ? "Installer l'application" : "Install app"}
-            </Button>
+            <div className="text-center">
+              <Button size="lg" className="rounded-xl px-8 py-6 text-lg shadow" onClick={install}>
+                <Smartphone className="mr-2 w-5 h-5" />
+                {fr ? "Ajouter à l'écran d'accueil" : "Add to Home Screen"}
+              </Button>
+            </div>
           ) : (
-            <div className="text-sm text-muted-foreground space-y-2 max-w-sm mx-auto text-left">
-              <p>
-                <span className="font-semibold text-foreground">iOS Safari : </span>
-                {fr ? "Bouton Partager " : "Tap the Share button "}
-                <span className="font-mono bg-muted px-1 rounded text-xs">⬆</span>
-                {fr ? " → \"Sur l'écran d'accueil\"" : " → \"Add to Home Screen\""}
-              </p>
-              <p>
-                <span className="font-semibold text-foreground">Android Chrome : </span>
-                {fr
-                  ? "Menu ⋮ → \"Ajouter à l'écran d'accueil\""
-                  : "Menu ⋮ → \"Add to Home screen\""}
-              </p>
+            <div className="grid md:grid-cols-2 gap-4">
+              {/* iOS */}
+              <div className="bg-card rounded-xl border border-border p-5 space-y-3">
+                <div className="flex items-center gap-2">
+                  <span className="text-2xl">🍎</span>
+                  <span className="font-semibold">{fr ? "iPhone / iPad (Safari)" : "iPhone / iPad (Safari)"}</span>
+                </div>
+                <ol className="space-y-2 text-sm text-muted-foreground">
+                  <li className="flex items-start gap-2">
+                    <span className="w-5 h-5 rounded-full bg-primary text-white text-xs flex items-center justify-center shrink-0 mt-0.5 font-bold">1</span>
+                    <span>{fr ? "Ouvrez Safari et allez sur ce site" : "Open Safari and visit this site"}</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="w-5 h-5 rounded-full bg-primary text-white text-xs flex items-center justify-center shrink-0 mt-0.5 font-bold">2</span>
+                    <span>
+                      {fr ? "Appuyez sur le bouton Partager" : "Tap the Share button"}
+                      {" "}<span className="font-mono bg-muted px-1.5 py-0.5 rounded text-xs text-foreground">⬆</span>
+                      {" "}{fr ? "en bas de l'écran" : "at the bottom"}
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="w-5 h-5 rounded-full bg-primary text-white text-xs flex items-center justify-center shrink-0 mt-0.5 font-bold">3</span>
+                    <span>
+                      {fr ? "Choisissez" : "Select"}{" "}
+                      <span className="font-semibold text-foreground">
+                        {fr ? "« Sur l'écran d'accueil »" : '"Add to Home Screen"'}
+                      </span>
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="w-5 h-5 rounded-full bg-primary text-white text-xs flex items-center justify-center shrink-0 mt-0.5 font-bold">4</span>
+                    <span>{fr ? "Appuyez sur « Ajouter »" : 'Tap "Add"'}</span>
+                  </li>
+                </ol>
+              </div>
+
+              {/* Android */}
+              <div className="bg-card rounded-xl border border-border p-5 space-y-3">
+                <div className="flex items-center gap-2">
+                  <span className="text-2xl">🤖</span>
+                  <span className="font-semibold">{fr ? "Android (Chrome)" : "Android (Chrome)"}</span>
+                </div>
+                <ol className="space-y-2 text-sm text-muted-foreground">
+                  <li className="flex items-start gap-2">
+                    <span className="w-5 h-5 rounded-full bg-primary text-white text-xs flex items-center justify-center shrink-0 mt-0.5 font-bold">1</span>
+                    <span>{fr ? "Ouvrez Chrome et allez sur ce site" : "Open Chrome and visit this site"}</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="w-5 h-5 rounded-full bg-primary text-white text-xs flex items-center justify-center shrink-0 mt-0.5 font-bold">2</span>
+                    <span>
+                      {fr ? "Appuyez sur le menu" : "Tap the menu"}
+                      {" "}<span className="font-mono bg-muted px-1.5 py-0.5 rounded text-xs text-foreground">⋮</span>
+                      {" "}{fr ? "en haut à droite" : "top right"}
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="w-5 h-5 rounded-full bg-primary text-white text-xs flex items-center justify-center shrink-0 mt-0.5 font-bold">3</span>
+                    <span>
+                      {fr ? "Choisissez" : "Select"}{" "}
+                      <span className="font-semibold text-foreground">
+                        {fr ? "« Ajouter à l'écran d'accueil »" : '"Add to Home screen"'}
+                      </span>
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="w-5 h-5 rounded-full bg-primary text-white text-xs flex items-center justify-center shrink-0 mt-0.5 font-bold">4</span>
+                    <span>{fr ? "Appuyez sur « Ajouter »" : 'Tap "Add"'}</span>
+                  </li>
+                </ol>
+              </div>
             </div>
           )}
         </div>
