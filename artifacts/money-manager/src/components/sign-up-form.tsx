@@ -101,8 +101,6 @@ export function SignUpForm({ showTitle = false, fullForm = false }: SignUpFormPr
     try {
       const signUp = clerk.client.signUp;
       await signUp.create({
-        ...(form.firstName.trim() ? { firstName: form.firstName.trim() } : {}),
-        ...(form.lastName.trim() ? { lastName: form.lastName.trim() } : {}),
         emailAddress: form.email.trim(),
         password: form.password,
       });
@@ -128,6 +126,8 @@ export function SignUpForm({ showTitle = false, fullForm = false }: SignUpFormPr
       const result = await signUp.attemptEmailAddressVerification({ code });
       if (result.status === "complete") {
         await clerk.setActive({ session: result.createdSessionId });
+        if (form.firstName.trim()) sessionStorage.setItem("pendingFirstName", form.firstName.trim());
+        if (form.lastName.trim()) sessionStorage.setItem("pendingLastName", form.lastName.trim());
         setLocation(`${basePath}/onboarding`);
       } else {
         setCodeError("Vérification incomplète. Veuillez réessayer.");

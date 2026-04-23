@@ -58,6 +58,21 @@ export default function OnboardingPage() {
     setSaving(true);
     setError("");
     try {
+      const firstName = sessionStorage.getItem("pendingFirstName");
+      const lastName = sessionStorage.getItem("pendingLastName");
+      if (user && (firstName || lastName)) {
+        try {
+          await user.update({
+            ...(firstName ? { firstName } : {}),
+            ...(lastName ? { lastName } : {}),
+          });
+        } catch {
+          // name update failure is non-blocking
+        }
+        sessionStorage.removeItem("pendingFirstName");
+        sessionStorage.removeItem("pendingLastName");
+      }
+
       const res = await fetch(`${basePath}/api/profile`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
