@@ -111,7 +111,7 @@ export default function Home() {
                 {fr ? "Inscription en 30 secondes. Aucune carte bancaire." : "Sign up in 30 seconds. No credit card."}
               </p>
             </div>
-            <SignUpForm />
+            <SignUpForm fullForm />
           </div>
         </div>
       </section>
