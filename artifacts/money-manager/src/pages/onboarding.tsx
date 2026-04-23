@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { useUser } from "@clerk/react";
+import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Loader2, Briefcase, User, CheckCircle2 } from "lucide-react";
 
@@ -38,6 +39,7 @@ const PROVIDERS = [
 export default function OnboardingPage() {
   const { user, isLoaded } = useUser();
   const [, setLocation] = useLocation();
+  const queryClient = useQueryClient();
 
   const [step, setStep] = useState(1);
   const [accountType, setAccountType] = useState<"personal" | "business">("personal");
@@ -85,6 +87,7 @@ export default function OnboardingPage() {
         }),
       });
       if (!res.ok) throw new Error("Échec de la sauvegarde.");
+      await queryClient.invalidateQueries({ queryKey: ["profile"] });
       setLocation(`${basePath}/dashboard`);
     } catch {
       setError("Impossible de sauvegarder. Veuillez réessayer.");
