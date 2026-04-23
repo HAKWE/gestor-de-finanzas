@@ -1,5 +1,5 @@
-import { useState, useRef, useEffect } from "react";
-import { useSignUp } from "@clerk/react";
+import { useState } from "react";
+import { useClerk, useAuth } from "@clerk/react";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -56,18 +56,14 @@ interface SignUpFormProps {
 }
 
 export function SignUpForm({ showTitle = false, fullForm = false }: SignUpFormProps) {
-  const { isLoaded, signUp, setActive } = useSignUp();
+  const { isLoaded } = useAuth();
+  const clerk = useClerk();
   const [, setLocation] = useLocation();
-
-  const isLoadedRef = useRef(isLoaded);
-  const signUpRef = useRef(signUp);
-  useEffect(() => { isLoadedRef.current = isLoaded; }, [isLoaded]);
-  useEffect(() => { signUpRef.current = signUp; }, [signUp]);
 
   const [step, setStep] = useState<"form" | "verify">("form");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   const [form, setForm] = useState({
     firstName: "",
@@ -99,49 +95,39 @@ export function SignUpForm({ showTitle = false, fullForm = false }: SignUpFormPr
     setErrors(errs);
     if (Object.keys(errs).length > 0) return;
 
-    setLoading(true);
+    if (!isLoaded || !clerk?.client) return;
 
-    // Wait up to 8s for Clerk to become ready (use refs so we always see the latest value)
-    let ready = isLoadedRef.current && !!signUpRef.current;
-    if (!ready) {
-      for (let i = 0; i < 16; i++) {
-        await new Promise((r) => setTimeout(r, 500));
-        if (isLoadedRef.current && signUpRef.current) { ready = true; break; }
-      }
-    }
-    if (!ready || !signUpRef.current) {
-      setErrors({ global: "Impossible de joindre le service d'authentification. Rechargez la page et réessayez." });
-      setLoading(false);
-      return;
-    }
-
+    setSubmitting(true);
     try {
-      await signUpRef.current.create({
+      const signUp = clerk.client.signUp;
+      await signUp.create({
         ...(form.firstName.trim() ? { firstName: form.firstName.trim() } : {}),
         ...(form.lastName.trim() ? { lastName: form.lastName.trim() } : {}),
         emailAddress: form.email.trim(),
         password: form.password,
       });
-      await signUpRef.current.prepareEmailAddressVerification({ strategy: "email_code" });
+      await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
       setStep("verify");
     } catch (err: any) {
-      const msg = err?.errors?.[0]?.longMessage || err?.errors?.[0]?.message || "Une erreur est survenue.";
+      const msg = err?.errors?.[0]?.longMessage || err?.errors?.[0]?.message || "Une erreur est survenue. Réessayez.";
       setErrors({ global: msg });
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   }
 
   async function handleVerify(e: React.FormEvent) {
     e.preventDefault();
     if (!code.trim()) { setCodeError("Entrez le code de vérification."); return; }
-    if (!signUpRef.current || !setActive) { setCodeError("Service non prêt. Rechargez la page."); return; }
-    setLoading(true);
+    if (!clerk?.client) { setCodeError("Service non prêt. Rechargez la page."); return; }
+
+    setSubmitting(true);
     setCodeError("");
     try {
-      const result = await signUpRef.current.attemptEmailAddressVerification({ code });
+      const signUp = clerk.client.signUp;
+      const result = await signUp.attemptEmailAddressVerification({ code });
       if (result.status === "complete") {
-        await setActive({ session: result.createdSessionId });
+        await clerk.setActive({ session: result.createdSessionId });
         setLocation(`${basePath}/onboarding`);
       } else {
         setCodeError("Vérification incomplète. Veuillez réessayer.");
@@ -150,7 +136,7 @@ export function SignUpForm({ showTitle = false, fullForm = false }: SignUpFormPr
       const msg = err?.errors?.[0]?.longMessage || err?.errors?.[0]?.message || "Code incorrect.";
       setCodeError(msg);
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   }
 
@@ -180,8 +166,8 @@ export function SignUpForm({ showTitle = false, fullForm = false }: SignUpFormPr
           />
           <FieldError message={codeError} />
         </div>
-        <Button type="submit" className="w-full h-11 text-base" disabled={loading}>
-          {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Vérifier"}
+        <Button type="submit" className="w-full h-11 text-base" disabled={submitting}>
+          {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Vérifier"}
         </Button>
         <button
           type="button"
@@ -193,6 +179,8 @@ export function SignUpForm({ showTitle = false, fullForm = false }: SignUpFormPr
       </form>
     );
   }
+
+  const buttonDisabled = submitting || !isLoaded;
 
   return (
     <form onSubmit={handleSubmit} className="space-y-3" noValidate>
@@ -317,8 +305,14 @@ export function SignUpForm({ showTitle = false, fullForm = false }: SignUpFormPr
         {!form.confirmPassword && <FieldError message={errors.confirmPassword} />}
       </div>
 
-      <Button type="submit" className="w-full h-11 text-base mt-1" disabled={loading}>
-        {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Créer mon compte"}
+      <Button type="submit" className="w-full h-11 text-base mt-1" disabled={buttonDisabled}>
+        {submitting ? (
+          <Loader2 className="h-4 w-4 animate-spin" />
+        ) : !isLoaded ? (
+          <><Loader2 className="h-4 w-4 animate-spin mr-2" />Chargement...</>
+        ) : (
+          "Créer mon compte"
+        )}
       </Button>
 
       <p className="text-center text-sm text-muted-foreground">
