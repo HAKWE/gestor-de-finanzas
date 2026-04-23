@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useSignUp } from "@clerk/react";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
@@ -59,6 +59,11 @@ export function SignUpForm({ showTitle = false, fullForm = false }: SignUpFormPr
   const { isLoaded, signUp, setActive } = useSignUp();
   const [, setLocation] = useLocation();
 
+  const isLoadedRef = useRef(isLoaded);
+  const signUpRef = useRef(signUp);
+  useEffect(() => { isLoadedRef.current = isLoaded; }, [isLoaded]);
+  useEffect(() => { signUpRef.current = signUp; }, [signUp]);
+
   const [step, setStep] = useState<"form" | "verify">("form");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -96,28 +101,28 @@ export function SignUpForm({ showTitle = false, fullForm = false }: SignUpFormPr
 
     setLoading(true);
 
-    // Wait up to 6s for Clerk to become ready
-    let ready = isLoaded && !!signUp;
+    // Wait up to 8s for Clerk to become ready (use refs so we always see the latest value)
+    let ready = isLoadedRef.current && !!signUpRef.current;
     if (!ready) {
-      for (let i = 0; i < 12; i++) {
+      for (let i = 0; i < 16; i++) {
         await new Promise((r) => setTimeout(r, 500));
-        if (isLoaded && signUp) { ready = true; break; }
+        if (isLoadedRef.current && signUpRef.current) { ready = true; break; }
       }
     }
-    if (!ready || !signUp) {
+    if (!ready || !signUpRef.current) {
       setErrors({ global: "Impossible de joindre le service d'authentification. Rechargez la page et réessayez." });
       setLoading(false);
       return;
     }
 
     try {
-      await signUp.create({
+      await signUpRef.current.create({
         ...(form.firstName.trim() ? { firstName: form.firstName.trim() } : {}),
         ...(form.lastName.trim() ? { lastName: form.lastName.trim() } : {}),
         emailAddress: form.email.trim(),
         password: form.password,
       });
-      await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
+      await signUpRef.current.prepareEmailAddressVerification({ strategy: "email_code" });
       setStep("verify");
     } catch (err: any) {
       const msg = err?.errors?.[0]?.longMessage || err?.errors?.[0]?.message || "Une erreur est survenue.";
@@ -130,11 +135,11 @@ export function SignUpForm({ showTitle = false, fullForm = false }: SignUpFormPr
   async function handleVerify(e: React.FormEvent) {
     e.preventDefault();
     if (!code.trim()) { setCodeError("Entrez le code de vérification."); return; }
-    if (!signUp || !setActive) { setCodeError("Service non prêt. Rechargez la page."); return; }
+    if (!signUpRef.current || !setActive) { setCodeError("Service non prêt. Rechargez la page."); return; }
     setLoading(true);
     setCodeError("");
     try {
-      const result = await signUp.attemptEmailAddressVerification({ code });
+      const result = await signUpRef.current.attemptEmailAddressVerification({ code });
       if (result.status === "complete") {
         await setActive({ session: result.createdSessionId });
         setLocation(`${basePath}/onboarding`);
