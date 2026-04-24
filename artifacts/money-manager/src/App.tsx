@@ -185,7 +185,7 @@ function ClerkProviderWithRoutes() {
           <Route path="/reports"><ProtectedRoute component={Reports} /></Route>
           <Route path="/inventory"><ProtectedRoute component={Inventory} /></Route>
           <Route path="/settings"><ProtectedRoute component={Settings} /></Route>
-          <Route path="/pricing"><ProtectedRoute component={Pricing} /></Route>
+          <Route path="/pricing" component={Pricing} />
           <Route path="/success" component={Success} />
           <Route component={NotFound} />
         </Switch>

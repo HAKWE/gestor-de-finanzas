@@ -19,18 +19,16 @@ function requireAuth(req: any, res: any, next: any) {
 
 router.get("/stripe/products", async (_req, res): Promise<void> => {
   try {
+    // First try the synced DB
     const rows = await db.execute(sql`
       SELECT
         p.id AS product_id,
         p.name AS product_name,
         p.description AS product_description,
-        p.active AS product_active,
-        p.metadata AS product_metadata,
         pr.id AS price_id,
         pr.unit_amount,
         pr.currency,
-        pr.recurring,
-        pr.active AS price_active
+        pr.recurring
       FROM stripe.products p
       LEFT JOIN stripe.prices pr ON pr.product = p.id AND pr.active = true
       WHERE p.active = true
@@ -57,10 +55,121 @@ router.get("/stripe/products", async (_req, res): Promise<void> => {
       }
     }
 
+    // If DB is empty (sync hasn't run yet), fetch directly from Stripe API
+    if (productsMap.size === 0) {
+      const stripe = await getUncachableStripeClient();
+      const stripeProducts = await stripe.products.list({ active: true, limit: 10 });
+
+      for (const product of stripeProducts.data) {
+        const prices = await stripe.prices.list({
+          product: product.id,
+          active: true,
+          limit: 5,
+        });
+        productsMap.set(product.id, {
+          id: product.id,
+          name: product.name,
+          description: product.description,
+          prices: prices.data
+            .filter((p) => p.type === "recurring")
+            .sort((a, b) => (a.unit_amount ?? 0) - (b.unit_amount ?? 0))
+            .map((p) => ({
+              id: p.id,
+              unit_amount: p.unit_amount,
+              currency: p.currency,
+              recurring: p.recurring,
+            })),
+        });
+      }
+
+      // Sort by price ascending
+      const sorted = Array.from(productsMap.values()).sort((a, b) => {
+        const aPrice = a.prices[0]?.unit_amount ?? 0;
+        const bPrice = b.prices[0]?.unit_amount ?? 0;
+        return aPrice - bPrice;
+      });
+      res.json({ data: sorted });
+      return;
+    }
+
     res.json({ data: Array.from(productsMap.values()) });
   } catch (err: any) {
     console.error("Error fetching products:", err.message);
     res.status(500).json({ error: "Erreur lors de la récupération des offres" });
+  }
+});
+
+router.post("/stripe/checkout-by-plan", requireAuth, async (req: any, res): Promise<void> => {
+  const userId = req.userId;
+  const { planName } = req.body as { planName: string };
+
+  if (!planName) {
+    res.status(400).json({ error: "planName requis (starter | pro)" });
+    return;
+  }
+
+  try {
+    const stripe = await getUncachableStripeClient();
+    const products = await stripe.products.list({ active: true, limit: 20 });
+
+    const match = products.data.find((p) =>
+      p.name.toLowerCase().includes(planName.toLowerCase())
+    );
+
+    if (!match) {
+      res.status(404).json({ error: `Offre "${planName}" introuvable dans Stripe` });
+      return;
+    }
+
+    const prices = await stripe.prices.list({
+      product: match.id,
+      active: true,
+      type: "recurring",
+      limit: 5,
+    });
+
+    const price = prices.data.sort(
+      (a, b) => (a.unit_amount ?? 0) - (b.unit_amount ?? 0)
+    )[0];
+
+    if (!price) {
+      res.status(404).json({ error: "Aucun prix actif trouvé pour cette offre" });
+      return;
+    }
+
+    const profiles = await db
+      .select()
+      .from(userProfilesTable)
+      .where(eq(userProfilesTable.userId, userId))
+      .limit(1);
+
+    const profile = profiles[0];
+    let customerId = profile?.stripeCustomerId;
+
+    if (!customerId) {
+      const customer = await stripe.customers.create({ metadata: { userId } });
+      customerId = customer.id;
+      await db
+        .update(userProfilesTable)
+        .set({ stripeCustomerId: customerId })
+        .where(eq(userProfilesTable.userId, userId));
+    }
+
+    const domain = process.env.REPLIT_DOMAINS?.split(",")[0] || req.get("host");
+
+    const session = await stripe.checkout.sessions.create({
+      customer: customerId,
+      payment_method_types: ["card"],
+      line_items: [{ price: price.id, quantity: 1 }],
+      mode: "subscription",
+      success_url: `https://${domain}/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `https://${domain}/pricing`,
+    });
+
+    res.json({ url: session.url });
+  } catch (err: any) {
+    console.error("Checkout-by-plan error:", err.message);
+    res.status(500).json({ error: "Erreur lors de la création de la session de paiement" });
   }
 });
 
