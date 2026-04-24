@@ -166,7 +166,8 @@ router.post("/stripe/checkout-by-plan", requireAuth, async (req: any, res): Prom
         .where(eq(userProfilesTable.userId, userId));
     }
 
-    const domain = process.env.REPLIT_DOMAINS?.split(",")[0] || req.get("host");
+    const domain = process.env.APP_DOMAIN || process.env.REPLIT_DOMAINS?.split(",")[0] || req.get("host");
+    console.log(`[checkout-by-plan] Using domain: ${domain}`);
 
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
@@ -177,6 +178,7 @@ router.post("/stripe/checkout-by-plan", requireAuth, async (req: any, res): Prom
       cancel_url: `https://${domain}/pricing`,
     });
 
+    console.log(`[checkout-by-plan] Session created: ${session.id}`);
     res.json({ url: session.url });
   } catch (err: any) {
     console.error("Checkout-by-plan error:", err.message);
@@ -217,9 +219,7 @@ router.post("/stripe/checkout", requireAuth, async (req: any, res): Promise<void
         .where(eq(userProfilesTable.userId, userId));
     }
 
-    const domain =
-      process.env.REPLIT_DOMAINS?.split(",")[0] ||
-      req.get("host");
+    const domain = process.env.APP_DOMAIN || process.env.REPLIT_DOMAINS?.split(",")[0] || req.get("host");
 
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
