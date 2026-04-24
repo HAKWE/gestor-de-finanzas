@@ -110,16 +110,22 @@ router.post("/stripe/checkout-by-plan", requireAuth, async (req: any, res): Prom
 
   try {
     const stripe = await getUncachableStripeClient();
+
+    console.log(`[checkout-by-plan] Fetching products for plan: ${planName}`);
     const products = await stripe.products.list({ active: true, limit: 20 });
+    console.log(`[checkout-by-plan] Found ${products.data.length} products: ${products.data.map(p => p.name).join(', ')}`);
 
     const match = products.data.find((p) =>
       p.name.toLowerCase().includes(planName.toLowerCase())
     );
 
     if (!match) {
-      res.status(404).json({ error: `Offre "${planName}" introuvable dans Stripe` });
+      console.error(`[checkout-by-plan] No product found matching "${planName}". Available: ${products.data.map(p => p.name).join(', ')}`);
+      res.status(404).json({ error: `Offre "${planName}" introuvable dans Stripe. Vérifiez que le produit existe dans votre compte Stripe.` });
       return;
     }
+
+    console.log(`[checkout-by-plan] Matched product: ${match.name} (${match.id})`);
 
     const prices = await stripe.prices.list({
       product: match.id,
@@ -128,14 +134,19 @@ router.post("/stripe/checkout-by-plan", requireAuth, async (req: any, res): Prom
       limit: 5,
     });
 
+    console.log(`[checkout-by-plan] Found ${prices.data.length} prices for product`);
+
     const price = prices.data.sort(
       (a, b) => (a.unit_amount ?? 0) - (b.unit_amount ?? 0)
     )[0];
 
     if (!price) {
+      console.error(`[checkout-by-plan] No active recurring price for product ${match.id}`);
       res.status(404).json({ error: "Aucun prix actif trouvé pour cette offre" });
       return;
     }
+
+    console.log(`[checkout-by-plan] Using price: ${price.id} (${price.unit_amount} ${price.currency})`);
 
     const profiles = await db
       .select()

@@ -2,7 +2,7 @@ import Stripe from 'stripe';
 
 let connectionSettings: any;
 
-async function getCredentials() {
+async function getCredentialsFromConnector() {
   const hostname = process.env.REPLIT_CONNECTORS_HOSTNAME;
   const xReplitToken = process.env.REPL_IDENTITY
     ? 'repl ' + process.env.REPL_IDENTITY
@@ -10,8 +10,8 @@ async function getCredentials() {
       ? 'depl ' + process.env.WEB_REPL_RENEWAL
       : null;
 
-  if (!xReplitToken) {
-    throw new Error('X-Replit-Token not found for repl/depl');
+  if (!xReplitToken || !hostname) {
+    throw new Error('Replit connector token not available');
   }
 
   const connectorName = 'stripe';
@@ -41,6 +41,22 @@ async function getCredentials() {
     publishableKey: connectionSettings.settings.publishable,
     secretKey: connectionSettings.settings.secret,
   };
+}
+
+async function getCredentials() {
+  const envSecret = process.env.STRIPE_SECRET_KEY;
+  const envPublishable = process.env.STRIPE_PUBLISHABLE_KEY;
+
+  if (envSecret) {
+    console.log('[Stripe] Using STRIPE_SECRET_KEY from environment variable');
+    return {
+      secretKey: envSecret,
+      publishableKey: envPublishable || '',
+    };
+  }
+
+  console.log('[Stripe] Falling back to Replit connector credentials');
+  return getCredentialsFromConnector();
 }
 
 export async function getUncachableStripeClient(): Promise<Stripe> {
