@@ -4,9 +4,9 @@ import { useLanguage } from "../lib/language-context";
 import { Layout } from "../components/layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useGetDashboardSummary, useGetWeeklySummary } from "@workspace/api-client-react";
+import { useGetDashboardSummary, useGetWeeklySummary, useListTransactions } from "@workspace/api-client-react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Wallet, ArrowDownRight, ArrowUpRight, Activity, Zap, Star, Crown, CheckCircle, X } from "lucide-react";
+import { Wallet, ArrowDownRight, ArrowUpRight, Activity, Zap, Star, Crown, CheckCircle, X, Plus } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer } from "recharts";
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
@@ -45,6 +45,7 @@ export default function Dashboard() {
   const { t, language } = useLanguage();
   const { data: summary, isLoading: isLoadingSummary } = useGetDashboardSummary();
   const { data: weekly, isLoading: isLoadingWeekly } = useGetWeeklySummary();
+  const { data: recentTxs } = useListTransactions();
   const [subStatus, setSubStatus] = useState<SubscriptionStatus | null>(null);
   const [showUpgradedBanner, setShowUpgradedBanner] = useState(false);
 
@@ -94,14 +95,23 @@ export default function Dashboard() {
           </div>
         )}
 
-        <div className="flex flex-col gap-2">
-          <div className="flex items-center gap-3">
-            <h1 className="text-3xl font-bold tracking-tight">{t("nav.dashboard")}</h1>
-            {subStatus && (
-              <PlanBadge plan={subStatus.plan} label={subStatus.planLabel} />
-            )}
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex flex-col gap-1">
+            <div className="flex items-center gap-3 flex-wrap">
+              <h1 className="text-3xl font-bold tracking-tight">{t("nav.dashboard")}</h1>
+              {subStatus && (
+                <PlanBadge plan={subStatus.plan} label={subStatus.planLabel} />
+              )}
+            </div>
+            <p className="text-muted-foreground">Voici le résumé de votre activité.</p>
           </div>
-          <p className="text-muted-foreground">Voici le résumé de votre activité.</p>
+          <Link href="/transactions/new">
+            <Button size="lg" className="rounded-xl shrink-0 gap-2 shadow-sm">
+              <Plus className="w-5 h-5" />
+              <span className="hidden sm:inline">Ajouter une transaction</span>
+              <span className="sm:hidden">Ajouter</span>
+            </Button>
+          </Link>
         </div>
 
         {isLoadingSummary ? (
@@ -191,6 +201,59 @@ export default function Dashboard() {
               <div className="flex items-center justify-center h-full text-muted-foreground">
                 Aucune donnée pour cette semaine
               </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Recent Transactions */}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-3">
+            <CardTitle className="text-base font-semibold">Transactions récentes</CardTitle>
+            <Link href="/transactions" className="text-sm text-primary hover:underline font-medium">
+              Voir tout
+            </Link>
+          </CardHeader>
+          <CardContent className="p-0">
+            {!recentTxs || recentTxs.length === 0 ? (
+              <div className="px-6 pb-6 pt-2 text-center space-y-4">
+                <p className="text-muted-foreground text-sm">Aucune transaction pour l'instant.</p>
+                <Link href="/transactions/new">
+                  <Button className="rounded-xl gap-2">
+                    <Plus className="w-4 h-4" />
+                    Ajouter votre première transaction
+                  </Button>
+                </Link>
+              </div>
+            ) : (
+              <ul className="divide-y divide-border">
+                {recentTxs.slice(0, 5).map((tx: any) => (
+                  <li key={tx.id} className="flex items-center gap-3 px-6 py-3">
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
+                      tx.type === "income"
+                        ? "bg-green-100 text-green-600"
+                        : "bg-red-100 text-red-500"
+                    }`}>
+                      {tx.type === "income"
+                        ? <ArrowUpRight className="w-4 h-4" />
+                        : <ArrowDownRight className="w-4 h-4" />}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-foreground truncate">{tx.category}</p>
+                      <p className="text-xs text-muted-foreground">{tx.paymentMethod} · {tx.date}</p>
+                    </div>
+                    <span className={`text-sm font-semibold shrink-0 ${
+                      tx.type === "income" ? "text-green-600" : "text-red-500"
+                    }`}>
+                      {tx.type === "income" ? "+" : "−"}
+                      {new Intl.NumberFormat("fr-FR", {
+                        style: "currency",
+                        currency: tx.currency || "XOF",
+                        maximumFractionDigits: 0,
+                      }).format(parseFloat(tx.amount))}
+                    </span>
+                  </li>
+                ))}
+              </ul>
             )}
           </CardContent>
         </Card>
