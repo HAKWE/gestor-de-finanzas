@@ -14,6 +14,7 @@ import {
   Smartphone,
   CheckCircle,
   X,
+  Zap,
 } from "lucide-react";
 
 export default function Home() {
@@ -110,12 +111,19 @@ export default function Home() {
                 ? "Le compagnon financier des entrepreneurs africains. Orange Money, Wave, MTN MoMo — tout en un."
                 : "The financial companion for African entrepreneurs. Orange Money, Wave, MTN MoMo — all in one."}
             </p>
-            <p className="text-sm text-muted-foreground">
-              {fr ? "Déjà un compte ?" : "Already have an account?"}{" "}
-              <Link href="/sign-in" className="text-primary font-medium hover:underline">
-                {fr ? "Se connecter" : "Sign in"}
+            <div className="flex flex-wrap items-center justify-center md:justify-start gap-x-4 gap-y-1 text-sm text-muted-foreground">
+              <span>
+                {fr ? "Déjà un compte ?" : "Already have an account?"}{" "}
+                <Link href="/sign-in" className="text-primary font-medium hover:underline">
+                  {fr ? "Se connecter" : "Sign in"}
+                </Link>
+              </span>
+              <span className="hidden md:inline text-border">·</span>
+              <Link href="/pricing" className="inline-flex items-center gap-1 text-primary font-medium hover:underline">
+                <Zap className="w-3.5 h-3.5" />
+                {fr ? "Voir les tarifs" : "See pricing"}
               </Link>
-            </p>
+            </div>
           </div>
 
           {/* Right: sign-up form */}
@@ -295,9 +303,22 @@ export default function Home() {
 
       {/* ── Footer ── */}
       <footer className="border-t border-border/50 text-center py-8 px-4 text-sm text-muted-foreground pb-28 md:pb-8">
-        <div className="flex items-center justify-center gap-2 mb-2">
+        <div className="flex items-center justify-center gap-2 mb-3">
           <img src="/logo.svg" alt="MobileMoney" className="w-5 h-5" />
           <span className="font-semibold text-foreground">MobileMoney Manager</span>
+        </div>
+        <div className="flex items-center justify-center gap-4 mb-3">
+          <Link href="/pricing" className="text-primary hover:underline font-medium">
+            {fr ? "Tarifs" : "Pricing"}
+          </Link>
+          <span className="text-border">·</span>
+          <Link href="/sign-in" className="hover:underline">
+            {fr ? "Connexion" : "Sign in"}
+          </Link>
+          <span className="text-border">·</span>
+          <Link href="/sign-up" className="hover:underline">
+            {fr ? "Inscription" : "Sign up"}
+          </Link>
         </div>
         <p>© {new Date().getFullYear()} — {fr ? "Tous droits réservés." : "All rights reserved."}</p>
       </footer>
