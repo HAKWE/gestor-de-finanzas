@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useGetDashboardSummary, useGetWeeklySummary } from "@workspace/api-client-react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Wallet, ArrowDownRight, ArrowUpRight, Activity, Zap, Star, Crown } from "lucide-react";
+import { Wallet, ArrowDownRight, ArrowUpRight, Activity, Zap, Star, Crown, CheckCircle, X } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer } from "recharts";
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
@@ -46,6 +46,16 @@ export default function Dashboard() {
   const { data: summary, isLoading: isLoadingSummary } = useGetDashboardSummary();
   const { data: weekly, isLoading: isLoadingWeekly } = useGetWeeklySummary();
   const [subStatus, setSubStatus] = useState<SubscriptionStatus | null>(null);
+  const [showUpgradedBanner, setShowUpgradedBanner] = useState(false);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("upgraded") === "true") {
+      setShowUpgradedBanner(true);
+      const clean = window.location.pathname;
+      window.history.replaceState({}, "", clean);
+    }
+  }, []);
 
   useEffect(() => {
     fetch(`${basePath}/api/stripe/subscription-status`, { credentials: "include" })
@@ -67,6 +77,23 @@ export default function Dashboard() {
   return (
     <Layout>
       <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+
+        {showUpgradedBanner && (
+          <div className="rounded-2xl bg-green-50 border border-green-200 p-4 flex items-start gap-3">
+            <CheckCircle className="w-5 h-5 text-green-600 shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p className="font-semibold text-green-800">Abonnement activé avec succès !</p>
+              <p className="text-sm text-green-700 mt-0.5">Merci pour votre confiance. Vos nouvelles fonctionnalités sont maintenant disponibles.</p>
+            </div>
+            <button
+              onClick={() => setShowUpgradedBanner(false)}
+              className="shrink-0 text-green-500 hover:text-green-700 transition-colors p-1"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        )}
+
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-3">
             <h1 className="text-3xl font-bold tracking-tight">{t("nav.dashboard")}</h1>

@@ -162,7 +162,7 @@ router.post("/stripe/checkout-by-plan", requireAuth, async (req: any, res): Prom
       payment_method_types: ["card"],
       line_items: [{ price: price.id, quantity: 1 }],
       mode: "subscription",
-      success_url: `https://${domain}/success?session_id={CHECKOUT_SESSION_ID}`,
+      success_url: `https://${domain}/dashboard?upgraded=true`,
       cancel_url: `https://${domain}/pricing`,
     });
 
@@ -215,7 +215,7 @@ router.post("/stripe/checkout", requireAuth, async (req: any, res): Promise<void
       payment_method_types: ["card"],
       line_items: [{ price: priceId, quantity: 1 }],
       mode: "subscription",
-      success_url: `https://${domain}/success?session_id={CHECKOUT_SESSION_ID}`,
+      success_url: `https://${domain}/dashboard?upgraded=true`,
       cancel_url: `https://${domain}/pricing`,
     });
 
