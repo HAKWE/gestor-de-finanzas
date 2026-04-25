@@ -5,12 +5,15 @@ import cookieParser from "cookie-parser";
 import { clerkMiddleware } from "@clerk/express";
 import { CLERK_PROXY_PATH, clerkProxyMiddleware } from "./middlewares/clerkProxyMiddleware";
 import { WebhookHandlers } from "./webhookHandlers";
+import { handleStripeWebhook } from "./routes/stripe-webhook-handler";
 import router from "./routes";
 import { logger } from "./lib/logger";
 
 const app: Express = express();
 
-// ── Stripe webhook MUST be registered before express.json() ──────────────────
+// ── Stripe webhooks MUST be registered before express.json() ─────────────────
+
+// stripe-replit-sync auto-sync webhook
 app.post(
   "/api/stripe/webhook",
   express.raw({ type: "application/json" }),
@@ -30,6 +33,14 @@ app.post(
     }
   }
 );
+
+// Explicit subscription management webhook
+app.post(
+  "/api/stripe-webhook",
+  express.raw({ type: "application/json" }),
+  handleStripeWebhook
+);
+
 // ─────────────────────────────────────────────────────────────────────────────
 
 app.use(
