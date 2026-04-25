@@ -164,7 +164,7 @@ function AddTransactionModal({ onClose }: { onClose: () => void }) {
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       {/* Sheet / Dialog */}
-      <div className="bg-background w-full sm:max-w-md rounded-t-3xl sm:rounded-2xl shadow-2xl flex flex-col max-h-[92dvh] overflow-hidden">
+      <div className="bg-background w-full sm:max-w-md rounded-t-3xl sm:rounded-2xl shadow-2xl flex flex-col overflow-hidden" style={{ maxHeight: "92vh" }}>
 
         {/* Header */}
         <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-border shrink-0">
@@ -178,7 +178,7 @@ function AddTransactionModal({ onClose }: { onClose: () => void }) {
         </div>
 
         {/* Scrollable body */}
-        <div className="overflow-y-auto flex-1 px-5 py-5 space-y-5">
+        <div className="overflow-y-auto flex-1 min-h-0 px-5 py-5 space-y-5">
 
           {/* Type toggle */}
           <div className="grid grid-cols-2 gap-2">
