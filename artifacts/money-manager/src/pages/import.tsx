@@ -1,7 +1,7 @@
 import { useState, useRef, ChangeEvent } from "react";
 import { useLanguage } from "../lib/language-context";
 import { Layout } from "../components/layout";
-import { useCreateTransaction, getListTransactionsQueryKey, getGetDashboardSummaryQueryKey } from "@workspace/api-client-react";
+import { useCreateTransaction, getListTransactionsQueryKey, getGetDashboardSummaryQueryKey, getGetWeeklySummaryQueryKey } from "@workspace/api-client-react";
 import { queryClient } from "../lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -116,6 +116,7 @@ export default function Import() {
     setIsImportingSms(false);
     queryClient.invalidateQueries({ queryKey: getListTransactionsQueryKey() });
     queryClient.invalidateQueries({ queryKey: getGetDashboardSummaryQueryKey() });
+    queryClient.invalidateQueries({ queryKey: getGetWeeklySummaryQueryKey() });
     
     toast({ title: language === "fr" ? "Import terminé" : "Import completed", description: `${success} transactions importées.` });
     if (success === parsedSms.length) {
@@ -193,6 +194,7 @@ export default function Import() {
     setIsImportingCsv(false);
     queryClient.invalidateQueries({ queryKey: getListTransactionsQueryKey() });
     queryClient.invalidateQueries({ queryKey: getGetDashboardSummaryQueryKey() });
+    queryClient.invalidateQueries({ queryKey: getGetWeeklySummaryQueryKey() });
     
     toast({ 
       title: language === "fr" ? "Import terminé" : "Import completed", 
@@ -265,6 +267,7 @@ export default function Import() {
     setIsImportingPdf(false);
     queryClient.invalidateQueries({ queryKey: getListTransactionsQueryKey() });
     queryClient.invalidateQueries({ queryKey: getGetDashboardSummaryQueryKey() });
+    queryClient.invalidateQueries({ queryKey: getGetWeeklySummaryQueryKey() });
     toast({
       title: language === "fr" ? "Import terminé" : "Import completed",
       description: `${success} ${language === "fr" ? "importées" : "imported"}${errors > 0 ? `, ${errors} erreurs` : ""}.`,

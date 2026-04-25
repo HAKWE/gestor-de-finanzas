@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { useGetTransaction, useUpdateTransaction, getListTransactionsQueryKey, getGetDashboardSummaryQueryKey } from "@workspace/api-client-react";
+import { useGetTransaction, useUpdateTransaction, getListTransactionsQueryKey, getGetDashboardSummaryQueryKey, getGetWeeklySummaryQueryKey } from "@workspace/api-client-react";
 import { queryClient } from "../lib/queryClient";
 import { useLocation, useParams } from "wouter";
 import { useToast } from "@/hooks/use-toast";
@@ -77,6 +77,7 @@ export default function EditTransaction() {
         toast({ title: "Transaction modifiée" });
         queryClient.invalidateQueries({ queryKey: getListTransactionsQueryKey() });
         queryClient.invalidateQueries({ queryKey: getGetDashboardSummaryQueryKey() });
+        queryClient.invalidateQueries({ queryKey: getGetWeeklySummaryQueryKey() });
         setLocation("/transactions");
       },
       onError: () => {

@@ -7,6 +7,7 @@ import {
   useCreateTransaction,
   getListTransactionsQueryKey,
   getGetDashboardSummaryQueryKey,
+  getGetWeeklySummaryQueryKey,
 } from "@workspace/api-client-react";
 import { queryClient } from "../lib/queryClient";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -128,6 +129,7 @@ function AddTransactionModal({ onClose }: { onClose: () => void }) {
           toast({ title: "✓ Transaction enregistrée" });
           queryClient.invalidateQueries({ queryKey: getListTransactionsQueryKey() });
           queryClient.invalidateQueries({ queryKey: getGetDashboardSummaryQueryKey() });
+          queryClient.invalidateQueries({ queryKey: getGetWeeklySummaryQueryKey() });
           onClose();
         },
         onError: () => {
@@ -417,6 +419,7 @@ export default function Transactions() {
         toast({ title: "Transaction supprimée" });
         queryClient.invalidateQueries({ queryKey: getListTransactionsQueryKey() });
         queryClient.invalidateQueries({ queryKey: getGetDashboardSummaryQueryKey() });
+        queryClient.invalidateQueries({ queryKey: getGetWeeklySummaryQueryKey() });
       },
       onError: () => toast({ title: "Erreur", variant: "destructive" }),
     });

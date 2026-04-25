@@ -5,6 +5,7 @@ import {
   useCreateTransaction,
   getListTransactionsQueryKey,
   getGetDashboardSummaryQueryKey,
+  getGetWeeklySummaryQueryKey,
 } from "@workspace/api-client-react";
 import { queryClient } from "../lib/queryClient";
 import { useLocation, Link } from "wouter";
@@ -93,6 +94,7 @@ export default function NewTransaction() {
           toast({ title: "✓ Transaction enregistrée" });
           queryClient.invalidateQueries({ queryKey: getListTransactionsQueryKey() });
           queryClient.invalidateQueries({ queryKey: getGetDashboardSummaryQueryKey() });
+          queryClient.invalidateQueries({ queryKey: getGetWeeklySummaryQueryKey() });
           setLocation("/transactions");
         },
         onError: () =>
