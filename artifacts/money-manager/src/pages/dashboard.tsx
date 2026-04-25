@@ -47,14 +47,13 @@ export default function Dashboard() {
   const { data: weekly, isLoading: isLoadingWeekly } = useGetWeeklySummary();
   const { data: recentTxs } = useListTransactions();
   const [subStatus, setSubStatus] = useState<SubscriptionStatus | null>(null);
-  const [showUpgradedBanner, setShowUpgradedBanner] = useState(false);
+  const [showSuccessBanner, setShowSuccessBanner] = useState(false);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    if (params.get("upgraded") === "true") {
-      setShowUpgradedBanner(true);
-      const clean = window.location.pathname;
-      window.history.replaceState({}, "", clean);
+    if (params.get("success") === "true" || params.get("upgraded") === "true") {
+      setShowSuccessBanner(true);
+      window.history.replaceState({}, "", window.location.pathname);
     }
   }, []);
 
@@ -79,18 +78,35 @@ export default function Dashboard() {
     <Layout>
       <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
 
-        {showUpgradedBanner && (
-          <div className="rounded-2xl bg-green-50 border border-green-200 p-4 flex items-start gap-3">
-            <CheckCircle className="w-5 h-5 text-green-600 shrink-0 mt-0.5" />
-            <div className="flex-1">
-              <p className="font-semibold text-green-800">Abonnement activé avec succès !</p>
-              <p className="text-sm text-green-700 mt-0.5">Merci pour votre confiance. Vos nouvelles fonctionnalités sont maintenant disponibles.</p>
+        {showSuccessBanner && (
+          <div style={{
+            borderRadius: 20, background: "linear-gradient(135deg,#f0fdf4 0%,#dcfce7 100%)",
+            border: "1.5px solid #86efac", padding: "18px 20px",
+            display: "flex", alignItems: "flex-start", gap: 14,
+            boxShadow: "0 4px 20px rgba(34,197,94,0.15)",
+          }}>
+            <span style={{
+              width: 40, height: 40, borderRadius: 12, background: "#22c55e",
+              display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+            }}>
+              <CheckCircle style={{ width: 22, height: 22, color: "white" }} />
+            </span>
+            <div style={{ flex: 1 }}>
+              <p style={{ fontWeight: 700, fontSize: 15, color: "#14532d", margin: 0 }}>
+                Félicitations&nbsp;! 🎉
+              </p>
+              <p style={{ fontSize: 14, color: "#166534", margin: "4px 0 0" }}>
+                {subStatus && subStatus.plan !== "free"
+                  ? <>Votre abonnement <strong>{subStatus.planLabel}</strong> est maintenant actif.</>
+                  : <>Votre abonnement est maintenant actif. Vos nouvelles fonctionnalités sont disponibles.</>
+                }
+              </p>
             </div>
             <button
-              onClick={() => setShowUpgradedBanner(false)}
-              className="shrink-0 text-green-500 hover:text-green-700 transition-colors p-1"
+              onClick={() => setShowSuccessBanner(false)}
+              style={{ background: "none", border: "none", cursor: "pointer", color: "#16a34a", padding: 4, flexShrink: 0 }}
             >
-              <X className="w-4 h-4" />
+              <X style={{ width: 16, height: 16 }} />
             </button>
           </div>
         )}

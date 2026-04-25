@@ -1,10 +1,49 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useLanguage } from "../lib/language-context";
 import { Link, useLocation } from "wouter";
 import { UserButton } from "@clerk/react";
-import { LayoutDashboard, Receipt, BarChart3, Package, Settings, Menu } from "lucide-react";
+import { LayoutDashboard, Receipt, BarChart3, Package, Settings, Menu, Crown, Star } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "./ui/sheet";
 import { Button } from "./ui/button";
+
+const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
+
+function NavPlanBadge() {
+  const [plan, setPlan] = useState<string | null>(null);
+  const [label, setLabel] = useState<string>("");
+
+  useEffect(() => {
+    fetch(`${basePath}/api/stripe/subscription-status`, { credentials: "include" })
+      .then(r => r.ok ? r.json() : null)
+      .then(d => {
+        if (d && d.plan && d.plan !== "free") {
+          setPlan(d.plan);
+          setLabel(d.planLabel || d.plan);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  if (!plan) return null;
+
+  const isPro = plan === "pro";
+  return (
+    <span style={{
+      display: "inline-flex", alignItems: "center", gap: 5,
+      padding: "4px 10px", borderRadius: 999, fontSize: 12, fontWeight: 700,
+      backgroundColor: isPro ? "#f97316" : "#fff7ed",
+      color: isPro ? "white" : "#f97316",
+      border: isPro ? "none" : "1.5px solid #f97316",
+      whiteSpace: "nowrap",
+    }}>
+      {isPro
+        ? <Crown style={{ width: 11, height: 11 }} />
+        : <Star style={{ width: 11, height: 11 }} />
+      }
+      {label}
+    </span>
+  );
+}
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const { t } = useLanguage();
@@ -76,7 +115,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 </Link>
               ))}
           </nav>
-          <div className="ml-auto">
+          <div style={{ display: "flex", alignItems: "center", gap: 10, marginLeft: "auto" }}>
+            <NavPlanBadge />
             <UserButton afterSignOutUrl="/" />
           </div>
         </div>
