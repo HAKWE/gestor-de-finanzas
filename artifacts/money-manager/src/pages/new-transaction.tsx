@@ -1,18 +1,28 @@
 import { useState } from "react";
 import { Layout } from "../components/layout";
 import { Input } from "@/components/ui/input";
-import { useCreateTransaction, getListTransactionsQueryKey, getGetDashboardSummaryQueryKey } from "@workspace/api-client-react";
+import {
+  useCreateTransaction,
+  getListTransactionsQueryKey,
+  getGetDashboardSummaryQueryKey,
+} from "@workspace/api-client-react";
 import { queryClient } from "../lib/queryClient";
-import { useLocation } from "wouter";
+import { useLocation, Link } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import {
   TrendingUp, TrendingDown, ShoppingBag, Scissors, Package, Car,
   Smartphone, Utensils, Home, HelpCircle, Phone, Sparkles,
-  LayoutGrid, CalendarDays, StickyNote, Plus, Loader2, ArrowLeft,
+  LayoutGrid, CalendarDays, StickyNote, Plus, Loader2, ArrowLeft, CheckCircle2,
 } from "lucide-react";
-import { Link } from "wouter";
 
-const ORANGE = "#f97316";
+/* ─── Design tokens ─── */
+const ORANGE      = "#f97316";
+const ORANGE_LIGHT = "#fff7ed";
+const ORANGE_MID  = "#ffedd5";
+const BORDER      = "#e5e7eb";
+const TEXT        = "#111827";
+const MUTED       = "#6b7280";
+const LABEL       = "#374151";
 
 const CATEGORIES = [
   { label: "Vente produit",       Icon: ShoppingBag },
@@ -71,9 +81,13 @@ export default function NewTransaction() {
   const handleSubmit = () => {
     if (!validate()) return;
     createTx.mutate(
-      { data: { type: form.type, amount: Number(form.amount), currency: "XOF",
-                category: form.category, paymentMethod: form.paymentMethod,
-                referenceNote: form.referenceNote || undefined, date: form.date } },
+      {
+        data: {
+          type: form.type, amount: Number(form.amount), currency: "XOF",
+          category: form.category, paymentMethod: form.paymentMethod,
+          referenceNote: form.referenceNote || undefined, date: form.date,
+        },
+      },
       {
         onSuccess: () => {
           toast({ title: "✓ Transaction enregistrée" });
@@ -81,160 +95,197 @@ export default function NewTransaction() {
           queryClient.invalidateQueries({ queryKey: getGetDashboardSummaryQueryKey() });
           setLocation("/transactions");
         },
-        onError: () => {
-          toast({ title: "Erreur", description: "Impossible d'enregistrer", variant: "destructive" });
-        },
+        onError: () =>
+          toast({ title: "Erreur", description: "Impossible d'enregistrer", variant: "destructive" }),
       }
     );
   };
 
-  const isIncome = form.type === "income";
-
   return (
     <Layout>
-      <div style={{ maxWidth: 560, margin: "0 auto", paddingBottom: 40 }}>
+      {/* ── Scoped keyframe animations ── */}
+      <style>{`
+        @keyframes ntFadeUp {
+          from { opacity: 0; transform: translateY(16px); }
+          to   { opacity: 1; transform: translateY(0);    }
+        }
+        .nt-form   { animation: ntFadeUp 0.35s cubic-bezier(.22,.68,0,1.2) both; }
+        .nt-cat    { transition: transform 0.12s, box-shadow 0.12s, background 0.12s, border-color 0.12s; }
+        .nt-cat:active  { transform: scale(0.94); }
+        .nt-chip   { transition: transform 0.12s, box-shadow 0.12s, background 0.12s, border-color 0.12s; }
+        .nt-chip:active { transform: scale(0.93); }
+        .nt-type   { transition: transform 0.12s, background 0.12s, border-color 0.12s, color 0.12s; }
+        .nt-type:active { transform: scale(0.96); }
+        .nt-submit { transition: transform 0.12s, background 0.15s, box-shadow 0.15s; }
+        .nt-submit:not(:disabled):hover { box-shadow: 0 6px 20px rgba(249,115,22,0.40); transform: translateY(-1px); }
+        .nt-submit:not(:disabled):active { transform: scale(0.97); box-shadow: none; }
+      `}</style>
 
-        {/* Back link */}
+      <div
+        className="nt-form"
+        style={{ maxWidth: 560, margin: "0 auto", width: "100%", paddingBottom: 48, boxSizing: "border-box" }}
+      >
+        {/* Back */}
         <Link href="/transactions">
-          <button style={{
-            display: "flex", alignItems: "center", gap: 6,
-            background: "none", border: "none", cursor: "pointer",
-            color: "#6b7280", fontSize: 14, marginBottom: 20, padding: 0,
+          <button className="nt-type" style={{
+            display: "flex", alignItems: "center", gap: 6, background: "none",
+            border: "none", cursor: "pointer", color: MUTED, fontSize: 14,
+            marginBottom: 24, padding: 0, fontFamily: "inherit",
           }}>
-            <ArrowLeft size={16} /> Retour aux transactions
+            <ArrowLeft size={15} /> Retour aux transactions
           </button>
         </Link>
 
-        <h1 style={{ fontSize: 26, fontWeight: 700, color: "#111", marginBottom: 24 }}>
+        <h1 style={{ fontSize: 26, fontWeight: 700, color: TEXT, marginBottom: 28, letterSpacing: "-0.02em" }}>
           Nouvelle transaction
         </h1>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 28 }}>
 
-          {/* 1 · Type */}
-          <div>
-            <p style={{ fontSize: 13, fontWeight: 600, color: "#374151", marginBottom: 10 }}>Type</p>
+          {/* ── 1 · Type ── */}
+          <section>
+            <SectionLabel>Type</SectionLabel>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
               {([
-                { val: "income"  as const, label: "Revenu",  Icon: TrendingUp,   color: "#22c55e" },
-                { val: "expense" as const, label: "Dépense", Icon: TrendingDown, color: "#ef4444" },
-              ] as const).map(({ val, label, Icon, color }) => {
+                { val: "income"  as const, label: "Revenu",  Icon: TrendingUp,   color: "#22c55e", shadow: "rgba(34,197,94,0.30)"  },
+                { val: "expense" as const, label: "Dépense", Icon: TrendingDown, color: "#ef4444", shadow: "rgba(239,68,68,0.30)"   },
+              ] as const).map(({ val, label, Icon, color, shadow }) => {
                 const active = form.type === val;
                 return (
-                  <button key={val} type="button" onClick={() => set("type", val)} style={{
-                    display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-                    padding: "14px 0", borderRadius: 14,
-                    border: `2px solid ${active ? color : "#e5e7eb"}`,
-                    backgroundColor: active ? color : "white",
-                    color: active ? "white" : "#6b7280",
-                    fontWeight: 600, fontSize: 14, cursor: "pointer",
-                    transition: "all 0.15s",
-                  }}>
-                    <Icon size={16} />{label}
+                  <button key={val} type="button" className="nt-type"
+                    onClick={() => set("type", val)}
+                    style={{
+                      display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+                      padding: "15px 0", borderRadius: 14,
+                      border: `2px solid ${active ? color : BORDER}`,
+                      backgroundColor: active ? color : "white",
+                      color: active ? "white" : MUTED,
+                      fontWeight: 700, fontSize: 14, cursor: "pointer",
+                      boxShadow: active ? `0 4px 14px ${shadow}` : "none",
+                    }}>
+                    <Icon size={18} /> {label}
                   </button>
                 );
               })}
             </div>
-          </div>
+          </section>
 
-          {/* 2 · Category grid */}
-          <div>
-            <p style={{ fontSize: 13, fontWeight: 600, color: "#374151", marginBottom: 10 }}>
-              Catégorie
-            </p>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+          {/* ── 2 · Category grid ── */}
+          <section>
+            <SectionLabel>Catégorie</SectionLabel>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 9 }}>
               {CATEGORIES.map(({ label, Icon }) => {
-                const selected = form.category === label;
+                const sel = form.category === label;
                 return (
-                  <button key={label} type="button" onClick={() => set("category", label)} style={{
-                    display: "flex", alignItems: "center", gap: 8,
-                    padding: "11px 12px", borderRadius: 12,
-                    border: `2px solid ${selected ? ORANGE : "#e5e7eb"}`,
-                    backgroundColor: selected ? "#fff7ed" : "white",
-                    color: selected ? ORANGE : "#374151",
-                    fontWeight: selected ? 600 : 400,
-                    fontSize: 13, cursor: "pointer", textAlign: "left",
-                    transition: "all 0.15s",
-                  }}>
-                    <Icon size={16} style={{ flexShrink: 0, color: selected ? ORANGE : "#6b7280" }} />
-                    <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  <button key={label} type="button" className="nt-cat"
+                    onClick={() => set("category", label)}
+                    style={{
+                      display: "flex", alignItems: "center", gap: 10,
+                      padding: "12px 14px", borderRadius: 13,
+                      border: `2px solid ${sel ? ORANGE : BORDER}`,
+                      backgroundColor: sel ? ORANGE_LIGHT : "white",
+                      color: sel ? ORANGE : LABEL,
+                      fontWeight: sel ? 700 : 400, fontSize: 13,
+                      cursor: "pointer", textAlign: "left",
+                      boxShadow: sel ? `0 0 0 4px ${ORANGE_MID}` : "none",
+                    }}>
+                    {/* Icon bubble */}
+                    <span style={{
+                      width: 34, height: 34, borderRadius: 10, flexShrink: 0,
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      backgroundColor: sel ? ORANGE : "#f3f4f6",
+                    }}>
+                      <Icon size={18} color={sel ? "white" : MUTED} />
+                    </span>
+                    <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", lineHeight: 1.3 }}>
                       {label}
                     </span>
+                    {sel && (
+                      <CheckCircle2 size={15} color={ORANGE} style={{ marginLeft: "auto", flexShrink: 0 }} />
+                    )}
                   </button>
                 );
               })}
             </div>
-            {errors.category && (
-              <p style={{ color: "#ef4444", fontSize: 12, marginTop: 6 }}>{errors.category}</p>
-            )}
-          </div>
+            {errors.category && <ErrorMsg>{errors.category}</ErrorMsg>}
+          </section>
 
-          {/* 3 · Amount */}
-          <div>
-            <p style={{ fontSize: 13, fontWeight: 600, color: "#374151", marginBottom: 8 }}>Montant</p>
+          {/* ── 3 · Amount ── */}
+          <section>
+            <SectionLabel>Montant</SectionLabel>
             <div style={{ position: "relative" }}>
               <Input
                 type="number" min="0" placeholder="0"
                 value={form.amount}
                 onChange={e => set("amount", e.target.value)}
-                style={{ fontSize: 22, fontWeight: 700, height: 56, paddingRight: 70, borderRadius: 12,
-                         borderColor: errors.amount ? "#ef4444" : undefined }}
+                style={{
+                  fontSize: 24, fontWeight: 700, height: 60, paddingRight: 72,
+                  borderRadius: 14, letterSpacing: "-0.01em",
+                  borderColor: errors.amount ? "#ef4444" : BORDER,
+                  boxShadow: errors.amount ? "0 0 0 3px rgba(239,68,68,0.12)" : "none",
+                }}
               />
               <span style={{
-                position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)",
-                fontSize: 13, fontWeight: 600, color: "#9ca3af",
+                position: "absolute", right: 16, top: "50%", transform: "translateY(-50%)",
+                fontSize: 13, fontWeight: 700, color: MUTED, letterSpacing: "0.04em",
               }}>FCFA</span>
             </div>
-            {errors.amount && (
-              <p style={{ color: "#ef4444", fontSize: 12, marginTop: 6 }}>{errors.amount}</p>
-            )}
-          </div>
+            {errors.amount && <ErrorMsg>{errors.amount}</ErrorMsg>}
+          </section>
 
-          {/* 4 · Payment method */}
-          <div>
-            <p style={{ fontSize: 13, fontWeight: 600, color: "#374151", marginBottom: 10 }}>
-              Moyen de paiement
-            </p>
+          {/* ── 4 · Payment method ── */}
+          <section>
+            <SectionLabel>Moyen de paiement</SectionLabel>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
               {PAYMENT_METHODS.map(pm => {
-                const selected = form.paymentMethod === pm;
+                const sel = form.paymentMethod === pm;
                 return (
-                  <button key={pm} type="button" onClick={() => set("paymentMethod", pm)} style={{
-                    padding: "9px 18px", borderRadius: 999,
-                    border: `2px solid ${selected ? ORANGE : "#e5e7eb"}`,
-                    backgroundColor: selected ? ORANGE : "white",
-                    color: selected ? "white" : "#374151",
-                    fontWeight: 500, fontSize: 13, cursor: "pointer",
-                    transition: "all 0.15s",
-                  }}>
+                  <button key={pm} type="button" className="nt-chip"
+                    onClick={() => set("paymentMethod", pm)}
+                    style={{
+                      display: "flex", alignItems: "center", gap: 6,
+                      padding: "10px 18px", borderRadius: 999,
+                      border: `2px solid ${sel ? ORANGE : BORDER}`,
+                      backgroundColor: sel ? ORANGE : "white",
+                      color: sel ? "white" : LABEL,
+                      fontWeight: sel ? 700 : 500, fontSize: 13,
+                      cursor: "pointer",
+                      boxShadow: sel ? `0 3px 12px rgba(249,115,22,0.35)` : "none",
+                    }}>
+                    {sel && <CheckCircle2 size={13} color="white" />}
                     {pm}
                   </button>
                 );
               })}
             </div>
-            {errors.paymentMethod && (
-              <p style={{ color: "#ef4444", fontSize: 12, marginTop: 6 }}>{errors.paymentMethod}</p>
-            )}
-          </div>
+            {errors.paymentMethod && <ErrorMsg>{errors.paymentMethod}</ErrorMsg>}
+          </section>
 
-          {/* 5 · Date */}
-          <div>
-            <p style={{ fontSize: 13, fontWeight: 600, color: "#374151", marginBottom: 8,
-                        display: "flex", alignItems: "center", gap: 6 }}>
-              <CalendarDays size={14} color="#9ca3af" /> Date
+          {/* ── 5 · Date ── */}
+          <section>
+            <p style={{
+              fontSize: 13, fontWeight: 600, color: LABEL, marginBottom: 8, marginTop: 0,
+              display: "flex", alignItems: "center", gap: 6,
+            }}>
+              <CalendarDays size={14} color={MUTED} /> Date
             </p>
-            <Input type="date" value={form.date} onChange={e => set("date", e.target.value)}
-              style={{ height: 44, borderRadius: 12, borderColor: errors.date ? "#ef4444" : undefined }} />
-            {errors.date && <p style={{ color: "#ef4444", fontSize: 12, marginTop: 6 }}>{errors.date}</p>}
-          </div>
+            <Input
+              type="date" value={form.date}
+              onChange={e => set("date", e.target.value)}
+              style={{ height: 46, borderRadius: 12, borderColor: errors.date ? "#ef4444" : BORDER }}
+            />
+            {errors.date && <ErrorMsg>{errors.date}</ErrorMsg>}
+          </section>
 
-          {/* 6 · Note */}
-          <div>
-            <p style={{ fontSize: 13, fontWeight: 600, color: "#374151", marginBottom: 8,
-                        display: "flex", alignItems: "center", gap: 6 }}>
-              <StickyNote size={14} color="#9ca3af" />
+          {/* ── 6 · Note ── */}
+          <section>
+            <p style={{
+              fontSize: 13, fontWeight: 600, color: LABEL, marginBottom: 8, marginTop: 0,
+              display: "flex", alignItems: "center", gap: 6,
+            }}>
+              <StickyNote size={14} color={MUTED} />
               Note / Référence
-              <span style={{ fontWeight: 400, color: "#9ca3af" }}>(optionnel)</span>
+              <span style={{ fontWeight: 400, color: MUTED }}>(optionnel)</span>
             </p>
             <textarea
               placeholder="Client, motif, numéro de reçu..."
@@ -243,23 +294,26 @@ export default function NewTransaction() {
               rows={2}
               style={{
                 width: "100%", boxSizing: "border-box",
-                borderRadius: 12, border: "1px solid #e5e7eb",
-                padding: "10px 12px", fontSize: 14, resize: "none",
-                outline: "none", fontFamily: "inherit", color: "#374151",
+                borderRadius: 12, border: `1px solid ${BORDER}`,
+                padding: "11px 14px", fontSize: 14, resize: "none",
+                outline: "none", fontFamily: "inherit", color: TEXT,
+                lineHeight: 1.5,
               }}
             />
-          </div>
+          </section>
 
-          {/* Submit */}
+          {/* ── Submit ── */}
           <button
-            type="button"
+            type="button" className="nt-submit"
             onClick={handleSubmit}
             disabled={createTx.isPending}
             style={{
-              width: "100%", height: 56, borderRadius: 14, border: "none",
+              width: "100%", height: 58, borderRadius: 16, border: "none",
               backgroundColor: createTx.isPending ? "#fdba74" : ORANGE,
-              color: "white", fontSize: 16, fontWeight: 700, cursor: "pointer",
+              color: "white", fontSize: 16, fontWeight: 700, cursor: createTx.isPending ? "default" : "pointer",
               display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+              boxShadow: "0 4px 16px rgba(249,115,22,0.30)",
+              letterSpacing: "0.01em",
             }}
           >
             {createTx.isPending
@@ -271,5 +325,22 @@ export default function NewTransaction() {
         </div>
       </div>
     </Layout>
+  );
+}
+
+/* ── Small helpers ── */
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <p style={{ fontSize: 13, fontWeight: 600, color: "#374151", marginBottom: 10, marginTop: 0 }}>
+      {children}
+    </p>
+  );
+}
+
+function ErrorMsg({ children }: { children: React.ReactNode }) {
+  return (
+    <p style={{ color: "#ef4444", fontSize: 12, marginTop: 6, display: "flex", alignItems: "center", gap: 4 }}>
+      {children}
+    </p>
   );
 }
