@@ -163,13 +163,13 @@ function AddTransactionModal({ onClose }: { onClose: () => void }) {
       className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/50 backdrop-blur-sm"
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
-      {/* Sheet / Dialog — single scrollable container, sticky header + footer */}
+      {/* Sheet / Dialog */}
       <div
-        className="bg-background w-full sm:max-w-md rounded-t-3xl sm:rounded-2xl shadow-2xl overflow-y-auto"
-        style={{ maxHeight: "92vh" }}
+        className="bg-background w-full sm:max-w-md rounded-t-3xl sm:rounded-2xl shadow-2xl flex flex-col"
+        style={{ height: "92vh" }}
       >
-        {/* Header — sticks while scrolling */}
-        <div className="sticky top-0 z-10 bg-background flex items-center justify-between px-5 pt-5 pb-4 border-b border-border">
+        {/* Header */}
+        <div className="shrink-0 flex items-center justify-between px-5 pt-5 pb-4 border-b border-border">
           <h2 className="text-lg font-bold">Nouvelle transaction</h2>
           <button
             onClick={onClose}
@@ -179,8 +179,8 @@ function AddTransactionModal({ onClose }: { onClose: () => void }) {
           </button>
         </div>
 
-        {/* Body — scrolls with the container */}
-        <div className="px-5 py-5 space-y-5">
+        {/* Scrollable body */}
+        <div className="px-5 py-5 space-y-5" style={{ flex: "1 1 0", overflowY: "auto", minHeight: 0 }}>
 
           {/* Type toggle */}
           <div className="grid grid-cols-2 gap-2">
@@ -313,8 +313,8 @@ function AddTransactionModal({ onClose }: { onClose: () => void }) {
           </div>
         </div>
 
-        {/* Footer CTA — sticks at bottom while scrolling */}
-        <div className="sticky bottom-0 z-10 px-5 py-4 border-t border-border bg-background">
+        {/* Footer CTA */}
+        <div className="shrink-0 px-5 py-4 border-t border-border bg-background">
           <Button
             className="w-full h-14 text-base font-bold rounded-xl shadow-lg"
             onClick={handleSubmit}
