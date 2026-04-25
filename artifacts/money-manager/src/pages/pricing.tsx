@@ -1,16 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@clerk/react";
 import { Button } from "@/components/ui/button";
 import {
-  Check,
-  Loader2,
-  ArrowLeft,
-  Zap,
-  Star,
-  Gift,
-  ShieldCheck,
-  Lock,
+  Check, Loader2, ArrowLeft, Zap, Star, Gift, ShieldCheck, Lock, Crown,
 } from "lucide-react";
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
@@ -72,6 +65,8 @@ const PLANS = [
   },
 ] as const;
 
+const PLAN_RANK: Record<string, number> = { free: 0, starter: 1, pro: 2, paid: 1 };
+
 function formatPrice(cents: number, currency: string) {
   if (cents === 0) return "0 €";
   return new Intl.NumberFormat("fr-FR", {
@@ -97,18 +92,31 @@ export default function Pricing() {
   const { isSignedIn, isLoaded } = useAuth();
   const [, setLocation] = useLocation();
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
+  const [currentPlan, setCurrentPlan] = useState<string | null>(null);
+  const [currentLabel, setCurrentLabel] = useState<string>("");
+
+  useEffect(() => {
+    if (!isSignedIn) return;
+    fetch(`${basePath}/api/stripe/subscription-status`, { credentials: "include" })
+      .then(r => r.ok ? r.json() : null)
+      .then(d => {
+        if (d) {
+          setCurrentPlan(d.plan || "free");
+          setCurrentLabel(d.planLabel || "");
+        }
+      })
+      .catch(() => {});
+  }, [isSignedIn]);
 
   const handlePlanClick = async (planKey: string) => {
     if (planKey === "free") {
       setLocation("/sign-up");
       return;
     }
-
     if (!isSignedIn) {
       setLocation("/sign-in");
       return;
     }
-
     setLoadingPlan(planKey);
     try {
       const url = await startCheckout(planKey);
@@ -118,6 +126,8 @@ export default function Pricing() {
       setLoadingPlan(null);
     }
   };
+
+  const userRank = currentPlan ? (PLAN_RANK[currentPlan] ?? 0) : 0;
 
   return (
     <div className="min-h-screen bg-background">
@@ -160,6 +170,18 @@ export default function Pricing() {
             <p className="text-muted-foreground text-lg max-w-xl mx-auto">
               Commencez gratuitement. Passez à une offre payante quand votre activité grandit.
             </p>
+            {/* Active plan notice for signed-in paid users */}
+            {currentPlan && currentPlan !== "free" && (
+              <div style={{
+                display: "inline-flex", alignItems: "center", gap: 8,
+                background: "linear-gradient(135deg,#fff7ed,#ffedd5)",
+                border: "1.5px solid #f97316", borderRadius: 999,
+                padding: "8px 18px", fontSize: 14, fontWeight: 600, color: "#9a3412",
+              }}>
+                <Crown style={{ width: 15, height: 15, color: "#f97316" }} />
+                Votre plan actuel&nbsp;: <span style={{ color: "#f97316" }}>{currentLabel}</span>
+              </div>
+            )}
           </div>
 
           {/* Plans grid */}
@@ -168,6 +190,10 @@ export default function Pricing() {
               const PlanIcon = plan.icon;
               const isLoading = loadingPlan === plan.key;
               const isFree = plan.key === "free";
+              const isCurrentPlan = currentPlan === plan.key;
+              const planRank = PLAN_RANK[plan.key] ?? 0;
+              const isDowngrade = userRank > planRank;
+              const isDisabled = isCurrentPlan || isDowngrade;
 
               return (
                 <div
@@ -177,12 +203,29 @@ export default function Pricing() {
                       ? "border-primary bg-primary/5 shadow-xl ring-2 ring-primary/20"
                       : "border-border bg-card shadow-sm hover:shadow-md"
                   }`}
+                  style={isCurrentPlan ? { borderColor: "#f97316", boxShadow: "0 0 0 3px rgba(249,115,22,0.15)" } : {}}
                 >
-                  {plan.recommended && (
+                  {/* Recommended badge */}
+                  {plan.recommended && !isCurrentPlan && (
                     <div className="absolute -top-4 inset-x-0 flex justify-center">
                       <span className="bg-primary text-white text-xs font-bold px-4 py-1.5 rounded-full flex items-center gap-1.5 shadow-md">
                         <Star className="w-3 h-3 fill-white" />
                         Recommandé
+                      </span>
+                    </div>
+                  )}
+
+                  {/* "Plan actuel" badge */}
+                  {isCurrentPlan && (
+                    <div className="absolute -top-4 inset-x-0 flex justify-center">
+                      <span style={{
+                        background: "#f97316", color: "white",
+                        fontSize: 11, fontWeight: 700, padding: "5px 14px",
+                        borderRadius: 999, display: "inline-flex", alignItems: "center", gap: 5,
+                        boxShadow: "0 2px 8px rgba(249,115,22,0.40)",
+                      }}>
+                        <Check style={{ width: 11, height: 11 }} />
+                        Votre plan actuel
                       </span>
                     </div>
                   )}
@@ -198,17 +241,12 @@ export default function Pricing() {
                         </div>
                         <h2 className="text-xl font-bold text-foreground">{plan.name}</h2>
                       </div>
-
                       <div className="flex items-baseline gap-1">
                         <span className="text-4xl font-extrabold text-foreground">
                           {formatPrice(plan.price, plan.currency)}
                         </span>
-                        {!isFree && (
-                          <span className="text-muted-foreground text-sm font-medium">/mois</span>
-                        )}
-                        {isFree && (
-                          <span className="text-muted-foreground text-sm font-medium">pour toujours</span>
-                        )}
+                        {!isFree && <span className="text-muted-foreground text-sm font-medium">/mois</span>}
+                        {isFree && <span className="text-muted-foreground text-sm font-medium">pour toujours</span>}
                       </div>
                     </div>
 
@@ -228,34 +266,58 @@ export default function Pricing() {
                       ))}
                     </ul>
 
-                    {/* CTA button */}
-                    <Button
-                      size="lg"
-                      className={`w-full h-12 text-base font-semibold rounded-xl ${
-                        plan.recommended
-                          ? ""
-                          : isFree
-                          ? "border-2 border-border bg-background text-foreground hover:bg-muted"
-                          : ""
-                      }`}
-                      variant={plan.recommended ? "default" : "outline"}
-                      disabled={!!loadingPlan}
-                      onClick={() => handlePlanClick(plan.key)}
-                    >
-                      {isLoading ? (
-                        <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                      ) : (
-                        <PlanIcon className="w-4 h-4 mr-2" />
-                      )}
-                      {plan.cta}
-                    </Button>
+                    {/* CTA */}
+                    {isCurrentPlan ? (
+                      /* Current plan — show active state, no action */
+                      <div style={{
+                        width: "100%", height: 48, borderRadius: 12,
+                        background: "linear-gradient(135deg,#fff7ed,#ffedd5)",
+                        border: "2px solid #f97316",
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        gap: 8, fontWeight: 700, fontSize: 14, color: "#c2410c",
+                      }}>
+                        <Check style={{ width: 16, height: 16 }} />
+                        Plan actif
+                      </div>
+                    ) : isDowngrade ? (
+                      /* Lower than current — greyed out */
+                      <div style={{
+                        width: "100%", height: 48, borderRadius: 12,
+                        background: "#f3f4f6", border: "1.5px solid #e5e7eb",
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        gap: 8, fontWeight: 600, fontSize: 13, color: "#9ca3af",
+                        cursor: "not-allowed",
+                      }}>
+                        Plan inférieur
+                      </div>
+                    ) : (
+                      <Button
+                        size="lg"
+                        className={`w-full h-12 text-base font-semibold rounded-xl ${
+                          plan.recommended
+                            ? ""
+                            : isFree
+                            ? "border-2 border-border bg-background text-foreground hover:bg-muted"
+                            : ""
+                        }`}
+                        variant={plan.recommended ? "default" : "outline"}
+                        disabled={!!loadingPlan || !isLoaded}
+                        onClick={() => handlePlanClick(plan.key)}
+                      >
+                        {isLoading
+                          ? <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                          : <PlanIcon className="w-4 h-4 mr-2" />
+                        }
+                        {plan.cta}
+                      </Button>
+                    )}
                   </div>
                 </div>
               );
             })}
           </div>
 
-          {/* Comparison table (mobile-friendly, optional detail) */}
+          {/* Comparison table */}
           <div className="bg-card border border-border rounded-2xl overflow-hidden">
             <div className="px-6 py-5 border-b border-border">
               <h3 className="font-semibold text-lg text-foreground">Comparaison détaillée</h3>
@@ -296,24 +358,14 @@ export default function Pricing() {
 
           {/* Trust badges */}
           <div className="flex flex-wrap justify-center gap-6 text-sm text-muted-foreground">
-            <div className="flex items-center gap-2">
-              <ShieldCheck className="w-4 h-4 text-primary" />
-              Paiement sécurisé via Stripe
-            </div>
-            <div className="flex items-center gap-2">
-              <Check className="w-4 h-4 text-primary" />
-              Annulez à tout moment
-            </div>
-            <div className="flex items-center gap-2">
-              <Check className="w-4 h-4 text-primary" />
-              Aucune carte requise pour le plan gratuit
-            </div>
+            <div className="flex items-center gap-2"><ShieldCheck className="w-4 h-4 text-primary" />Paiement sécurisé via Stripe</div>
+            <div className="flex items-center gap-2"><Check className="w-4 h-4 text-primary" />Annulez à tout moment</div>
+            <div className="flex items-center gap-2"><Check className="w-4 h-4 text-primary" />Aucune carte requise pour le plan gratuit</div>
           </div>
 
         </div>
       </main>
 
-      {/* Footer */}
       <footer className="border-t border-border/50 text-center py-6 px-4 text-xs text-muted-foreground">
         © {new Date().getFullYear()} MobileMoney Manager — Tous droits réservés.
       </footer>
