@@ -109,16 +109,23 @@ export default function NewTransaction() {
           from { opacity: 0; transform: translateY(16px); }
           to   { opacity: 1; transform: translateY(0);    }
         }
-        .nt-form   { animation: ntFadeUp 0.35s cubic-bezier(.22,.68,0,1.2) both; }
-        .nt-cat    { transition: transform 0.12s, box-shadow 0.12s, background 0.12s, border-color 0.12s; }
+        .nt-form { animation: ntFadeUp 0.35s cubic-bezier(.22,.68,0,1.2) both; }
+        .nt-cat  { transition: transform 0.13s, box-shadow 0.13s, background 0.13s, border-color 0.13s, color 0.13s; }
         .nt-cat:active  { transform: scale(0.94); }
-        .nt-chip   { transition: transform 0.12s, box-shadow 0.12s, background 0.12s, border-color 0.12s; }
+        .nt-chip { transition: transform 0.13s, box-shadow 0.13s, background 0.13s, border-color 0.13s, color 0.13s; }
         .nt-chip:active { transform: scale(0.93); }
-        .nt-type   { transition: transform 0.12s, background 0.12s, border-color 0.12s, color 0.12s; }
+        .nt-type { transition: transform 0.13s, background 0.13s, border-color 0.13s, color 0.13s, box-shadow 0.13s; }
         .nt-type:active { transform: scale(0.96); }
         .nt-submit { transition: transform 0.12s, background 0.15s, box-shadow 0.15s; }
-        .nt-submit:not(:disabled):hover { box-shadow: 0 6px 20px rgba(249,115,22,0.40); transform: translateY(-1px); }
+        .nt-submit:not(:disabled):hover  { box-shadow: 0 8px 22px rgba(249,115,22,0.45); transform: translateY(-2px); }
         .nt-submit:not(:disabled):active { transform: scale(0.97); box-shadow: none; }
+        @media (max-width: 480px) {
+          .nt-form { padding-left: 2px !important; padding-right: 2px !important; }
+          .nt-form h1 { font-size: 20px !important; margin-bottom: 18px !important; }
+          .nt-sections { gap: 18px !important; }
+          .nt-cat  { padding: 9px 10px !important; }
+          .nt-grid { gap: 7px !important; }
+        }
       `}</style>
 
       <div
@@ -140,16 +147,16 @@ export default function NewTransaction() {
           Nouvelle transaction
         </h1>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: 28 }}>
+        <div className="nt-sections" style={{ display: "flex", flexDirection: "column", gap: 24 }}>
 
           {/* ── 1 · Type ── */}
           <section>
             <SectionLabel>Type</SectionLabel>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
               {([
-                { val: "income"  as const, label: "Revenu",  Icon: TrendingUp,   color: "#22c55e", shadow: "rgba(34,197,94,0.30)"  },
-                { val: "expense" as const, label: "Dépense", Icon: TrendingDown, color: "#ef4444", shadow: "rgba(239,68,68,0.30)"   },
-              ] as const).map(({ val, label, Icon, color, shadow }) => {
+                { val: "income"  as const, label: "Revenu",  Icon: TrendingUp   },
+                { val: "expense" as const, label: "Dépense", Icon: TrendingDown },
+              ] as const).map(({ val, label, Icon }) => {
                 const active = form.type === val;
                 return (
                   <button key={val} type="button" className="nt-type"
@@ -157,11 +164,11 @@ export default function NewTransaction() {
                     style={{
                       display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
                       padding: "15px 0", borderRadius: 14,
-                      border: `2px solid ${active ? color : BORDER}`,
-                      backgroundColor: active ? color : "white",
+                      border: `2px solid ${active ? ORANGE : BORDER}`,
+                      backgroundColor: active ? ORANGE : "white",
                       color: active ? "white" : MUTED,
                       fontWeight: 700, fontSize: 14, cursor: "pointer",
-                      boxShadow: active ? `0 4px 14px ${shadow}` : "none",
+                      boxShadow: active ? "0 4px 16px rgba(249,115,22,0.38)" : "none",
                     }}>
                     <Icon size={18} /> {label}
                   </button>
@@ -173,7 +180,7 @@ export default function NewTransaction() {
           {/* ── 2 · Category grid ── */}
           <section>
             <SectionLabel>Catégorie</SectionLabel>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 9 }}>
+            <div className="nt-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 9 }}>
               {CATEGORIES.map(({ label, Icon }) => {
                 const sel = form.category === label;
                 return (
@@ -181,27 +188,29 @@ export default function NewTransaction() {
                     onClick={() => set("category", label)}
                     style={{
                       display: "flex", alignItems: "center", gap: 10,
-                      padding: "12px 14px", borderRadius: 13,
+                      padding: "11px 12px", borderRadius: 13,
                       border: `2px solid ${sel ? ORANGE : BORDER}`,
-                      backgroundColor: sel ? ORANGE_LIGHT : "white",
-                      color: sel ? ORANGE : LABEL,
+                      backgroundColor: sel ? ORANGE : "white",
+                      color: sel ? "white" : LABEL,
                       fontWeight: sel ? 700 : 400, fontSize: 13,
                       cursor: "pointer", textAlign: "left",
-                      boxShadow: sel ? `0 0 0 4px ${ORANGE_MID}` : "none",
+                      boxShadow: sel
+                        ? "0 4px 14px rgba(249,115,22,0.38)"
+                        : "0 1px 3px rgba(0,0,0,0.06)",
                     }}>
                     {/* Icon bubble */}
                     <span style={{
-                      width: 34, height: 34, borderRadius: 10, flexShrink: 0,
+                      width: 32, height: 32, borderRadius: 9, flexShrink: 0,
                       display: "flex", alignItems: "center", justifyContent: "center",
-                      backgroundColor: sel ? ORANGE : "#f3f4f6",
+                      backgroundColor: sel ? "rgba(255,255,255,0.22)" : "#f3f4f6",
                     }}>
-                      <Icon size={18} color={sel ? "white" : MUTED} />
+                      <Icon size={17} color={sel ? "white" : MUTED} />
                     </span>
                     <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", lineHeight: 1.3 }}>
                       {label}
                     </span>
                     {sel && (
-                      <CheckCircle2 size={15} color={ORANGE} style={{ marginLeft: "auto", flexShrink: 0 }} />
+                      <CheckCircle2 size={14} color="white" style={{ marginLeft: "auto", flexShrink: 0, opacity: 0.9 }} />
                     )}
                   </button>
                 );
