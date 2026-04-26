@@ -104,7 +104,7 @@ export default function Home() {
           <div className="flex flex-col items-center md:items-start text-center md:text-left space-y-6">
             <img src="/logo.svg" alt="MobileMoney Manager" width="64" height="64" className="w-16 h-16 md:w-20 md:h-20 drop-shadow-md" style={{ width: 64, height: 64 }} />
             <h1 className="text-4xl md:text-5xl font-bold text-foreground tracking-tight leading-tight">
-              {fr ? "Gérez votre argent avec fierté." : "Manage your money with pride."}
+              {fr ? "Gérez votre argent avec efficacité." : "Manage your money with efficiency."}
             </h1>
             <p className="text-lg md:text-xl text-muted-foreground">
               {fr
