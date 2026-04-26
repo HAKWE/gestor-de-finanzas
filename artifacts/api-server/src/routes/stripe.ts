@@ -259,7 +259,8 @@ router.get("/stripe/subscription-status", requireAuth, async (req: any, res): Pr
         s.status,
         p.name AS product_name,
         pr.unit_amount,
-        pr.currency
+        pr.currency,
+        s.current_period_end
       FROM stripe.subscriptions s
       JOIN stripe.subscription_items si ON si.subscription = s.id
       JOIN stripe.prices pr ON pr.id = si.price
@@ -281,15 +282,52 @@ router.get("/stripe/subscription-status", requireAuth, async (req: any, res): Pr
       : name.toLowerCase().includes("starter") ? "starter"
       : "paid";
 
+    // current_period_end is a Unix timestamp (integer) in the stripe schema
+    const rawEnd = row.current_period_end;
+    const currentPeriodEnd = rawEnd
+      ? (typeof rawEnd === "number" ? new Date(rawEnd * 1000).toISOString() : new Date(rawEnd).toISOString())
+      : (profile.subscriptionPeriodEnd ? profile.subscriptionPeriodEnd.toISOString() : null);
+
     res.json({
       plan,
       planLabel: name,
       status: row.status,
       subscriptionId: row.subscription_id,
+      currentPeriodEnd,
     });
   } catch (err: any) {
     console.error("Subscription status error:", err.message);
     res.status(500).json({ error: "Erreur lors de la récupération du statut" });
+  }
+});
+
+router.post("/stripe/portal", requireAuth, async (req: any, res): Promise<void> => {
+  const userId = req.userId;
+  try {
+    const profiles = await db
+      .select()
+      .from(userProfilesTable)
+      .where(eq(userProfilesTable.userId, userId))
+      .limit(1);
+
+    const profile = profiles[0];
+    if (!profile?.stripeCustomerId) {
+      res.status(400).json({ error: "Aucun abonnement actif trouvé" });
+      return;
+    }
+
+    const stripe = await getUncachableStripeClient();
+    const domain = process.env.APP_DOMAIN || process.env.REPLIT_DOMAINS?.split(",")[0] || req.get("host");
+
+    const session = await stripe.billingPortal.sessions.create({
+      customer: profile.stripeCustomerId,
+      return_url: `https://${domain}/subscription`,
+    });
+
+    res.json({ url: session.url });
+  } catch (err: any) {
+    console.error("Portal error:", err.message);
+    res.status(500).json({ error: "Impossible d'ouvrir le portail de facturation. Vérifiez que le portail client Stripe est configuré." });
   }
 });
 

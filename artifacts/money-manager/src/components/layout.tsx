@@ -2,60 +2,66 @@ import React, { useEffect, useState } from "react";
 import { useLanguage } from "../lib/language-context";
 import { Link, useLocation } from "wouter";
 import { UserButton } from "@clerk/react";
-import { LayoutDashboard, Receipt, BarChart3, Package, Settings, Menu, Crown, Star } from "lucide-react";
+import { LayoutDashboard, Receipt, BarChart3, Package, Settings, Menu, Crown, Star, CreditCard } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "./ui/sheet";
 import { Button } from "./ui/button";
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
-function NavPlanBadge() {
-  const [plan, setPlan] = useState<string | null>(null);
-  const [label, setLabel] = useState<string>("");
+interface SubInfo { plan: string; label: string }
 
+function useSubscription(): SubInfo | null {
+  const [sub, setSub] = useState<SubInfo | null>(null);
   useEffect(() => {
     fetch(`${basePath}/api/stripe/subscription-status`, { credentials: "include" })
       .then(r => r.ok ? r.json() : null)
       .then(d => {
-        if (d && d.plan && d.plan !== "free") {
-          setPlan(d.plan);
-          setLabel(d.planLabel || d.plan);
-        }
+        if (d && d.plan && d.plan !== "free") setSub({ plan: d.plan, label: d.planLabel || d.plan });
       })
       .catch(() => {});
   }, []);
+  return sub;
+}
 
-  if (!plan) return null;
-
+function PlanPill({ plan, label }: { plan: string; label: string }) {
   const isPro = plan === "pro";
   return (
-    <span style={{
-      display: "inline-flex", alignItems: "center", gap: 5,
-      padding: "4px 10px", borderRadius: 999, fontSize: 12, fontWeight: 700,
-      backgroundColor: isPro ? "#f97316" : "#fff7ed",
-      color: isPro ? "white" : "#f97316",
-      border: isPro ? "none" : "1.5px solid #f97316",
-      whiteSpace: "nowrap",
-    }}>
-      {isPro
-        ? <Crown style={{ width: 11, height: 11 }} />
-        : <Star style={{ width: 11, height: 11 }} />
-      }
-      {label}
-    </span>
+    <Link href="/subscription">
+      <span style={{
+        display: "inline-flex", alignItems: "center", gap: 5,
+        padding: "4px 10px", borderRadius: 999, fontSize: 12, fontWeight: 700,
+        backgroundColor: isPro ? "#f97316" : "#fff7ed",
+        color: isPro ? "white" : "#f97316",
+        border: isPro ? "none" : "1.5px solid #f97316",
+        whiteSpace: "nowrap", cursor: "pointer",
+        textDecoration: "none",
+      }}>
+        {isPro
+          ? <Crown style={{ width: 11, height: 11 }} />
+          : <Star style={{ width: 11, height: 11 }} />
+        }
+        {label}
+      </span>
+    </Link>
   );
 }
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const { t } = useLanguage();
   const [location] = useLocation();
+  const sub = useSubscription();
+  const isPaid = sub !== null;
 
-  const links = [
+  const baseLinks = [
     { href: "/dashboard", label: t("nav.dashboard"), icon: LayoutDashboard },
     { href: "/transactions", label: t("nav.transactions"), icon: Receipt },
     { href: "/reports", label: t("nav.reports"), icon: BarChart3 },
     { href: "/inventory", label: t("nav.inventory"), icon: Package },
     { href: "/settings", label: t("nav.settings"), icon: Settings },
   ];
+
+  const subLink = { href: "/subscription", label: "Mon abonnement", icon: CreditCard };
+  const links = isPaid ? [...baseLinks, subLink] : baseLinks;
 
   return (
     <div className="flex min-h-[100dvh] flex-col bg-background">
@@ -90,7 +96,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             </nav>
           </SheetContent>
         </Sheet>
-        
+
         <div className="flex w-full items-center gap-4 md:ml-auto md:gap-2 lg:gap-4 justify-between md:justify-end">
           <div className="hidden md:flex md:flex-1">
             <div className="flex items-center gap-2">
@@ -98,30 +104,31 @@ export function Layout({ children }: { children: React.ReactNode }) {
               <span className="font-bold text-primary text-xl">MobileMoney</span>
             </div>
           </div>
-          
+
           <nav className="hidden md:flex gap-6 mx-6">
-             {links.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={`flex items-center gap-2 text-sm transition-colors ${
-                    location.startsWith(link.href)
-                      ? "text-primary font-semibold border-b-2 border-primary pb-1 -mb-1"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  <link.icon className="h-4 w-4" />
-                  {link.label}
-                </Link>
-              ))}
+            {links.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={`flex items-center gap-2 text-sm transition-colors ${
+                  location.startsWith(link.href)
+                    ? "text-primary font-semibold border-b-2 border-primary pb-1 -mb-1"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <link.icon className="h-4 w-4" />
+                {link.label}
+              </Link>
+            ))}
           </nav>
+
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginLeft: "auto" }}>
-            <NavPlanBadge />
+            {sub && <PlanPill plan={sub.plan} label={sub.label} />}
             <UserButton afterSignOutUrl="/" />
           </div>
         </div>
       </header>
-      
+
       <main className="flex-1 flex flex-col p-4 md:p-8 w-full max-w-6xl mx-auto">
         {children}
       </main>

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { Link } from "wouter";
 import { useLanguage } from "../lib/language-context";
 import { Layout } from "../components/layout";
@@ -8,6 +8,68 @@ import { useGetDashboardSummary, useGetWeeklySummary, useListTransactions } from
 import { Skeleton } from "@/components/ui/skeleton";
 import { Wallet, ArrowDownRight, ArrowUpRight, Activity, Zap, Star, Crown, X, Plus, Sparkles } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer } from "recharts";
+
+function ConfettiCanvas({ active }: { active: boolean }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    if (!active || !canvasRef.current) return;
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d")!;
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const colors = ["#f97316","#4ade80","#60a5fa","#facc15","#c084fc","#f472b6","#34d399","#fb923c"];
+    type P = { x:number; y:number; r:number; vx:number; vy:number; color:string; rotation:number; rotV:number };
+    const particles: P[] = Array.from({ length: 160 }, () => ({
+      x: Math.random() * canvas.width,
+      y: -20 - Math.random() * canvas.height * 0.6,
+      r: Math.random() * 7 + 3,
+      vx: (Math.random() - 0.5) * 3.5,
+      vy: Math.random() * 3.5 + 1.5,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      rotation: Math.random() * Math.PI * 2,
+      rotV: (Math.random() - 0.5) * 0.15,
+    }));
+
+    let rafId: number;
+    const start = Date.now();
+
+    function draw() {
+      const elapsed = Date.now() - start;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const alpha = Math.max(0, 1 - Math.max(0, elapsed - 3500) / 1500);
+
+      for (const p of particles) {
+        p.x += p.vx; p.y += p.vy; p.vy += 0.06; p.rotation += p.rotV;
+        if (p.y > canvas.height + 20) { p.y = -10; p.x = Math.random() * canvas.width; }
+        ctx.save();
+        ctx.globalAlpha = alpha;
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.rotation);
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.roundRect(-p.r, -p.r * 0.5, p.r * 2, p.r, 2);
+        ctx.fill();
+        ctx.restore();
+      }
+
+      if (elapsed < 5000) rafId = requestAnimationFrame(draw);
+      else ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    rafId = requestAnimationFrame(draw);
+    return () => cancelAnimationFrame(rafId);
+  }, [active]);
+
+  if (!active) return null;
+  return (
+    <canvas ref={canvasRef} style={{
+      position: "fixed", inset: 0, width: "100vw", height: "100vh",
+      pointerEvents: "none", zIndex: 9999,
+    }} />
+  );
+}
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 const BANNER_DURATION = 8000;
@@ -95,6 +157,7 @@ export default function Dashboard() {
 
   return (
     <Layout>
+      <ConfettiCanvas active={showSuccessBanner} />
       <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
 
         {/* ── Celebratory success banner ── */}
@@ -356,13 +419,13 @@ export default function Dashboard() {
                 Vous bénéficiez de toutes les fonctionnalités de votre offre.
               </p>
             </div>
-            <Link href="/pricing">
+            <Link href="/subscription">
               <button style={{
                 background: "rgba(255,255,255,0.15)", border: "1.5px solid rgba(255,255,255,0.25)",
                 color: "#fff7ed", fontWeight: 600, fontSize: 13, padding: "8px 18px",
                 borderRadius: 10, cursor: "pointer", whiteSpace: "nowrap",
               }}>
-                Gérer mon abonnement
+                Mon abonnement →
               </button>
             </Link>
           </div>
