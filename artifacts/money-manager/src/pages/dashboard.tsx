@@ -109,6 +109,77 @@ function PlanBadge({ plan, label }: { plan: string; label: string }) {
   );
 }
 
+function UpgradeBanner({ plan, onDismiss }: { plan: string; onDismiss: () => void }) {
+  const isPro = plan === "pro";
+  if (isPro) return null;
+  const isStarter = plan === "starter";
+  const proFeatures = [
+    { icon: "📄", text: "Export PDF professionnel" },
+    { icon: "📱", text: "Import SMS Orange Money, Wave" },
+    { icon: "📊", text: "Graphiques & rapports avancés" },
+    { icon: "♾️", text: "Transactions illimitées" },
+  ];
+  return (
+    <div style={{
+      borderRadius: 18, overflow: "hidden",
+      background: "linear-gradient(135deg, #431407 0%, #7c2d12 55%, #9a3412 100%)",
+      boxShadow: "0 4px 20px rgba(249,115,22,0.22)",
+      position: "relative",
+    }}>
+      <div style={{ position: "absolute", top: 12, right: 50, fontSize: 36, opacity: 0.08, pointerEvents: "none" }}>👑</div>
+      <div style={{ padding: "18px 20px" }}>
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, marginBottom: 14 }}>
+          <div>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <Crown style={{ width: 16, height: 16, color: "#fed7aa" }} />
+              <span style={{ fontWeight: 800, fontSize: 15, color: "#fff7ed" }}>
+                {isStarter ? "Débloquez le plan Pro" : "Passez à Starter ou Pro"}
+              </span>
+            </div>
+            <p style={{ fontSize: 12, color: "#fdba74", margin: "3px 0 0", lineHeight: 1.4 }}>
+              {isStarter
+                ? "Vous êtes sur Starter — Pro débloque encore plus de fonctionnalités."
+                : "Commencez à gérer vos finances comme un pro."}
+            </p>
+          </div>
+          <button onClick={onDismiss} style={{
+            background: "rgba(255,255,255,0.10)", border: "none", cursor: "pointer",
+            color: "#fdba74", padding: 5, borderRadius: 7, flexShrink: 0,
+            display: "flex", alignItems: "center",
+          }}>
+            <X style={{ width: 13, height: 13 }} />
+          </button>
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6, marginBottom: 14 }}>
+          {proFeatures.map(f => (
+            <div key={f.text} style={{
+              background: "rgba(255,255,255,0.07)", borderRadius: 9,
+              padding: "7px 10px", display: "flex", alignItems: "center", gap: 7,
+            }}>
+              <span style={{ fontSize: 14, flexShrink: 0 }}>{f.icon}</span>
+              <span style={{ fontSize: 11, color: "#fff7ed", fontWeight: 600, lineHeight: 1.3 }}>{f.text}</span>
+            </div>
+          ))}
+        </div>
+
+        <Link href="/pricing">
+          <button style={{
+            width: "100%", background: ORANGE, color: "#fff",
+            border: "none", borderRadius: 12, padding: "11px 20px",
+            fontWeight: 800, fontSize: 13, cursor: "pointer",
+            display: "flex", alignItems: "center", justifyContent: "center", gap: 7,
+            boxShadow: "0 2px 10px rgba(249,115,22,0.40)",
+          }}>
+            <Zap style={{ width: 14, height: 14 }} />
+            {isStarter ? "Passer au Pro →" : "Voir les offres →"}
+          </button>
+        </Link>
+      </div>
+    </div>
+  );
+}
+
 function TrendBadge({ current, prev, invert = false }: { current: number; prev: number; invert?: boolean }) {
   if (prev === 0) return null;
   const pct = ((current - prev) / prev) * 100;
@@ -461,6 +532,9 @@ export default function Dashboard() {
   const [showTour, setShowTour] = useState(() => !localStorage.getItem("welcome-tour-v1"));
   const closeTour = () => { localStorage.setItem("welcome-tour-v1", "1"); setShowTour(false); };
 
+  const [showUpgradeBanner, setShowUpgradeBanner] = useState(() => !localStorage.getItem("upgrade-banner-v1"));
+  const dismissUpgradeBanner = () => { localStorage.setItem("upgrade-banner-v1", "1"); setShowUpgradeBanner(false); };
+
   const [subStatus, setSubStatus] = useState<SubscriptionStatus | null>(null);
   const [showSuccessBanner, setShowSuccessBanner] = useState(false);
   const [bannerProgress, setBannerProgress] = useState(100);
@@ -638,6 +712,10 @@ export default function Dashboard() {
             </>
           )}
         </div>
+
+        {showUpgradeBanner && subStatus && subStatus.plan !== "pro" && (
+          <UpgradeBanner plan={subStatus.plan} onDismiss={dismissUpgradeBanner} />
+        )}
 
         <div style={{
           background: "#fff", borderRadius: 18, border: "1px solid #f0ede9",
