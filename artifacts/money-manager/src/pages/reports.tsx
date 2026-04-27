@@ -194,12 +194,30 @@ function StarterTeaser({ isStarter }: { isStarter: boolean }) {
       {/* Content */}
       <div style={{ background: "#fff", padding: "24px 24px 28px" }}>
         <div style={{ marginBottom: 16 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8, flexWrap: "wrap" }}>
+            {isStarter && (
+              <span style={{
+                display: "inline-flex", alignItems: "center", gap: 4,
+                background: "#fff7ed", border: "1.5px solid #fed7aa", borderRadius: 999,
+                padding: "3px 10px", fontSize: 11, fontWeight: 700, color: "#9a3412",
+              }}>
+                Starter → Pro
+              </span>
+            )}
+            <span style={{
+              display: "inline-flex", alignItems: "center",
+              background: ORANGE, borderRadius: 999,
+              padding: "3px 10px", fontSize: 11, fontWeight: 800, color: "#fff",
+            }}>
+              {isStarter ? "seulement +6 €/mois" : "dès 11 €/mois"}
+            </span>
+          </div>
           <h3 style={{ fontSize: 18, fontWeight: 800, color: "#111", margin: "0 0 6px" }}>
             Débloquez les Rapports Pro complets
           </h3>
           <p style={{ fontSize: 13, color: "#6b7280", margin: 0, lineHeight: 1.55 }}>
             {isStarter
-              ? "Vous êtes sur le plan Starter. Passez au Pro (seulement +6 €/mois) pour accéder aux analyses avancées."
+              ? "Vous avez déjà Starter — un seul cran vous sépare des rapports avancés et des exports PDF."
               : "Passez au plan Pro pour accéder aux graphiques, exports PDF et analyses détaillées."}
           </p>
         </div>
@@ -240,11 +258,28 @@ function StarterTeaser({ isStarter }: { isStarter: boolean }) {
               Passer au Pro — 11 €/mois
             </button>
           </Link>
-          {isStarter && (
-            <div style={{ fontSize: 12, color: "#9ca3af", textAlign: "center" }}>
-              Seulement +6 €/mois<br />vs votre plan Starter
-            </div>
-          )}
+        </div>
+
+        {/* Referral nudge */}
+        <div style={{
+          marginTop: 14, padding: "10px 14px",
+          background: "#fff7ed", borderRadius: 12,
+          display: "flex", alignItems: "center", gap: 10,
+          border: "1px solid #fed7aa",
+        }}>
+          <span style={{ fontSize: 16, flexShrink: 0 }}>🎁</span>
+          <span style={{ fontSize: 12, color: "#9a3412", lineHeight: 1.45 }}>
+            <strong>Parrainez un ami</strong> et vous recevez tous les deux <strong>1 mois Pro gratuit</strong> dès qu'il s'abonne.
+          </span>
+          <Link href="/settings" style={{ flexShrink: 0 }}>
+            <span style={{
+              fontSize: 11, fontWeight: 700, color: ORANGE,
+              background: "#fff", border: "1px solid #fed7aa", borderRadius: 6,
+              padding: "3px 10px", cursor: "pointer", whiteSpace: "nowrap",
+            }}>
+              Mon lien →
+            </span>
+          </Link>
         </div>
       </div>
     </div>

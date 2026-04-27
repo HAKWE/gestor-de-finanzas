@@ -142,7 +142,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
           <img src="/logo.svg" alt="MobileMoney" style={{ width: 16, height: 16 }} />
           <span style={{ fontSize: 12, color: "#9ca3af" }}>
-            © {new Date().getFullYear()} MobileMoney Manager
+            © {new Date().getFullYear()} MobileMoney Manager · Luxembourg
           </span>
         </div>
         <nav style={{ display: "flex", flexWrap: "wrap", gap: 16 }}>

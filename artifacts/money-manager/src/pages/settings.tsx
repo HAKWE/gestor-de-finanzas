@@ -71,8 +71,8 @@ function ReferralCard({ language }: { language: string }) {
             </div>
             <div style={{ fontSize: 13, color: "#6b7280", marginTop: 2 }}>
               {fr
-                ? "Gagnez 1 mois de Pro offert pour chaque ami qui s'abonne."
-                : "Earn 1 free Pro month for each friend who subscribes."}
+                ? "1 mois Pro gratuit — pour vous ET votre ami parrainé."
+                : "1 free Pro month — for you AND your referred friend."}
             </div>
           </div>
         </div>
@@ -91,7 +91,7 @@ function ReferralCard({ language }: { language: string }) {
               step: "2",
               icon: "🎁",
               title: fr ? "Ils s'abonnent" : "They subscribe",
-              desc: fr ? "Ils s'inscrivent via votre lien." : "They sign up via your link.",
+              desc: fr ? "Ils bénéficient aussi d'1 mois Pro offert." : "They also get 1 free Pro month.",
             },
           ].map(({ step, icon, title, desc }) => (
             <div key={step} style={{
@@ -155,8 +155,8 @@ function ReferralCard({ language }: { language: string }) {
           <span style={{ fontSize: 16, flexShrink: 0 }}>⚡</span>
           <p style={{ fontSize: 12, color: "#6b7280", margin: 0, lineHeight: 1.5 }}>
             {fr
-              ? "Dès qu'un ami s'abonne via votre lien, 1 mois de Pro est crédité automatiquement sur votre compte."
-              : "As soon as a friend subscribes via your link, 1 Pro month is automatically credited to your account."}
+              ? "Dès qu'un ami s'abonne via votre lien, vous recevez tous les deux 1 mois de Pro offert automatiquement."
+              : "Once a friend subscribes via your link, you both automatically receive 1 free Pro month."}
           </p>
         </div>
       </div>

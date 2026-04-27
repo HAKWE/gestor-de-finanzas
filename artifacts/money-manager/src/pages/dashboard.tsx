@@ -110,36 +110,68 @@ function PlanBadge({ plan, label }: { plan: string; label: string }) {
 }
 
 function UpgradeBanner({ plan, onDismiss }: { plan: string; onDismiss: () => void }) {
-  const isPro = plan === "pro";
-  if (isPro) return null;
+  if (plan === "pro") return null;
   const isStarter = plan === "starter";
-  const proFeatures = [
-    { icon: "📄", text: "Export PDF professionnel" },
-    { icon: "📱", text: "Import SMS Orange Money, Wave" },
-    { icon: "📊", text: "Graphiques & rapports avancés" },
-    { icon: "♾️", text: "Transactions illimitées" },
-  ];
+
+  const proFeatures = isStarter
+    ? [
+        { icon: "📄", text: "Export PDF professionnel" },
+        { icon: "📱", text: "Import SMS Orange Money, Wave" },
+        { icon: "📊", text: "Rapports avancés & graphiques" },
+        { icon: "♾️", text: "Transactions illimitées" },
+      ]
+    : [
+        { icon: "📊", text: "Rapports & tableau de bord complet" },
+        { icon: "📄", text: "Export PDF professionnel" },
+        { icon: "📱", text: "Import SMS & relevés bancaires" },
+        { icon: "🗂️", text: "Jusqu'à 3 wallets (Starter)" },
+      ];
+
   return (
     <div style={{
-      borderRadius: 18, overflow: "hidden",
-      background: "linear-gradient(135deg, #431407 0%, #7c2d12 55%, #9a3412 100%)",
-      boxShadow: "0 4px 20px rgba(249,115,22,0.22)",
+      borderRadius: 20, overflow: "hidden",
+      background: "linear-gradient(135deg, #431407 0%, #7c2d12 50%, #9a3412 100%)",
+      boxShadow: "0 6px 28px rgba(249,115,22,0.25)",
       position: "relative",
     }}>
-      <div style={{ position: "absolute", top: 12, right: 50, fontSize: 36, opacity: 0.08, pointerEvents: "none" }}>👑</div>
-      <div style={{ padding: "18px 20px" }}>
-        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, marginBottom: 14 }}>
-          <div>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <Crown style={{ width: 16, height: 16, color: "#fed7aa" }} />
-              <span style={{ fontWeight: 800, fontSize: 15, color: "#fff7ed" }}>
-                {isStarter ? "Débloquez le plan Pro" : "Passez à Starter ou Pro"}
+      {/* Decorative glows */}
+      <div style={{ position: "absolute", top: -20, right: -20, width: 100, height: 100, borderRadius: "50%", background: "rgba(249,115,22,0.12)", pointerEvents: "none" }} />
+      <div style={{ position: "absolute", bottom: -15, left: -15, width: 70, height: 70, borderRadius: "50%", background: "rgba(253,186,116,0.08)", pointerEvents: "none" }} />
+
+      <div style={{ padding: "18px 20px 16px", position: "relative" }}>
+        {/* Header row */}
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 10, marginBottom: 12 }}>
+          <div style={{ flex: 1 }}>
+            {/* Plan progression label */}
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 5, flexWrap: "wrap" }}>
+              <span style={{
+                display: "inline-flex", alignItems: "center", gap: 4,
+                background: "rgba(255,255,255,0.12)", borderRadius: 999,
+                padding: "3px 10px", fontSize: 11, fontWeight: 700, color: "#fed7aa",
+              }}>
+                {isStarter ? (
+                  <><Star style={{ width: 10, height: 10 }} /> Starter → <Crown style={{ width: 10, height: 10 }} /> Pro</>
+                ) : (
+                  <><Zap style={{ width: 10, height: 10 }} /> Plan Gratuit → Pro</>
+                )}
+              </span>
+              <span style={{
+                display: "inline-flex", alignItems: "center",
+                background: ORANGE, borderRadius: 999,
+                padding: "3px 10px", fontSize: 11, fontWeight: 800, color: "#fff",
+              }}>
+                {isStarter ? "+6 €/mois" : "dès 5 €/mois"}
               </span>
             </div>
-            <p style={{ fontSize: 12, color: "#fdba74", margin: "3px 0 0", lineHeight: 1.4 }}>
+            <p style={{ fontSize: 15, fontWeight: 800, color: "#fff7ed", margin: 0, lineHeight: 1.3 }}>
               {isStarter
-                ? "Vous êtes sur Starter — Pro débloque encore plus de fonctionnalités."
-                : "Commencez à gérer vos finances comme un pro."}
+                ? "Passez au Pro — un cran au-dessus"
+                : "Gérez votre activité comme un pro"}
+            </p>
+            <p style={{ fontSize: 11, color: "#fdba74", margin: "3px 0 0", lineHeight: 1.4 }}>
+              {isStarter
+                ? "Seulement +6 € de plus que Starter. Annulable à tout moment."
+                : "Commencez gratuitement, évoluez quand vous grandissez."}
             </p>
           </div>
           <button onClick={onDismiss} style={{
@@ -151,30 +183,55 @@ function UpgradeBanner({ plan, onDismiss }: { plan: string; onDismiss: () => voi
           </button>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6, marginBottom: 14 }}>
+        {/* Feature grid */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 5, marginBottom: 12 }}>
           {proFeatures.map(f => (
             <div key={f.text} style={{
               background: "rgba(255,255,255,0.07)", borderRadius: 9,
               padding: "7px 10px", display: "flex", alignItems: "center", gap: 7,
+              border: "1px solid rgba(255,255,255,0.06)",
             }}>
-              <span style={{ fontSize: 14, flexShrink: 0 }}>{f.icon}</span>
+              <span style={{ fontSize: 14, flexShrink: 0, lineHeight: 1 }}>{f.icon}</span>
               <span style={{ fontSize: 11, color: "#fff7ed", fontWeight: 600, lineHeight: 1.3 }}>{f.text}</span>
             </div>
           ))}
         </div>
 
+        {/* CTA */}
         <Link href="/pricing">
           <button style={{
             width: "100%", background: ORANGE, color: "#fff",
-            border: "none", borderRadius: 12, padding: "11px 20px",
+            border: "none", borderRadius: 12, padding: "12px 20px",
             fontWeight: 800, fontSize: 13, cursor: "pointer",
             display: "flex", alignItems: "center", justifyContent: "center", gap: 7,
-            boxShadow: "0 2px 10px rgba(249,115,22,0.40)",
+            boxShadow: "0 3px 12px rgba(249,115,22,0.45)",
           }}>
-            <Zap style={{ width: 14, height: 14 }} />
-            {isStarter ? "Passer au Pro →" : "Voir les offres →"}
+            <Crown style={{ width: 14, height: 14 }} />
+            {isStarter ? "Passer au Pro maintenant →" : "Voir les offres →"}
           </button>
         </Link>
+
+        {/* Referral nudge */}
+        <div style={{
+          marginTop: 10, padding: "8px 12px",
+          background: "rgba(255,255,255,0.06)", borderRadius: 10,
+          display: "flex", alignItems: "center", gap: 8,
+          border: "1px solid rgba(253,186,116,0.20)",
+        }}>
+          <span style={{ fontSize: 14, flexShrink: 0 }}>🎁</span>
+          <span style={{ fontSize: 11, color: "#fdba74", lineHeight: 1.4 }}>
+            <strong style={{ color: "#fff7ed" }}>Parrainez un ami</strong> → vous recevez tous les deux <strong style={{ color: "#4ade80" }}>1 mois Pro gratuit</strong>.
+          </span>
+          <Link href="/settings" style={{ flexShrink: 0 }}>
+            <span style={{
+              fontSize: 10, fontWeight: 700, color: "#fed7aa",
+              background: "rgba(255,255,255,0.10)", borderRadius: 6, padding: "3px 8px",
+              cursor: "pointer", whiteSpace: "nowrap",
+            }}>
+              En savoir +
+            </span>
+          </Link>
+        </div>
       </div>
     </div>
   );
