@@ -35,24 +35,27 @@ export default function Home() {
   const features = [
     {
       icon: Wallet,
-      title: fr ? "Tous vos wallets réunis" : "All wallets in one place",
+      title: fr ? "Tous vos wallets en un seul endroit" : "All your wallets in one place",
       description: fr
-        ? "Orange Money, Wave, MTN MoMo, Airtel, M-Pesa, espèces — gérez tout depuis un seul tableau de bord."
-        : "Orange Money, Wave, MTN MoMo, Airtel, M-Pesa, cash — manage all from one dashboard.",
+        ? "Orange Money, Wave, MTN MoMo, M-Pesa, Airtel, espèces — fini les cahiers et les calculs. Tout est centralisé, clair et à jour."
+        : "Orange Money, Wave, MTN MoMo, M-Pesa, Airtel, cash — no more notebooks. Everything centralized, clear and up to date.",
+      badge: fr ? "5 wallets supportés" : "5 wallets supported",
     },
     {
       icon: TrendingUp,
-      title: fr ? "Rapports clairs et exportables" : "Clear, exportable reports",
+      title: fr ? "Sachez exactement combien vous gagnez" : "Know exactly how much you earn",
       description: fr
-        ? "Visualisez vos revenus, dépenses et bénéfices mois par mois. Exportez en PDF pour votre comptable."
-        : "Visualize your income, expenses and profit month by month. Export PDF for your accountant.",
+        ? "Tableaux de bord clairs, rapports mensuels et exports PDF. Montrez vos chiffres à votre comptable en un clic."
+        : "Clear dashboards, monthly reports and PDF exports. Show your numbers to your accountant in one click.",
+      badge: fr ? "Export PDF inclus" : "PDF export included",
     },
     {
       icon: ShieldCheck,
-      title: fr ? "Données sécurisées & privées" : "Secure & private data",
+      title: fr ? "Vos finances protégées et privées" : "Your finances protected and private",
       description: fr
-        ? "Chiffrement de bout en bout. Vos données financières ne sont jamais partagées ou vendues."
-        : "End-to-end encryption. Your financial data is never shared or sold.",
+        ? "Chiffrement de bout en bout. Vos données financières ne sont jamais partagées, jamais vendues. Vous restez maître de vos données."
+        : "End-to-end encryption. Your financial data is never shared or sold. You stay in control of your data.",
+      badge: fr ? "Données chiffrées" : "Encrypted data",
     },
   ];
 
@@ -83,32 +86,38 @@ export default function Home() {
   const testimonials = [
     {
       name: "Kofi Mensah",
-      role: fr ? "Vendeur de téléphones, Abidjan" : "Phone vendor, Abidjan",
+      role: fr ? "Vendeur de téléphones" : "Phone vendor",
+      city: "Abidjan, Côte d'Ivoire",
       avatar: "KM",
       color: "#22c55e",
+      emoji: "📱",
       quote: fr
-        ? "Je suivais mes finances dans un carnet. Avec MobileMoney Manager, je vois tout en un coup d'œil. Mes revenus Wave et Orange Money sont enfin organisés."
-        : "I tracked finances in a notebook. With MobileMoney Manager, I see everything at a glance. My Wave and Orange Money income is finally organized.",
+        ? "Je suivais mes finances dans un carnet. Maintenant je vois mes revenus Wave et Orange Money en temps réel. Mes bénéfices ont augmenté de 20 % en 3 mois."
+        : "I tracked finances in a notebook. Now I see my Wave and Orange Money income in real time. My profit grew 20% in 3 months.",
       stars: 5,
     },
     {
       name: "Aminata Diallo",
-      role: fr ? "Commerçante textile, Dakar" : "Textile merchant, Dakar",
+      role: fr ? "Commerçante textile" : "Textile merchant",
+      city: "Dakar, Sénégal",
       avatar: "AD",
       color: "#f97316",
+      emoji: "👗",
       quote: fr
-        ? "J'ai découvert que je dépensais 30 % de plus que je ne pensais. L'appli m'a aidée à réduire mes coûts et augmenter mes bénéfices en deux mois."
-        : "I discovered I was spending 30% more than I thought. The app helped me cut costs and increase profit in two months.",
+        ? "J'ai découvert que je dépensais 30 % de plus que je ne pensais. En deux mois, j'ai réduit mes coûts et augmenté mes bénéfices. Cette appli m'a changé la vie."
+        : "I discovered I was spending 30% more than I thought. In two months I cut costs and grew profit. This app changed my life.",
       stars: 5,
     },
     {
       name: "Ibrahim Touré",
-      role: fr ? "Entrepreneur, Douala" : "Entrepreneur, Douala",
+      role: fr ? "Artisan électricien" : "Electrician",
+      city: "Yaoundé, Cameroun",
       avatar: "IT",
       color: "#6366f1",
+      emoji: "⚡",
       quote: fr
-        ? "Les rapports PDF sont parfaits pour ma comptabilité. Mon comptable adore recevoir les exports bien organisés chaque mois."
-        : "The PDF reports are perfect for my accounting. My accountant loves receiving the well-organized exports every month.",
+        ? "Les rapports PDF sont parfaits pour mes clients et mon comptable. Tout est organisé, professionnel. Je recommande à tous les artisans."
+        : "The PDF reports are perfect for my clients and accountant. Everything organized and professional. I recommend it to all artisans.",
       stars: 5,
     },
   ];
@@ -178,29 +187,39 @@ export default function Home() {
             </div>
 
             <h1 style={{
-              fontSize: "clamp(32px, 5vw, 52px)", fontWeight: 900,
+              fontSize: "clamp(30px, 5vw, 50px)", fontWeight: 900,
               color: "#111", lineHeight: 1.1, letterSpacing: "-0.03em", margin: 0,
             }}>
               {fr
-                ? <>Gérez votre argent mobile<br /><span style={{ color: ORANGE }}>facilement.</span></>
-                : <>Manage your mobile money<br /><span style={{ color: ORANGE }}>effortlessly.</span></>
+                ? <>Gérez votre argent mobile<br /><span style={{ color: ORANGE }}>facilement et en toute sécurité.</span></>
+                : <>Manage your mobile money<br /><span style={{ color: ORANGE }}>easily and securely.</span></>
               }
             </h1>
 
-            <p style={{ fontSize: 18, color: "#4b5563", lineHeight: 1.65, margin: 0, maxWidth: 480 }}>
+            <p style={{ fontSize: 17, color: "#4b5563", lineHeight: 1.7, margin: 0, maxWidth: 500 }}>
               {fr
-                ? "L'application financière conçue pour les micro-entrepreneurs africains. Suivez Orange Money, Wave et MTN MoMo depuis un seul tableau de bord."
-                : "The financial app built for African micro-entrepreneurs. Track Orange Money, Wave and MTN MoMo from a single dashboard."
+                ? "Le compagnon financier des coiffeuses, vendeurs, artisans et petits commerçants en Afrique. Suivez Orange Money, Wave, MTN MoMo et plus — depuis un seul tableau de bord."
+                : "The financial companion for hairdressers, vendors, artisans and small traders in Africa. Track Orange Money, Wave, MTN MoMo and more — from one dashboard."
               }
             </p>
 
             {/* Mobile-money logos / payment badges */}
             <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-              {["Orange Money", "Wave", "MTN MoMo", "M-Pesa", "Airtel"].map(p => (
-                <span key={p} style={{
-                  fontSize: 11, fontWeight: 700, padding: "4px 10px", borderRadius: 999,
-                  background: "#fff", border: "1.5px solid #e5e7eb", color: "#374151",
-                }}>{p}</span>
+              {[
+                { label: "Orange Money", bg: "#fff3e0", color: "#e65100", dot: "#f97316" },
+                { label: "Wave",         bg: "#e3f2fd", color: "#1565c0", dot: "#1976d2" },
+                { label: "MTN MoMo",     bg: "#fffde7", color: "#f57f17", dot: "#fbc02d" },
+                { label: "M-Pesa",       bg: "#e8f5e9", color: "#2e7d32", dot: "#43a047" },
+                { label: "Airtel Money", bg: "#fce4ec", color: "#c62828", dot: "#e53935" },
+              ].map(({ label, bg, color, dot }) => (
+                <span key={label} style={{
+                  display: "inline-flex", alignItems: "center", gap: 5,
+                  fontSize: 11, fontWeight: 700, padding: "5px 11px", borderRadius: 999,
+                  background: bg, color, border: `1.5px solid ${dot}22`,
+                }}>
+                  <span style={{ width: 6, height: 6, borderRadius: "50%", background: dot, flexShrink: 0, display: "inline-block" }} />
+                  {label}
+                </span>
               ))}
             </div>
 
@@ -267,24 +286,59 @@ export default function Home() {
             </p>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 20 }}>
-            {features.map(({ icon: Icon, title, description }) => (
+            {features.map(({ icon: Icon, title, description, badge }) => (
               <div key={title} style={{
-                background: "#fafaf9", border: "1px solid #f0ede9", borderRadius: 18,
+                background: "#fafaf9", border: "1.5px solid #f0ede9", borderRadius: 20,
                 padding: 24, display: "flex", flexDirection: "column", gap: 14,
+                boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
               }}>
-                <div style={{
-                  width: 46, height: 46, borderRadius: 12,
-                  background: ORANGE + "18", display: "flex", alignItems: "center", justifyContent: "center",
-                }}>
-                  <Icon style={{ width: 22, height: 22, color: ORANGE }} />
+                <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
+                  <div style={{
+                    width: 50, height: 50, borderRadius: 14,
+                    background: "linear-gradient(135deg," + ORANGE + "20," + ORANGE + "08)",
+                    border: "1.5px solid " + ORANGE + "25",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                  }}>
+                    <Icon style={{ width: 24, height: 24, color: ORANGE }} />
+                  </div>
+                  {badge && (
+                    <span style={{
+                      fontSize: 10, fontWeight: 700, padding: "3px 8px", borderRadius: 999,
+                      background: ORANGE + "14", color: ORANGE, border: "1px solid " + ORANGE + "30",
+                    }}>{badge}</span>
+                  )}
                 </div>
                 <div>
-                  <div style={{ fontWeight: 700, fontSize: 15, color: "#111", marginBottom: 6 }}>{title}</div>
-                  <p style={{ fontSize: 13, color: "#6b7280", lineHeight: 1.6, margin: 0 }}>{description}</p>
+                  <div style={{ fontWeight: 800, fontSize: 15, color: "#111", marginBottom: 8, lineHeight: 1.3 }}>{title}</div>
+                  <p style={{ fontSize: 13, color: "#6b7280", lineHeight: 1.65, margin: 0 }}>{description}</p>
                 </div>
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* ─── TRUST BAR ─── */}
+      <section style={{ background: "#111", padding: "20px 24px" }}>
+        <div style={{
+          maxWidth: 900, margin: "0 auto",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          flexWrap: "wrap", gap: "12px 32px",
+        }}>
+          {[
+            { icon: "🔒", text: fr ? "Données chiffrées et sécurisées" : "Encrypted & secure data" },
+            { icon: "👥", text: fr ? "+500 entrepreneurs actifs" : "+500 active entrepreneurs" },
+            { icon: "💳", text: fr ? "Paiement protégé par Stripe" : "Payment secured by Stripe" },
+            { icon: "🌍", text: fr ? "Afrique de l'Ouest & Centrale" : "West & Central Africa" },
+          ].map(({ icon, text }) => (
+            <div key={text} style={{
+              display: "flex", alignItems: "center", gap: 7,
+              fontSize: 13, fontWeight: 600, color: "#d1d5db",
+            }}>
+              <span style={{ fontSize: 15 }}>{icon}</span>
+              {text}
+            </div>
+          ))}
         </div>
       </section>
 
@@ -301,25 +355,48 @@ export default function Home() {
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 20 }}>
           {testimonials.map(t => (
             <div key={t.name} style={{
-              background: "#fff", border: "1px solid #f0ede9", borderRadius: 18,
+              background: "#fff", border: "1.5px solid #f0ede9", borderRadius: 20,
               padding: 24, display: "flex", flexDirection: "column", gap: 14,
-              boxShadow: "0 1px 4px rgba(0,0,0,0.05)",
+              boxShadow: "0 2px 12px rgba(0,0,0,0.06)",
             }}>
-              <div style={{ display: "flex", gap: 2 }}>
-                {[1,2,3,4,5].map(s => <Star key={s} style={{ width: 14, height: 14, color: "#f97316", fill: "#f97316" }} />)}
+              {/* Stars + verified */}
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <div style={{ display: "flex", gap: 2 }}>
+                  {[1,2,3,4,5].map(s => <Star key={s} style={{ width: 14, height: 14, color: "#f97316", fill: "#f97316" }} />)}
+                </div>
+                <span style={{
+                  display: "inline-flex", alignItems: "center", gap: 4,
+                  fontSize: 10, fontWeight: 700, color: "#16a34a",
+                  background: "#f0fdf4", border: "1px solid #bbf7d0",
+                  borderRadius: 999, padding: "2px 8px",
+                }}>
+                  <CheckCircle style={{ width: 9, height: 9 }} />
+                  {fr ? "Vérifié" : "Verified"}
+                </span>
               </div>
-              <p style={{ fontSize: 14, color: "#374151", lineHeight: 1.65, margin: 0, fontStyle: "italic" }}>
+
+              {/* Quote */}
+              <p style={{
+                fontSize: 14, color: "#374151", lineHeight: 1.7, margin: 0,
+                borderLeft: `3px solid ${t.color}`, paddingLeft: 12,
+              }}>
                 "{t.quote}"
               </p>
-              <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 4 }}>
+
+              {/* Author */}
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 2 }}>
                 <div style={{
-                  width: 38, height: 38, borderRadius: "50%",
-                  background: t.color, color: "#fff", fontSize: 12, fontWeight: 800,
+                  width: 42, height: 42, borderRadius: "50%",
+                  background: t.color, color: "#fff", fontSize: 13, fontWeight: 800,
                   display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-                }}>{t.avatar}</div>
+                  boxShadow: `0 2px 8px ${t.color}50`,
+                }}>
+                  {t.emoji}
+                </div>
                 <div>
-                  <div style={{ fontWeight: 700, fontSize: 13, color: "#111" }}>{t.name}</div>
-                  <div style={{ fontSize: 12, color: "#9ca3af" }}>{t.role}</div>
+                  <div style={{ fontWeight: 800, fontSize: 13, color: "#111" }}>{t.name}</div>
+                  <div style={{ fontSize: 11, color: "#9ca3af" }}>{t.role}</div>
+                  <div style={{ fontSize: 11, color: ORANGE, fontWeight: 600 }}>📍 {t.city}</div>
                 </div>
               </div>
             </div>
