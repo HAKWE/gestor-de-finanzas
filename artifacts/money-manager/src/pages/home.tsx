@@ -1,28 +1,22 @@
 import { Link } from "wouter";
 import { useState, useEffect } from "react";
 import { useLanguage } from "../lib/language-context";
-import { Button } from "@/components/ui/button";
 import { usePwaInstall } from "../hooks/use-pwa-install";
 import { SignUpForm } from "@/components/sign-up-form";
 import {
-  Wallet,
-  TrendingUp,
-  ShieldCheck,
-  UserPlus,
-  PlusCircle,
-  BarChart2,
-  Smartphone,
-  CheckCircle,
-  X,
-  Zap,
+  Wallet, TrendingUp, ShieldCheck, UserPlus, PlusCircle,
+  BarChart2, Smartphone, CheckCircle, X, Zap, Star, ArrowRight,
 } from "lucide-react";
+
+const ORANGE = "#f97316";
+const GREEN = "#22c55e";
 
 export default function Home() {
   const { language } = useLanguage();
   const { canInstall, isInstalled, install } = usePwaInstall();
   const [bannerDismissed, setBannerDismissed] = useState(false);
 
-  const fr = language === "fr";
+  const fr = language !== "en";
 
   const isAndroid = /android/i.test(navigator.userAgent);
   const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
@@ -38,355 +32,497 @@ export default function Home() {
     sessionStorage.setItem("install-banner-dismissed", "1");
   };
 
-  const steps = [
-    {
-      icon: UserPlus,
-      title: fr ? "Créez votre compte" : "Create your account",
-      description: fr
-        ? "Inscription gratuite en 30 secondes. Aucune carte bancaire requise."
-        : "Free sign-up in 30 seconds. No credit card required.",
-    },
-    {
-      icon: PlusCircle,
-      title: fr ? "Ajoutez vos transactions" : "Add your transactions",
-      description: fr
-        ? "Saisissez manuellement, importez un relevé PDF, ou prenez une photo de votre reçu. Orange Money, Wave, MTN MoMo, cash — tout est pris en charge."
-        : "Enter manually, import a PDF statement, or scan a receipt. Orange Money, Wave, MTN MoMo, cash — all supported.",
-    },
-    {
-      icon: BarChart2,
-      title: fr ? "Visualisez vos finances" : "Understand your finances",
-      description: fr
-        ? "Tableaux de bord clairs, rapports mensuels et suivi de vos dépenses par catégorie. Sachez exactement où va votre argent."
-        : "Clear dashboards, monthly reports and spending by category. Know exactly where your money goes.",
-    },
-    {
-      icon: Smartphone,
-      title: fr ? "Installez l'app sur votre téléphone" : "Install on your phone",
-      description: fr
-        ? "Ajoutez l'application à votre écran d'accueil en un clic. Aucun App Store, aucun téléchargement — fonctionne même hors ligne."
-        : "Add the app to your home screen in one tap. No App Store, no download — works offline too.",
-    },
-  ];
-
   const features = [
     {
       icon: Wallet,
-      title: "Multi-Wallets",
+      title: fr ? "Tous vos wallets réunis" : "All wallets in one place",
       description: fr
-        ? "Orange Money, Wave, MTN MoMo, espèces. Tout au même endroit."
-        : "Orange Money, Wave, MTN MoMo, cash. Everything in one place.",
+        ? "Orange Money, Wave, MTN MoMo, Airtel, M-Pesa, espèces — gérez tout depuis un seul tableau de bord."
+        : "Orange Money, Wave, MTN MoMo, Airtel, M-Pesa, cash — manage all from one dashboard.",
     },
     {
       icon: TrendingUp,
-      title: fr ? "Rapports clairs" : "Clear Reports",
+      title: fr ? "Rapports clairs et exportables" : "Clear, exportable reports",
       description: fr
-        ? "Sachez exactement où va votre argent. Visuels simples et intuitifs."
-        : "Know exactly where your money goes. Simple, visual breakdowns.",
+        ? "Visualisez vos revenus, dépenses et bénéfices mois par mois. Exportez en PDF pour votre comptable."
+        : "Visualize your income, expenses and profit month by month. Export PDF for your accountant.",
     },
     {
       icon: ShieldCheck,
-      title: fr ? "Sécurisé & Privé" : "Secure & Private",
+      title: fr ? "Données sécurisées & privées" : "Secure & private data",
       description: fr
-        ? "Vos données restent les vôtres. Toujours protégées."
-        : "Your business data belongs to you. Always protected.",
+        ? "Chiffrement de bout en bout. Vos données financières ne sont jamais partagées ou vendues."
+        : "End-to-end encryption. Your financial data is never shared or sold.",
+    },
+  ];
+
+  const steps = [
+    {
+      icon: UserPlus,
+      title: fr ? "Créez votre compte en 30 secondes" : "Create your account in 30 seconds",
+      description: fr
+        ? "Inscription gratuite, aucune carte bancaire requise. Commencez tout de suite."
+        : "Free sign-up, no credit card required. Start right away.",
+    },
+    {
+      icon: PlusCircle,
+      title: fr ? "Enregistrez vos transactions" : "Record your transactions",
+      description: fr
+        ? "Saisissez manuellement ou importez. Orange Money, Wave, MTN MoMo, espèces — tout est pris en charge."
+        : "Enter manually or import. Orange Money, Wave, MTN MoMo, cash — all supported.",
+    },
+    {
+      icon: BarChart2,
+      title: fr ? "Analysez et progressez" : "Analyze and grow",
+      description: fr
+        ? "Tableaux de bord clairs, rapports mensuels et suivi par catégorie. Sachez exactement où va votre argent."
+        : "Clear dashboards, monthly reports and tracking by category. Know exactly where your money goes.",
+    },
+  ];
+
+  const testimonials = [
+    {
+      name: "Kofi Mensah",
+      role: fr ? "Vendeur de téléphones, Abidjan" : "Phone vendor, Abidjan",
+      avatar: "KM",
+      color: "#22c55e",
+      quote: fr
+        ? "Je suivais mes finances dans un carnet. Avec MobileMoney Manager, je vois tout en un coup d'œil. Mes revenus Wave et Orange Money sont enfin organisés."
+        : "I tracked finances in a notebook. With MobileMoney Manager, I see everything at a glance. My Wave and Orange Money income is finally organized.",
+      stars: 5,
+    },
+    {
+      name: "Aminata Diallo",
+      role: fr ? "Commerçante textile, Dakar" : "Textile merchant, Dakar",
+      avatar: "AD",
+      color: "#f97316",
+      quote: fr
+        ? "J'ai découvert que je dépensais 30 % de plus que je ne pensais. L'appli m'a aidée à réduire mes coûts et augmenter mes bénéfices en deux mois."
+        : "I discovered I was spending 30% more than I thought. The app helped me cut costs and increase profit in two months.",
+      stars: 5,
+    },
+    {
+      name: "Ibrahim Touré",
+      role: fr ? "Entrepreneur, Douala" : "Entrepreneur, Douala",
+      avatar: "IT",
+      color: "#6366f1",
+      quote: fr
+        ? "Les rapports PDF sont parfaits pour ma comptabilité. Mon comptable adore recevoir les exports bien organisés chaque mois."
+        : "The PDF reports are perfect for my accounting. My accountant loves receiving the well-organized exports every month.",
+      stars: 5,
     },
   ];
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div style={{ minHeight: "100vh", background: "#fafaf9", display: "flex", flexDirection: "column" }}>
 
-      {/* ── Hero ── */}
-      <section className="flex-1 px-4 py-12 md:py-20">
-        <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-10 items-center">
+      {/* ─── HEADER ─── */}
+      <header style={{
+        position: "sticky", top: 0, zIndex: 50,
+        background: "rgba(250,250,249,0.95)", backdropFilter: "blur(12px)",
+        borderBottom: "1px solid #f0ede9",
+        padding: "0 24px", height: 60,
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+      }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <img src="/logo.svg" alt="MobileMoney Manager" style={{ width: 34, height: 34 }} />
+          <span style={{ fontWeight: 800, fontSize: 16, color: "#111" }}>MobileMoney</span>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <Link href="/sign-in">
+            <span style={{ fontSize: 13, fontWeight: 600, color: "#6b7280", cursor: "pointer" }}>
+              {fr ? "Connexion" : "Sign in"}
+            </span>
+          </Link>
+          <Link href="/sign-up">
+            <span style={{
+              fontSize: 13, fontWeight: 700, color: "#fff",
+              background: ORANGE, padding: "7px 16px", borderRadius: 8,
+              cursor: "pointer", whiteSpace: "nowrap",
+            }}>
+              {fr ? "Commencer gratuitement" : "Start free"}
+            </span>
+          </Link>
+        </div>
+      </header>
 
-          {/* Left: headline */}
-          <div className="flex flex-col items-center md:items-start text-center md:text-left space-y-6">
-            <img src="/logo.svg" alt="MobileMoney Manager" width="64" height="64" className="w-16 h-16 md:w-20 md:h-20 drop-shadow-md" style={{ width: 64, height: 64 }} />
-            <h1 className="text-4xl md:text-5xl font-bold text-foreground tracking-tight leading-tight">
-              {fr ? "Gérez votre argent avec efficacité." : "Manage your money with efficiency."}
-            </h1>
-            <p className="text-lg md:text-xl text-muted-foreground">
-              {fr
-                ? "Le compagnon financier des entrepreneurs africains. Orange Money, Wave, MTN MoMo — tout en un."
-                : "The financial companion for African entrepreneurs. Orange Money, Wave, MTN MoMo — all in one."}
-            </p>
-            <div className="flex flex-wrap items-center justify-center md:justify-start gap-x-4 gap-y-1 text-sm text-muted-foreground">
-              <span>
-                {fr ? "Déjà un compte ?" : "Already have an account?"}{" "}
-                <Link href="/sign-in" className="text-primary font-medium hover:underline">
-                  {fr ? "Se connecter" : "Sign in"}
-                </Link>
+      {/* ─── HERO ─── */}
+      <section style={{ padding: "64px 24px 48px", maxWidth: 1100, margin: "0 auto", width: "100%" }}>
+        <div style={{
+          display: "grid",
+          gridTemplateColumns: "minmax(0,1fr) minmax(0,420px)",
+          gap: 48, alignItems: "center",
+        }}
+          className="hero-grid"
+        >
+          <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+            {/* Social proof pill */}
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 8, width: "fit-content" }}>
+              <div style={{ display: "flex", gap: -4 }}>
+                {["KM", "AD", "IT"].map((i, idx) => (
+                  <div key={i} style={{
+                    width: 26, height: 26, borderRadius: "50%",
+                    background: ["#22c55e", "#f97316", "#6366f1"][idx],
+                    color: "#fff", fontSize: 9, fontWeight: 800,
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    border: "2px solid #fafaf9", marginLeft: idx > 0 ? -8 : 0,
+                  }}>{i}</div>
+                ))}
+              </div>
+              <div style={{ display: "flex", gap: 2 }}>
+                {[1,2,3,4,5].map(s => <Star key={s} style={{ width: 12, height: 12, color: "#f97316", fill: "#f97316" }} />)}
+              </div>
+              <span style={{ fontSize: 12, fontWeight: 600, color: "#6b7280" }}>
+                {fr ? "500+ entrepreneurs nous font confiance" : "500+ entrepreneurs trust us"}
               </span>
-              <span className="hidden md:inline text-border">·</span>
-              <Link href="/pricing" className="inline-flex items-center gap-1 text-primary font-medium hover:underline">
-                <Zap className="w-3.5 h-3.5" />
-                {fr ? "Voir les tarifs" : "See pricing"}
+            </div>
+
+            <h1 style={{
+              fontSize: "clamp(32px, 5vw, 52px)", fontWeight: 900,
+              color: "#111", lineHeight: 1.1, letterSpacing: "-0.03em", margin: 0,
+            }}>
+              {fr
+                ? <>Gérez votre argent mobile<br /><span style={{ color: ORANGE }}>facilement.</span></>
+                : <>Manage your mobile money<br /><span style={{ color: ORANGE }}>effortlessly.</span></>
+              }
+            </h1>
+
+            <p style={{ fontSize: 18, color: "#4b5563", lineHeight: 1.65, margin: 0, maxWidth: 480 }}>
+              {fr
+                ? "L'application financière conçue pour les micro-entrepreneurs africains. Suivez Orange Money, Wave et MTN MoMo depuis un seul tableau de bord."
+                : "The financial app built for African micro-entrepreneurs. Track Orange Money, Wave and MTN MoMo from a single dashboard."
+              }
+            </p>
+
+            {/* Mobile-money logos / payment badges */}
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+              {["Orange Money", "Wave", "MTN MoMo", "M-Pesa", "Airtel"].map(p => (
+                <span key={p} style={{
+                  fontSize: 11, fontWeight: 700, padding: "4px 10px", borderRadius: 999,
+                  background: "#fff", border: "1.5px solid #e5e7eb", color: "#374151",
+                }}>{p}</span>
+              ))}
+            </div>
+
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 12, marginTop: 4 }}>
+              <Link href="/sign-up">
+                <button style={{
+                  background: ORANGE, color: "#fff", border: "none",
+                  borderRadius: 12, padding: "13px 28px", fontWeight: 800, fontSize: 15,
+                  cursor: "pointer", display: "flex", alignItems: "center", gap: 8,
+                  boxShadow: "0 4px 16px rgba(249,115,22,0.35)",
+                }}>
+                  {fr ? "Commencer gratuitement" : "Start for free"}
+                  <ArrowRight style={{ width: 16, height: 16 }} />
+                </button>
+              </Link>
+              <Link href="/pricing">
+                <button style={{
+                  background: "transparent", color: "#374151",
+                  border: "1.5px solid #e5e7eb", borderRadius: 12,
+                  padding: "13px 24px", fontWeight: 700, fontSize: 15,
+                  cursor: "pointer", display: "flex", alignItems: "center", gap: 6,
+                }}>
+                  <Zap style={{ width: 15, height: 15, color: ORANGE }} />
+                  {fr ? "Voir les tarifs" : "See pricing"}
+                </button>
               </Link>
             </div>
+
+            <p style={{ fontSize: 12, color: "#9ca3af", marginTop: -4 }}>
+              {fr ? "✓ Gratuit pour commencer · ✓ Aucune carte bancaire · ✓ Annulez à tout moment" : "✓ Free to start · ✓ No credit card · ✓ Cancel anytime"}
+            </p>
           </div>
 
-          {/* Right: sign-up form */}
-          <div className="bg-card border border-border rounded-2xl shadow-lg p-6 md:p-8">
-            <div className="mb-5">
-              <h2 className="text-xl font-bold text-foreground">
+          {/* Sign-up card */}
+          <div style={{
+            background: "#fff", border: "1px solid #f0ede9", borderRadius: 20,
+            boxShadow: "0 8px 32px rgba(0,0,0,0.08)", padding: "28px 28px 24px",
+          }}>
+            <div style={{ marginBottom: 20 }}>
+              <h2 style={{ fontSize: 20, fontWeight: 800, color: "#111", margin: 0 }}>
                 {fr ? "Créer un compte gratuit" : "Create a free account"}
               </h2>
-              <p className="text-sm text-muted-foreground mt-1">
+              <p style={{ fontSize: 13, color: "#6b7280", marginTop: 4 }}>
                 {fr ? "Inscription en 30 secondes. Aucune carte bancaire." : "Sign up in 30 seconds. No credit card."}
               </p>
             </div>
             <SignUpForm fullForm />
-          </div>
-        </div>
-      </section>
-
-      {/* ── Features ── */}
-      <section className="bg-muted/30 border-y border-border/50 px-4 py-16 md:py-20">
-        <div className="max-w-4xl mx-auto grid md:grid-cols-3 gap-6">
-          {features.map(({ icon: Icon, title, description }) => (
-            <div key={title} className="bg-card p-6 rounded-2xl border shadow-sm space-y-3">
-              <div className="w-12 h-12 bg-primary/10 text-primary rounded-xl flex items-center justify-center">
-                <Icon className="w-6 h-6" />
-              </div>
-              <h3 className="text-lg font-semibold">{title}</h3>
-              <p className="text-muted-foreground text-sm leading-relaxed">{description}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ── How it works ── */}
-      <section className="px-4 py-16 md:py-24 max-w-4xl mx-auto w-full">
-        <div className="text-center mb-12 space-y-3">
-          <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
-            {fr ? "Comment ça marche ?" : "How does it work?"}
-          </h2>
-          <p className="text-muted-foreground text-lg">
-            {fr
-              ? "Prêt à utiliser en moins de 2 minutes."
-              : "Up and running in under 2 minutes."}
-          </p>
-        </div>
-
-        <div className="space-y-6">
-          {steps.map(({ icon: Icon, title, description }, i) => (
-            <div
-              key={title}
-              className="flex gap-5 items-start bg-card border rounded-2xl p-6 shadow-sm"
-            >
-              <div className="shrink-0 flex flex-col items-center gap-2">
-                <div className="w-12 h-12 rounded-xl bg-primary text-white flex items-center justify-center font-bold text-lg shadow">
-                  {i + 1}
-                </div>
-              </div>
-              <div className="space-y-1">
-                <div className="flex items-center gap-2">
-                  <Icon className="w-5 h-5 text-primary shrink-0" />
-                  <h3 className="text-lg font-semibold">{title}</h3>
-                </div>
-                <p className="text-muted-foreground leading-relaxed">{description}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ── Install CTA ── */}
-      <section className="px-4 pb-16 md:pb-24 max-w-4xl mx-auto w-full">
-        <div className="rounded-2xl border border-primary/20 bg-primary/5 p-8 md:p-10 space-y-6">
-          <div className="text-center space-y-3">
-            <div className="w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto">
-              <Smartphone className="w-7 h-7 text-primary" />
-            </div>
-            <h2 className="text-2xl md:text-3xl font-bold">
-              {fr ? "Installez l'app sur votre téléphone" : "Install app on your phone"}
-            </h2>
-            <p className="text-muted-foreground max-w-xl mx-auto text-sm md:text-base">
-              {fr
-                ? "Gratuit, sans App Store. Fonctionne même hors ligne."
-                : "Free, no App Store needed. Works offline too."}
+            <p style={{ textAlign: "center", fontSize: 12, color: "#9ca3af", marginTop: 14 }}>
+              {fr ? "Déjà un compte ?" : "Already have an account?"}{" "}
+              <Link href="/sign-in">
+                <span style={{ color: ORANGE, fontWeight: 700, cursor: "pointer" }}>
+                  {fr ? "Se connecter" : "Sign in"}
+                </span>
+              </Link>
             </p>
           </div>
-
-          {isInstalled ? (
-            <div className="flex items-center justify-center gap-2 text-green-600 font-semibold py-2">
-              <CheckCircle className="w-5 h-5" />
-              {fr ? "Application déjà installée !" : "App already installed!"}
-            </div>
-          ) : canInstall ? (
-            <div className="text-center">
-              <Button size="lg" className="rounded-xl px-8 py-6 text-lg shadow" onClick={install}>
-                <Smartphone className="mr-2 w-5 h-5" />
-                {fr ? "Ajouter à l'écran d'accueil" : "Add to Home Screen"}
-              </Button>
-            </div>
-          ) : (
-            <div className="grid md:grid-cols-2 gap-4">
-              {/* iOS */}
-              <div className="bg-card rounded-xl border border-border p-5 space-y-3">
-                <div className="flex items-center gap-2">
-                  <span className="text-2xl">🍎</span>
-                  <span className="font-semibold">{fr ? "iPhone / iPad (Safari)" : "iPhone / iPad (Safari)"}</span>
-                </div>
-                <ol className="space-y-2 text-sm text-muted-foreground">
-                  <li className="flex items-start gap-2">
-                    <span className="w-5 h-5 rounded-full bg-primary text-white text-xs flex items-center justify-center shrink-0 mt-0.5 font-bold">1</span>
-                    <span>{fr ? "Ouvrez Safari et allez sur ce site" : "Open Safari and visit this site"}</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="w-5 h-5 rounded-full bg-primary text-white text-xs flex items-center justify-center shrink-0 mt-0.5 font-bold">2</span>
-                    <span>
-                      {fr ? "Appuyez sur le bouton Partager" : "Tap the Share button"}
-                      {" "}<span className="font-mono bg-muted px-1.5 py-0.5 rounded text-xs text-foreground">⬆</span>
-                      {" "}{fr ? "en bas de l'écran" : "at the bottom"}
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="w-5 h-5 rounded-full bg-primary text-white text-xs flex items-center justify-center shrink-0 mt-0.5 font-bold">3</span>
-                    <span>
-                      {fr ? "Choisissez" : "Select"}{" "}
-                      <span className="font-semibold text-foreground">
-                        {fr ? "« Sur l'écran d'accueil »" : '"Add to Home Screen"'}
-                      </span>
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="w-5 h-5 rounded-full bg-primary text-white text-xs flex items-center justify-center shrink-0 mt-0.5 font-bold">4</span>
-                    <span>{fr ? "Appuyez sur « Ajouter »" : 'Tap "Add"'}</span>
-                  </li>
-                </ol>
-              </div>
-
-              {/* Android */}
-              <div className="bg-card rounded-xl border border-border p-5 space-y-3">
-                <div className="flex items-center gap-2">
-                  <span className="text-2xl">🤖</span>
-                  <span className="font-semibold">{fr ? "Android (Chrome ou Brave)" : "Android (Chrome or Brave)"}</span>
-                </div>
-                <ol className="space-y-2 text-sm text-muted-foreground">
-                  <li className="flex items-start gap-2">
-                    <span className="w-5 h-5 rounded-full bg-primary text-white text-xs flex items-center justify-center shrink-0 mt-0.5 font-bold">1</span>
-                    <span>{fr ? "Ouvrez Chrome ou Brave et allez sur ce site" : "Open Chrome or Brave and visit this site"}</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="w-5 h-5 rounded-full bg-primary text-white text-xs flex items-center justify-center shrink-0 mt-0.5 font-bold">2</span>
-                    <span>
-                      {fr ? "Appuyez sur le menu" : "Tap the menu"}
-                      {" "}<span className="font-mono bg-muted px-1.5 py-0.5 rounded text-xs text-foreground">⋮</span>
-                      {" "}{fr ? "en haut à droite" : "top right"}
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="w-5 h-5 rounded-full bg-primary text-white text-xs flex items-center justify-center shrink-0 mt-0.5 font-bold">3</span>
-                    <span>
-                      {fr ? "Choisissez" : "Select"}{" "}
-                      <span className="font-semibold text-foreground">
-                        {fr ? "« Installer l'application »" : '"Install app"'}
-                      </span>
-                      {" "}{fr ? "ou" : "or"}{" "}
-                      <span className="font-semibold text-foreground">
-                        {fr ? "« Ajouter à l'écran d'accueil »" : '"Add to Home screen"'}
-                      </span>
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="w-5 h-5 rounded-full bg-primary text-white text-xs flex items-center justify-center shrink-0 mt-0.5 font-bold">4</span>
-                    <span>{fr ? "Appuyez sur « Ajouter »" : 'Tap "Add"'}</span>
-                  </li>
-                </ol>
-              </div>
-            </div>
-          )}
         </div>
       </section>
 
-      {/* ── Footer ── */}
-      <footer className="border-t border-border/50 text-center py-8 px-4 text-sm text-muted-foreground pb-28 md:pb-8">
-        <div className="flex items-center justify-center gap-2 mb-3">
-          <img src="/logo.svg" alt="MobileMoney" className="w-5 h-5" />
-          <span className="font-semibold text-foreground">MobileMoney Manager</span>
+      {/* ─── FEATURES ─── */}
+      <section style={{
+        background: "#fff", borderTop: "1px solid #f0ede9", borderBottom: "1px solid #f0ede9",
+        padding: "64px 24px",
+      }}>
+        <div style={{ maxWidth: 900, margin: "0 auto" }}>
+          <div style={{ textAlign: "center", marginBottom: 40 }}>
+            <h2 style={{ fontSize: "clamp(24px,4vw,36px)", fontWeight: 800, color: "#111", margin: 0 }}>
+              {fr ? "Tout ce dont vous avez besoin" : "Everything you need"}
+            </h2>
+            <p style={{ color: "#6b7280", marginTop: 10, fontSize: 16 }}>
+              {fr ? "Conçu pour les réalités des entrepreneurs d'Afrique de l'Ouest et Centrale." : "Built for the realities of West and Central African entrepreneurs."}
+            </p>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 20 }}>
+            {features.map(({ icon: Icon, title, description }) => (
+              <div key={title} style={{
+                background: "#fafaf9", border: "1px solid #f0ede9", borderRadius: 18,
+                padding: 24, display: "flex", flexDirection: "column", gap: 14,
+              }}>
+                <div style={{
+                  width: 46, height: 46, borderRadius: 12,
+                  background: ORANGE + "18", display: "flex", alignItems: "center", justifyContent: "center",
+                }}>
+                  <Icon style={{ width: 22, height: 22, color: ORANGE }} />
+                </div>
+                <div>
+                  <div style={{ fontWeight: 700, fontSize: 15, color: "#111", marginBottom: 6 }}>{title}</div>
+                  <p style={{ fontSize: 13, color: "#6b7280", lineHeight: 1.6, margin: 0 }}>{description}</p>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
-        <div className="flex items-center justify-center gap-4 mb-3">
-          <Link href="/pricing" className="text-primary hover:underline font-medium">
-            {fr ? "Tarifs" : "Pricing"}
-          </Link>
-          <span className="text-border">·</span>
-          <Link href="/sign-in" className="hover:underline">
-            {fr ? "Connexion" : "Sign in"}
-          </Link>
-          <span className="text-border">·</span>
-          <Link href="/sign-up" className="hover:underline">
-            {fr ? "Inscription" : "Sign up"}
-          </Link>
+      </section>
+
+      {/* ─── TESTIMONIALS ─── */}
+      <section style={{ padding: "64px 24px", maxWidth: 980, margin: "0 auto", width: "100%" }}>
+        <div style={{ textAlign: "center", marginBottom: 40 }}>
+          <h2 style={{ fontSize: "clamp(22px,4vw,34px)", fontWeight: 800, color: "#111", margin: 0 }}>
+            {fr ? "Ils nous font confiance" : "They trust us"}
+          </h2>
+          <p style={{ color: "#6b7280", marginTop: 10, fontSize: 15 }}>
+            {fr ? "Des entrepreneurs africains qui ont transformé leur gestion financière." : "African entrepreneurs who transformed their financial management."}
+          </p>
         </div>
-        <p>© {new Date().getFullYear()} — {fr ? "Tous droits réservés." : "All rights reserved."}</p>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 20 }}>
+          {testimonials.map(t => (
+            <div key={t.name} style={{
+              background: "#fff", border: "1px solid #f0ede9", borderRadius: 18,
+              padding: 24, display: "flex", flexDirection: "column", gap: 14,
+              boxShadow: "0 1px 4px rgba(0,0,0,0.05)",
+            }}>
+              <div style={{ display: "flex", gap: 2 }}>
+                {[1,2,3,4,5].map(s => <Star key={s} style={{ width: 14, height: 14, color: "#f97316", fill: "#f97316" }} />)}
+              </div>
+              <p style={{ fontSize: 14, color: "#374151", lineHeight: 1.65, margin: 0, fontStyle: "italic" }}>
+                "{t.quote}"
+              </p>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 4 }}>
+                <div style={{
+                  width: 38, height: 38, borderRadius: "50%",
+                  background: t.color, color: "#fff", fontSize: 12, fontWeight: 800,
+                  display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                }}>{t.avatar}</div>
+                <div>
+                  <div style={{ fontWeight: 700, fontSize: 13, color: "#111" }}>{t.name}</div>
+                  <div style={{ fontSize: 12, color: "#9ca3af" }}>{t.role}</div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ─── HOW IT WORKS ─── */}
+      <section style={{
+        background: "#fff", borderTop: "1px solid #f0ede9",
+        padding: "64px 24px",
+      }}>
+        <div style={{ maxWidth: 720, margin: "0 auto" }}>
+          <div style={{ textAlign: "center", marginBottom: 40 }}>
+            <h2 style={{ fontSize: "clamp(22px,4vw,34px)", fontWeight: 800, color: "#111", margin: 0 }}>
+              {fr ? "Comment ça marche ?" : "How does it work?"}
+            </h2>
+            <p style={{ color: "#6b7280", marginTop: 10, fontSize: 15 }}>
+              {fr ? "Prêt à utiliser en moins de 2 minutes." : "Up and running in under 2 minutes."}
+            </p>
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            {steps.map(({ icon: Icon, title, description }, i) => (
+              <div key={title} style={{
+                display: "flex", gap: 18, alignItems: "flex-start",
+                background: "#fafaf9", border: "1px solid #f0ede9",
+                borderRadius: 18, padding: "20px 22px",
+              }}>
+                <div style={{
+                  width: 44, height: 44, borderRadius: 12, flexShrink: 0,
+                  background: ORANGE, color: "#fff",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontWeight: 900, fontSize: 18,
+                }}>{i + 1}</div>
+                <div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                    <Icon style={{ width: 16, height: 16, color: ORANGE }} />
+                    <span style={{ fontWeight: 700, fontSize: 15, color: "#111" }}>{title}</span>
+                  </div>
+                  <p style={{ fontSize: 13, color: "#6b7280", lineHeight: 1.6, margin: 0 }}>{description}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ─── CTA BANNER ─── */}
+      <section style={{ padding: "64px 24px" }}>
+        <div style={{
+          maxWidth: 720, margin: "0 auto",
+          background: "linear-gradient(135deg, #431407 0%, #9a3412 100%)",
+          borderRadius: 24, padding: "48px 36px",
+          textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: 20,
+        }}>
+          <img src="/logo.svg" alt="MobileMoney" style={{ width: 52, height: 52 }} />
+          <h2 style={{ fontSize: "clamp(22px,4vw,34px)", fontWeight: 900, color: "#fff", margin: 0 }}>
+            {fr ? "Commencez dès aujourd'hui" : "Start today"}
+          </h2>
+          <p style={{ fontSize: 16, color: "#fed7aa", margin: 0, maxWidth: 440 }}>
+            {fr
+              ? "Rejoignez des centaines d'entrepreneurs qui maîtrisent déjà leurs finances. Gratuit pour commencer."
+              : "Join hundreds of entrepreneurs who already master their finances. Free to start."
+            }
+          </p>
+          <Link href="/sign-up">
+            <button style={{
+              background: ORANGE, color: "#fff", border: "none",
+              borderRadius: 14, padding: "14px 32px", fontWeight: 800, fontSize: 16,
+              cursor: "pointer", display: "flex", alignItems: "center", gap: 8,
+              boxShadow: "0 4px 20px rgba(249,115,22,0.40)",
+            }}>
+              {fr ? "Créer mon compte gratuit" : "Create my free account"}
+              <ArrowRight style={{ width: 17, height: 17 }} />
+            </button>
+          </Link>
+          <p style={{ fontSize: 12, color: "#fdba74" }}>
+            {fr ? "✓ Gratuit · ✓ Sans carte bancaire · ✓ Installation en 30 secondes" : "✓ Free · ✓ No credit card · ✓ Set up in 30 seconds"}
+          </p>
+        </div>
+      </section>
+
+      {/* ─── PWA INSTALL (if mobile) ─── */}
+      {isMobile && !isInstalled && (
+        <section style={{ padding: "0 24px 48px" }}>
+          <div style={{
+            maxWidth: 720, margin: "0 auto",
+            background: "#fff", border: "1px solid #f0ede9", borderRadius: 18,
+            padding: 24, display: "flex", alignItems: "center", gap: 16,
+            flexWrap: "wrap",
+          }}>
+            <div style={{
+              width: 44, height: 44, borderRadius: 12, flexShrink: 0,
+              background: ORANGE + "18", display: "flex", alignItems: "center", justifyContent: "center",
+            }}>
+              <Smartphone style={{ width: 22, height: 22, color: ORANGE }} />
+            </div>
+            <div style={{ flex: 1, minWidth: 200 }}>
+              <div style={{ fontWeight: 700, fontSize: 14, color: "#111" }}>
+                {fr ? "Installez l'app sur votre téléphone" : "Install the app on your phone"}
+              </div>
+              <div style={{ fontSize: 12, color: "#6b7280" }}>
+                {fr ? "Sans App Store · Fonctionne hors ligne · Gratuit" : "No App Store · Works offline · Free"}
+              </div>
+            </div>
+            {canInstall && (
+              <button onClick={install} style={{
+                background: ORANGE, color: "#fff", border: "none", borderRadius: 10,
+                padding: "9px 18px", fontWeight: 700, fontSize: 13, cursor: "pointer",
+              }}>
+                {fr ? "Installer" : "Install"}
+              </button>
+            )}
+          </div>
+        </section>
+      )}
+
+      {/* ─── FOOTER ─── */}
+      <footer style={{
+        borderTop: "1px solid #f0ede9", padding: "32px 24px",
+        paddingBottom: isMobile && !isInstalled && !bannerDismissed ? 100 : 32,
+      }}>
+        <div style={{ maxWidth: 900, margin: "0 auto" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 16 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <img src="/logo.svg" alt="MobileMoney" style={{ width: 22, height: 22 }} />
+              <span style={{ fontWeight: 700, fontSize: 14, color: "#111" }}>MobileMoney Manager</span>
+            </div>
+            <nav style={{ display: "flex", gap: 20, flexWrap: "wrap" }}>
+              {[
+                { href: "/pricing", label: fr ? "Tarifs" : "Pricing" },
+                { href: "/sign-in", label: fr ? "Connexion" : "Sign in" },
+                { href: "/sign-up", label: fr ? "Inscription" : "Sign up" },
+                { href: "mailto:support@mobilemoneymanager.africa", label: "Contact" },
+                { href: "#privacy", label: fr ? "Confidentialité" : "Privacy" },
+                { href: "#terms", label: fr ? "Conditions" : "Terms" },
+              ].map(({ href, label }) => (
+                <a key={label} href={href} style={{ fontSize: 12, color: "#9ca3af", textDecoration: "none" }}>
+                  {label}
+                </a>
+              ))}
+            </nav>
+          </div>
+          <p style={{ fontSize: 12, color: "#9ca3af", marginTop: 20, textAlign: "center" }}>
+            © {new Date().getFullYear()} MobileMoney Manager · {fr ? "Tous droits réservés." : "All rights reserved."}
+          </p>
+        </div>
       </footer>
 
-      {/* ── Sticky Install Banner (mobile only) ── */}
+      {/* ─── Sticky Install Banner (mobile) ─── */}
       {isMobile && !isInstalled && !bannerDismissed && (
-        <div className="fixed bottom-0 left-0 right-0 z-50 p-3 bg-background border-t border-primary/30 shadow-[0_-4px_24px_rgba(0,0,0,0.10)]">
-          <div className="max-w-lg mx-auto">
-            {canInstall ? (
-              /* Android: install prompt is ready — show a direct button */
-              <div className="flex items-center gap-3">
-                <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-sm text-foreground truncate">
-                    {fr ? "Installez l'application" : "Install the app"}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {fr ? "Accès rapide, fonctionne hors ligne" : "Fast access, works offline"}
-                  </p>
-                </div>
-                <Button size="sm" className="shrink-0 rounded-lg px-4" onClick={install}>
-                  {fr ? "Installer" : "Install"}
-                </Button>
-                <button onClick={dismissBanner} className="shrink-0 p-1 text-muted-foreground hover:text-foreground">
-                  <X className="w-4 h-4" />
-                </button>
+        <div style={{
+          position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 50,
+          background: "rgba(250,250,249,0.97)", backdropFilter: "blur(12px)",
+          borderTop: `2px solid ${ORANGE}`,
+          padding: "12px 16px",
+          boxShadow: "0 -4px 20px rgba(0,0,0,0.08)",
+        }}>
+          <div style={{ maxWidth: 500, margin: "0 auto", display: "flex", alignItems: "center", gap: 12 }}>
+            <Smartphone style={{ width: 20, height: 20, color: ORANGE, flexShrink: 0 }} />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontWeight: 700, fontSize: 13, color: "#111" }}>
+                {fr ? "Installer l'application" : "Install the app"}
               </div>
-            ) : isAndroid ? (
-              /* Android: no prompt yet — guide them to Chrome menu */
-              <div className="flex items-start gap-3">
-                <Smartphone className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-                <div className="flex-1 min-w-0 text-sm">
-                  <p className="font-semibold text-foreground">
-                    {fr ? "Ajouter à l'écran d'accueil" : "Add to Home Screen"}
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    {fr
-                      ? <>Chrome / Brave menu <span className="font-mono bg-muted px-1 rounded">⋮</span> → <strong>« Installer l'application »</strong> ou <strong>« Ajouter à l'écran d'accueil »</strong></>
-                      : <>Chrome / Brave menu <span className="font-mono bg-muted px-1 rounded">⋮</span> → <strong>"Install app"</strong> or <strong>"Add to Home screen"</strong></>
-                    }
-                  </p>
-                </div>
-                <button onClick={dismissBanner} className="shrink-0 p-1 text-muted-foreground hover:text-foreground">
-                  <X className="w-4 h-4" />
-                </button>
+              <div style={{ fontSize: 11, color: "#6b7280" }}>
+                {fr
+                  ? (isAndroid
+                    ? "Menu ⋮ → Installer l'application"
+                    : "Safari → Partager ⬆ → Sur l'écran d'accueil")
+                  : (isAndroid ? "Menu ⋮ → Install app" : "Safari → Share ⬆ → Add to Home Screen")
+                }
               </div>
-            ) : (
-              /* iOS: guide them to Safari share button */
-              <div className="flex items-start gap-3">
-                <Smartphone className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-                <div className="flex-1 min-w-0 text-sm">
-                  <p className="font-semibold text-foreground">
-                    {fr ? "Ajouter à l'écran d'accueil" : "Add to Home Screen"}
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    {fr
-                      ? <>Safari → bouton Partager <span className="font-mono bg-muted px-1 rounded">⬆</span> → <strong>« Sur l'écran d'accueil »</strong></>
-                      : <>Safari → Share button <span className="font-mono bg-muted px-1 rounded">⬆</span> → <strong>"Add to Home Screen"</strong></>
-                    }
-                  </p>
-                </div>
-                <button onClick={dismissBanner} className="shrink-0 p-1 text-muted-foreground hover:text-foreground">
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
+            </div>
+            {canInstall && (
+              <button onClick={install} style={{
+                background: ORANGE, color: "#fff", border: "none", borderRadius: 8,
+                padding: "7px 14px", fontWeight: 700, fontSize: 12, cursor: "pointer",
+              }}>
+                {fr ? "Installer" : "Install"}
+              </button>
             )}
+            <button onClick={dismissBanner} style={{
+              background: "none", border: "none", cursor: "pointer", padding: 4, color: "#9ca3af",
+            }}>
+              <X style={{ width: 16, height: 16 }} />
+            </button>
           </div>
         </div>
       )}
+
+      <style>{`
+        @media (max-width: 680px) {
+          .hero-grid { grid-template-columns: 1fr !important; }
+        }
+      `}</style>
     </div>
   );
 }
