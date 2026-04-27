@@ -192,9 +192,9 @@ function ClerkProviderWithRoutes() {
           <Route path="/pricing" component={Pricing} />
           <Route path="/success" component={Success} />
           <Route path="/subscription"><ProtectedRoute component={Subscription} /></Route>
-          <Route path="/privacy" component={Privacy} />
-          <Route path="/terms" component={Terms} />
-          <Route path="/legal" component={Legal} />
+          <Route path="/confidentialite" component={Privacy} />
+          <Route path="/conditions" component={Terms} />
+          <Route path="/mentions-legales" component={Legal} />
           <Route component={NotFound} />
         </Switch>
       </QueryClientProvider>

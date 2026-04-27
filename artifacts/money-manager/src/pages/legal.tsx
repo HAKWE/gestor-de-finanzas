@@ -120,12 +120,12 @@ export default function Legal() {
             <p style={{ fontSize: 14, color: "#374151", lineHeight: 1.7, margin: 0 }}>
               {fr
                 ? <>Le traitement des données personnelles est régi par notre{" "}
-                    <Link href="/privacy" style={{ color: ORANGE, fontWeight: 700, textDecoration: "none" }}>
+                    <Link href="/confidentialite" style={{ color: ORANGE, fontWeight: 700, textDecoration: "none" }}>
                       Politique de Confidentialité
                     </Link>
                     . Conformément au RGPD, vous disposez d'un droit d'accès, de rectification, d'effacement et d'opposition à vos données.</>
                 : <>The processing of personal data is governed by our{" "}
-                    <Link href="/privacy" style={{ color: ORANGE, fontWeight: 700, textDecoration: "none" }}>
+                    <Link href="/confidentialite" style={{ color: ORANGE, fontWeight: 700, textDecoration: "none" }}>
                       Privacy Policy
                     </Link>
                     . In accordance with the GDPR, you have the right to access, rectify, erase and object to your data.</>

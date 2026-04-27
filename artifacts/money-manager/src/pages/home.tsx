@@ -531,9 +531,9 @@ export default function Home() {
                 { href: "/sign-in", label: fr ? "Connexion" : "Sign in" },
                 { href: "/sign-up", label: fr ? "Inscription" : "Sign up" },
                 { href: "mailto:support@mobilemoneymanager.africa", label: "Contact" },
-                { href: "/privacy", label: fr ? "Confidentialité" : "Privacy" },
-                { href: "/terms", label: fr ? "Conditions" : "Terms" },
-                { href: "/legal", label: fr ? "Mentions légales" : "Legal notice" },
+                { href: "/confidentialite", label: fr ? "Confidentialité" : "Privacy" },
+                { href: "/conditions", label: fr ? "Conditions" : "Terms" },
+                { href: "/mentions-legales", label: fr ? "Mentions légales" : "Legal notice" },
               ].map(({ href, label }) => (
                 <a key={label} href={href} style={{ fontSize: 12, color: "#9ca3af", textDecoration: "none" }}>
                   {label}

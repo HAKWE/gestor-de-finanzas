@@ -148,9 +148,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <nav style={{ display: "flex", flexWrap: "wrap", gap: 16 }}>
           {[
             { href: "mailto:support@mobilemoneymanager.africa", label: "Contact" },
-            { href: "/privacy", label: "Confidentialité" },
-            { href: "/terms", label: "Conditions d'utilisation" },
-            { href: "/legal", label: "Mentions légales" },
+            { href: "/confidentialite", label: "Confidentialité" },
+            { href: "/conditions", label: "Conditions d'utilisation" },
+            { href: "/mentions-legales", label: "Mentions légales" },
             { href: "/pricing", label: "Tarifs" },
           ].map(({ href, label }) => (
             <a key={label} href={href} style={{ fontSize: 12, color: "#9ca3af", textDecoration: "none" }}>
