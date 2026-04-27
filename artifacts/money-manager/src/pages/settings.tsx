@@ -272,7 +272,7 @@ export default function Settings() {
         }}>
           {[
             { href: "mailto:support@mobilemoneymanager.africa", label: fr ? "Contact & Support" : "Contact & Support" },
-            { href: "#privacy", label: fr ? "Politique de confidentialité" : "Privacy Policy" },
+            { href: "/privacy", label: fr ? "Politique de confidentialité" : "Privacy Policy" },
             { href: "#terms", label: fr ? "Conditions d'utilisation" : "Terms of Service" },
           ].map(({ href, label }) => (
             <a key={label} href={href} style={{ fontSize: 13, color: "#9ca3af", textDecoration: "none" }}>

@@ -531,7 +531,7 @@ export default function Home() {
                 { href: "/sign-in", label: fr ? "Connexion" : "Sign in" },
                 { href: "/sign-up", label: fr ? "Inscription" : "Sign up" },
                 { href: "mailto:support@mobilemoneymanager.africa", label: "Contact" },
-                { href: "#privacy", label: fr ? "Confidentialité" : "Privacy" },
+                { href: "/privacy", label: fr ? "Confidentialité" : "Privacy" },
                 { href: "#terms", label: fr ? "Conditions" : "Terms" },
               ].map(({ href, label }) => (
                 <a key={label} href={href} style={{ fontSize: 12, color: "#9ca3af", textDecoration: "none" }}>
