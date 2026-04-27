@@ -315,6 +315,135 @@ function CustomTooltip({ active, payload, label, currency }: any) {
   );
 }
 
+const TOUR_STEPS = [
+  {
+    emoji: "👋",
+    title: "Bienvenue sur MobileMoney Manager !",
+    body: "Vous y êtes ! Quelques secondes pour découvrir l'essentiel.",
+    cta: null,
+  },
+  {
+    emoji: "➕",
+    title: "Ajoutez votre première transaction",
+    body: "Enregistrez revenus et dépenses — Orange Money, Wave, MTN MoMo, espèces. Tout est pris en charge en quelques secondes.",
+    cta: { label: "Ajouter maintenant", href: "/transactions/new" },
+  },
+  {
+    emoji: "📊",
+    title: "Suivez vos revenus et dépenses",
+    body: "Votre tableau de bord se met à jour en temps réel. Tendances, soldes, et activité hebdomadaire d'un seul coup d'œil.",
+    cta: null,
+  },
+  {
+    emoji: "📄",
+    title: "Exportez vos rapports PDF",
+    body: "Chaque mois, générez un rapport complet pour votre comptable ou pour piloter votre activité. Pro inclut des rapports avancés.",
+    cta: { label: "Voir les rapports", href: "/reports" },
+  },
+];
+
+function WelcomeTour({ onClose }: { onClose: () => void }) {
+  const [step, setStep] = useState(0);
+  const current = TOUR_STEPS[step];
+  const isLast = step === TOUR_STEPS.length - 1;
+
+  return (
+    <div style={{
+      position: "fixed", inset: 0, zIndex: 1000,
+      background: "rgba(0,0,0,0.50)", backdropFilter: "blur(4px)",
+      display: "flex", alignItems: "center", justifyContent: "center",
+      padding: 20,
+    }}>
+      <div style={{
+        background: "#fff", borderRadius: 24, padding: "32px 28px",
+        width: "100%", maxWidth: 420, position: "relative",
+        boxShadow: "0 24px 64px rgba(0,0,0,0.18)",
+      }}>
+        <button
+          onClick={onClose}
+          style={{
+            position: "absolute", top: 16, right: 16,
+            background: "#f3f4f6", border: "none", cursor: "pointer",
+            width: 30, height: 30, borderRadius: "50%",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            color: "#6b7280", fontSize: 16, lineHeight: 1,
+          }}
+        >
+          <X style={{ width: 14, height: 14 }} />
+        </button>
+
+        <div style={{ display: "flex", gap: 6, marginBottom: 24 }}>
+          {TOUR_STEPS.map((_, i) => (
+            <div key={i} style={{
+              flex: 1, height: 4, borderRadius: 2,
+              background: i <= step ? ORANGE : "#e5e7eb",
+              transition: "background 0.3s",
+            }} />
+          ))}
+        </div>
+
+        <div style={{ textAlign: "center", marginBottom: 24 }}>
+          <div style={{ fontSize: 52, marginBottom: 16, lineHeight: 1 }}>{current.emoji}</div>
+          <h2 style={{ fontSize: 20, fontWeight: 800, color: "#111", margin: "0 0 10px", lineHeight: 1.25 }}>
+            {current.title}
+          </h2>
+          <p style={{ fontSize: 14, color: "#6b7280", lineHeight: 1.65, margin: 0 }}>
+            {current.body}
+          </p>
+        </div>
+
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          {current.cta && (
+            <Link href={current.cta.href} onClick={onClose}>
+              <button style={{
+                width: "100%", background: ORANGE, color: "#fff", border: "none",
+                borderRadius: 12, padding: "12px 20px", fontWeight: 700, fontSize: 14,
+                cursor: "pointer", boxShadow: "0 2px 10px rgba(249,115,22,0.30)",
+              }}>
+                {current.cta.label} →
+              </button>
+            </Link>
+          )}
+          <button
+            onClick={() => isLast ? onClose() : setStep(s => s + 1)}
+            style={{
+              width: "100%",
+              background: current.cta ? "#f3f4f6" : ORANGE,
+              color: current.cta ? "#374151" : "#fff",
+              border: "none", borderRadius: 12,
+              padding: "12px 20px", fontWeight: 700, fontSize: 14,
+              cursor: "pointer",
+              boxShadow: current.cta ? "none" : "0 2px 10px rgba(249,115,22,0.30)",
+            }}
+          >
+            {isLast ? "Commencer 🚀" : "Suivant →"}
+          </button>
+          {step > 0 && !isLast && (
+            <button onClick={() => setStep(s => s - 1)} style={{
+              background: "none", border: "none", cursor: "pointer",
+              fontSize: 13, color: "#9ca3af", padding: "4px 0",
+            }}>
+              ← Précédent
+            </button>
+          )}
+          {step === 0 && (
+            <button onClick={onClose} style={{
+              background: "none", border: "none", cursor: "pointer",
+              fontSize: 13, color: "#9ca3af", padding: "4px 0",
+            }}>
+              Passer l'introduction
+            </button>
+          )}
+        </div>
+
+        <p style={{ textAlign: "center", fontSize: 11, color: "#d1d5db", marginTop: 16 }}>
+          {step + 1} / {TOUR_STEPS.length}
+        </p>
+      </div>
+    </div>
+  );
+}
+
 export default function Dashboard() {
   const { language } = useLanguage();
 
@@ -328,6 +457,9 @@ export default function Dashboard() {
     {},
     { query: { refetchInterval: 30_000, staleTime: 10_000 } },
   );
+
+  const [showTour, setShowTour] = useState(() => !localStorage.getItem("welcome-tour-v1"));
+  const closeTour = () => { localStorage.setItem("welcome-tour-v1", "1"); setShowTour(false); };
 
   const [subStatus, setSubStatus] = useState<SubscriptionStatus | null>(null);
   const [showSuccessBanner, setShowSuccessBanner] = useState(false);
@@ -387,6 +519,7 @@ export default function Dashboard() {
   return (
     <Layout>
       <ConfettiCanvas active={showSuccessBanner} />
+      {showTour && <WelcomeTour onClose={closeTour} />}
 
       <div style={{ display: "flex", flexDirection: "column", gap: 20, paddingBottom: 32 }}>
 

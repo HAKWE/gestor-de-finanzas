@@ -132,6 +132,30 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <main className="flex-1 flex flex-col p-4 md:p-8 w-full max-w-6xl mx-auto">
         {children}
       </main>
+
+      <footer style={{
+        borderTop: "1px solid #f0ede9",
+        padding: "16px 24px",
+        display: "flex", flexWrap: "wrap", alignItems: "center",
+        justifyContent: "space-between", gap: 12,
+      }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+          <img src="/logo.svg" alt="MobileMoney" style={{ width: 18, height: 18 }} />
+          <span style={{ fontSize: 12, color: "#9ca3af", fontWeight: 600 }}>MobileMoney Manager</span>
+        </div>
+        <nav style={{ display: "flex", flexWrap: "wrap", gap: 16 }}>
+          {[
+            { href: "mailto:support@mobilemoneymanager.africa", label: "Contact" },
+            { href: "#privacy", label: "Confidentialité" },
+            { href: "#terms", label: "Conditions" },
+            { href: "/pricing", label: "Tarifs" },
+          ].map(({ href, label }) => (
+            <a key={label} href={href} style={{ fontSize: 12, color: "#9ca3af", textDecoration: "none" }}>
+              {label}
+            </a>
+          ))}
+        </nav>
+      </footer>
     </div>
   );
 }
