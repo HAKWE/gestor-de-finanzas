@@ -5,6 +5,7 @@ import dashboardRouter from "./dashboard";
 import inventoryRouter from "./inventory";
 import profileRouter from "./profile";
 import stripeRouter from "./stripe";
+import reportsRouter from "./reports";
 
 const router: IRouter = Router();
 
@@ -14,5 +15,6 @@ router.use(dashboardRouter);
 router.use(inventoryRouter);
 router.use(profileRouter);
 router.use(stripeRouter);
+router.use(reportsRouter);
 
 export default router;
