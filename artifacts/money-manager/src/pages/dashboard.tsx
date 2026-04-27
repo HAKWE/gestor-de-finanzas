@@ -109,9 +109,27 @@ function PlanBadge({ plan, label }: { plan: string; label: string }) {
   );
 }
 
-function KpiCard({ label, value, sub, color, icon, hero }: {
+function TrendBadge({ current, prev, invert = false }: { current: number; prev: number; invert?: boolean }) {
+  if (prev === 0) return null;
+  const pct = ((current - prev) / prev) * 100;
+  const isUp = pct >= 0;
+  const good = invert ? !isUp : isUp;
+  return (
+    <span style={{
+      display: "inline-flex", alignItems: "center", gap: 3,
+      padding: "2px 7px", borderRadius: 999, fontSize: 11, fontWeight: 700,
+      background: good ? "#f0fdf4" : "#fef2f2",
+      color: good ? "#16a34a" : "#dc2626",
+    }}>
+      {isUp ? "↑" : "↓"} {Math.abs(pct).toFixed(0)}%
+    </span>
+  );
+}
+
+function KpiCard({ label, value, sub, color, icon, hero, trend }: {
   label: string; value: string; sub?: string; color: string;
   icon: React.ReactNode; hero?: boolean;
+  trend?: React.ReactNode;
 }) {
   const [hovered, setHovered] = useState(false);
   if (hero) {
@@ -120,29 +138,35 @@ function KpiCard({ label, value, sub, color, icon, hero }: {
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
         style={{
-          background: `linear-gradient(135deg, ${color}ee 0%, ${color} 100%)`,
-          borderRadius: 18, padding: "22px 20px",
+          background: `linear-gradient(135deg, #fb923c 0%, #f97316 55%, #ea580c 100%)`,
+          borderRadius: 20, padding: "24px 22px",
           boxShadow: hovered
-            ? "0 8px 28px rgba(249,115,22,0.38)"
-            : "0 4px 16px rgba(249,115,22,0.25)",
-          transform: hovered ? "translateY(-2px)" : "none",
-          transition: "box-shadow 0.18s, transform 0.18s",
-          display: "flex", flexDirection: "column", gap: 8,
-          cursor: "default",
+            ? "0 12px 36px rgba(249,115,22,0.55), 0 0 0 1px rgba(249,115,22,0.20)"
+            : "0 6px 24px rgba(249,115,22,0.40), 0 0 0 1px rgba(249,115,22,0.15)",
+          transform: hovered ? "translateY(-3px) scale(1.01)" : "none",
+          transition: "box-shadow 0.20s, transform 0.20s",
+          display: "flex", flexDirection: "column", gap: 10,
+          cursor: "default", position: "relative", overflow: "hidden",
         }}
       >
+        <div style={{
+          position: "absolute", top: -20, right: -20,
+          width: 90, height: 90, borderRadius: "50%",
+          background: "rgba(255,255,255,0.08)",
+          pointerEvents: "none",
+        }} />
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <span style={{ fontSize: 12, color: "rgba(255,255,255,0.8)", fontWeight: 600, letterSpacing: "0.04em", textTransform: "uppercase" }}>
+          <span style={{ fontSize: 11, color: "rgba(255,255,255,0.85)", fontWeight: 700, letterSpacing: "0.05em", textTransform: "uppercase" }}>
             {label}
           </span>
           <span style={{
-            width: 36, height: 36, borderRadius: 10,
-            background: "rgba(255,255,255,0.2)", display: "flex",
+            width: 38, height: 38, borderRadius: 11,
+            background: "rgba(255,255,255,0.22)", display: "flex",
             alignItems: "center", justifyContent: "center", color: "#fff",
           }}>{icon}</span>
         </div>
-        <div style={{ fontSize: 26, fontWeight: 800, color: "#fff", lineHeight: 1.1 }}>{value}</div>
-        {sub && <div style={{ fontSize: 12, color: "rgba(255,255,255,0.7)" }}>{sub}</div>}
+        <div style={{ fontSize: 32, fontWeight: 900, color: "#fff", lineHeight: 1, letterSpacing: "-0.02em" }}>{value}</div>
+        {sub && <div style={{ fontSize: 12, color: "rgba(255,255,255,0.75)", marginTop: -2 }}>{sub}</div>}
       </div>
     );
   }
@@ -151,10 +175,10 @@ function KpiCard({ label, value, sub, color, icon, hero }: {
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
-        background: "#fff", borderRadius: 18, padding: "20px 18px",
+        background: "#fff", borderRadius: 20, padding: "20px 18px",
         border: "1px solid #f0ede9",
         boxShadow: hovered
-          ? "0 6px 20px rgba(0,0,0,0.10)"
+          ? "0 8px 24px rgba(0,0,0,0.11)"
           : "0 1px 4px rgba(0,0,0,0.05)",
         transform: hovered ? "translateY(-2px)" : "none",
         transition: "box-shadow 0.18s, transform 0.18s",
@@ -162,15 +186,18 @@ function KpiCard({ label, value, sub, color, icon, hero }: {
       }}
     >
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <span style={{ fontSize: 12, color: "#6b7280", fontWeight: 500, letterSpacing: "0.02em" }}>{label}</span>
+        <span style={{ fontSize: 11, color: "#9ca3af", fontWeight: 600, letterSpacing: "0.03em", textTransform: "uppercase" }}>{label}</span>
         <span style={{
           width: 36, height: 36, borderRadius: 10,
-          background: color + "18", display: "flex",
+          background: color + "15", display: "flex",
           alignItems: "center", justifyContent: "center", color, flexShrink: 0,
         }}>{icon}</span>
       </div>
-      <div style={{ fontSize: 22, fontWeight: 800, color: "#111", lineHeight: 1.1 }}>{value}</div>
-      {sub && <div style={{ fontSize: 12, color: "#9ca3af" }}>{sub}</div>}
+      <div style={{ fontSize: 24, fontWeight: 900, color: "#111", lineHeight: 1, letterSpacing: "-0.02em" }}>{value}</div>
+      <div style={{ display: "flex", alignItems: "center", gap: 7, flexWrap: "wrap" }}>
+        {trend}
+        {sub && <div style={{ fontSize: 11, color: "#9ca3af" }}>{sub}</div>}
+      </div>
     </div>
   );
 }
@@ -217,31 +244,47 @@ function ChartEmptyState() {
 }
 
 function TxEmptyState() {
+  const [btnHovered, setBtnHovered] = useState(false);
   return (
     <div style={{
       display: "flex", flexDirection: "column", alignItems: "center",
-      padding: "44px 24px", gap: 14, textAlign: "center",
+      padding: "48px 24px 52px", gap: 16, textAlign: "center",
     }}>
       <div style={{
-        width: 72, height: 72, borderRadius: 22,
-        background: "#fff7ed", display: "flex", alignItems: "center", justifyContent: "center",
+        width: 80, height: 80, borderRadius: 24,
+        background: "linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%)",
+        border: "2px solid #fed7aa",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        boxShadow: "0 4px 16px rgba(249,115,22,0.12)",
       }}>
-        <Receipt style={{ width: 34, height: 34, color: ORANGE }} />
+        <Receipt style={{ width: 38, height: 38, color: ORANGE }} />
       </div>
-      <div style={{ fontWeight: 700, fontSize: 17, color: "#111" }}>
-        Aucune transaction pour le moment
-      </div>
-      <div style={{ color: "#6b7280", fontSize: 13, maxWidth: 270 }}>
-        Commencez par enregistrer votre première recette ou dépense.
+      <div>
+        <div style={{ fontWeight: 800, fontSize: 18, color: "#111", marginBottom: 6 }}>
+          Aucune transaction pour le moment
+        </div>
+        <div style={{ color: "#6b7280", fontSize: 13, maxWidth: 260, lineHeight: 1.6 }}>
+          Commencez par enregistrer votre première recette ou dépense pour voir votre tableau de bord prendre vie.
+        </div>
       </div>
       <Link href="/transactions/new">
-        <button style={{
-          background: ORANGE, color: "#fff", border: "none", borderRadius: 12,
-          padding: "11px 22px", fontWeight: 700, fontSize: 13, cursor: "pointer",
-          display: "flex", alignItems: "center", gap: 6,
-          boxShadow: "0 2px 8px rgba(249,115,22,0.30)",
-        }}>
-          <Plus style={{ width: 15, height: 15 }} />
+        <button
+          onMouseEnter={() => setBtnHovered(true)}
+          onMouseLeave={() => setBtnHovered(false)}
+          style={{
+            background: btnHovered ? "#ea580c" : ORANGE,
+            color: "#fff", border: "none", borderRadius: 14,
+            padding: "13px 28px", fontWeight: 800, fontSize: 14, cursor: "pointer",
+            display: "flex", alignItems: "center", gap: 8,
+            boxShadow: btnHovered
+              ? "0 6px 20px rgba(249,115,22,0.45)"
+              : "0 4px 14px rgba(249,115,22,0.35)",
+            transform: btnHovered ? "translateY(-1px)" : "none",
+            transition: "all 0.15s",
+            marginTop: 4,
+          }}
+        >
+          <Plus style={{ width: 17, height: 17 }} />
           Ajouter ma première transaction
         </button>
       </Link>
@@ -431,6 +474,12 @@ export default function Dashboard() {
                 sub={`mois : ${formatCurrency(summary?.monthIncome ?? 0)}`}
                 color={GREEN}
                 icon={<TrendingUp style={{ width: 17, height: 17 }} />}
+                trend={
+                  <TrendBadge
+                    current={summary?.weekIncome ?? 0}
+                    prev={summary?.prevWeekIncome ?? 0}
+                  />
+                }
               />
               <KpiCard
                 label="Dépenses cette semaine"
@@ -438,6 +487,13 @@ export default function Dashboard() {
                 sub={`mois : ${formatCurrency(summary?.monthExpenses ?? 0)}`}
                 color={RED}
                 icon={<TrendingDown style={{ width: 17, height: 17 }} />}
+                trend={
+                  <TrendBadge
+                    current={summary?.weekExpenses ?? 0}
+                    prev={summary?.prevWeekExpenses ?? 0}
+                    invert
+                  />
+                }
               />
               <KpiCard
                 label="Total transactions"

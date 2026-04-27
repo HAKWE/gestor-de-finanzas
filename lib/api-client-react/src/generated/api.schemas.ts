@@ -77,6 +77,8 @@ export interface DashboardSummary {
   weekIncome: number;
   weekExpenses: number;
   weekProfit: number;
+  prevWeekIncome?: number;
+  prevWeekExpenses?: number;
   monthIncome: number;
   monthExpenses: number;
   monthProfit: number;

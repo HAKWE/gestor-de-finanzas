@@ -437,6 +437,10 @@ components:
           type: number
         weekProfit:
           type: number
+        prevWeekIncome:
+          type: number
+        prevWeekExpenses:
+          type: number
         monthIncome:
           type: number
         monthExpenses:

@@ -26,17 +26,26 @@ router.get("/dashboard/summary", requireAuth, async (req: any, res): Promise<voi
   startOfWeek.setDate(now.getDate() - now.getDay());
   const weekStartStr = startOfWeek.toISOString().slice(0, 10);
 
+  // Previous week: 7 days before current week start
+  const prevWeekStart = new Date(startOfWeek);
+  prevWeekStart.setDate(prevWeekStart.getDate() - 7);
+  const prevWeekStartStr = prevWeekStart.toISOString().slice(0, 10);
+
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
   const monthStartStr = startOfMonth.toISOString().slice(0, 10);
+
+  // Query from prevWeekStart to cover both current and previous week
+  const queryFrom = prevWeekStartStr < monthStartStr ? prevWeekStartStr : monthStartStr;
 
   const all = await db
     .select()
     .from(transactionsTable)
-    .where(and(eq(transactionsTable.userId, userId), gte(transactionsTable.date, monthStartStr)));
+    .where(and(eq(transactionsTable.userId, userId), gte(transactionsTable.date, queryFrom)));
 
   let todayIncome = 0, todayExpenses = 0;
   let weekIncome = 0, weekExpenses = 0;
   let monthIncome = 0, monthExpenses = 0;
+  let prevWeekIncome = 0, prevWeekExpenses = 0;
 
   for (const t of all) {
     const amt = parseFloat(t.amount);
@@ -47,6 +56,9 @@ router.get("/dashboard/summary", requireAuth, async (req: any, res): Promise<voi
     if (t.date >= weekStartStr) {
       if (t.type === "income") weekIncome += amt;
       else weekExpenses += amt;
+    } else if (t.date >= prevWeekStartStr) {
+      if (t.type === "income") prevWeekIncome += amt;
+      else prevWeekExpenses += amt;
     }
     if (t.date === todayStr) {
       if (t.type === "income") todayIncome += amt;
@@ -76,6 +88,8 @@ router.get("/dashboard/summary", requireAuth, async (req: any, res): Promise<voi
     weekIncome,
     weekExpenses,
     weekProfit: weekIncome - weekExpenses,
+    prevWeekIncome,
+    prevWeekExpenses,
     monthIncome,
     monthExpenses,
     monthProfit: monthIncome - monthExpenses,

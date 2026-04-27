@@ -124,6 +124,8 @@ export const GetDashboardSummaryResponse = zod.object({
   weekIncome: zod.number(),
   weekExpenses: zod.number(),
   weekProfit: zod.number(),
+  prevWeekIncome: zod.number().optional(),
+  prevWeekExpenses: zod.number().optional(),
   monthIncome: zod.number(),
   monthExpenses: zod.number(),
   monthProfit: zod.number(),
