@@ -4,9 +4,130 @@ import { ArrowLeft } from "lucide-react";
 
 const ORANGE = "#f97316";
 
+interface Section {
+  title: string;
+  prose?: string;
+  intro?: string;
+  items?: string[];
+}
+
 export default function Terms() {
   const { lang } = useLanguage();
   const fr = lang === "fr";
+
+  const sections: Section[] = fr
+    ? [
+        {
+          title: "1. Objet",
+          prose: "Les présentes Conditions Générales d'Utilisation (CGU) régissent l'utilisation de l'application MobileMoney Manager.",
+        },
+        {
+          title: "2. Description du Service",
+          prose: "MobileMoney Manager est une plateforme SaaS permettant aux micro-entrepreneurs de suivre leurs transactions mobiles (Orange Money, Wave, MTN MoMo, etc.), générer des rapports et exporter des données.",
+        },
+        {
+          title: "3. Inscription et Compte",
+          items: [
+            "Vous devez avoir au moins 18 ans pour utiliser le service",
+            "Vous vous engagez à fournir des informations exactes et à jour",
+            "Vous êtes responsable de la confidentialité de votre mot de passe",
+          ],
+        },
+        {
+          title: "4. Abonnements et Paiements",
+          items: [
+            "Les abonnements sont renouvelés automatiquement à la fin de chaque période",
+            "Vous pouvez annuler votre abonnement à tout moment depuis « Mon abonnement »",
+            "Les paiements sont traités par Stripe",
+            "Aucun remboursement n'est effectué pour les périodes déjà commencées",
+          ],
+        },
+        {
+          title: "5. Obligations de l'Utilisateur",
+          items: [
+            "Utiliser le service de manière licite",
+            "Ne pas tenter de contourner les mesures de sécurité",
+            "Ne pas utiliser l'application pour des activités frauduleuses ou illégales",
+          ],
+        },
+        {
+          title: "6. Propriété Intellectuelle",
+          prose: "L'application et son contenu sont la propriété exclusive de MobileMoney Manager. Toute reproduction ou utilisation non autorisée est interdite.",
+        },
+        {
+          title: "7. Limitation de Responsabilité",
+          intro: "L'Application est fournie « en l'état ». Nous ne pouvons être tenus responsables des :",
+          items: [
+            "Erreurs de saisie de vos données",
+            "Pertes financières résultant de l'utilisation du service",
+            "Problèmes techniques liés à vos opérateurs mobiles",
+          ],
+        },
+        {
+          title: "8. Résiliation",
+          prose: "Nous pouvons suspendre ou supprimer votre compte en cas de violation grave des CGU.",
+        },
+        {
+          title: "9. Droit applicable et juridiction",
+          prose: "Les présentes CGU sont régies par le droit luxembourgeois. Tout litige sera soumis aux tribunaux compétents de Luxembourg.",
+        },
+      ]
+    : [
+        {
+          title: "1. Purpose",
+          prose: "These General Terms of Use govern the use of the MobileMoney Manager application.",
+        },
+        {
+          title: "2. Service description",
+          prose: "MobileMoney Manager is a SaaS platform enabling micro-entrepreneurs to track their mobile transactions (Orange Money, Wave, MTN MoMo, etc.), generate reports and export data.",
+        },
+        {
+          title: "3. Registration and account",
+          items: [
+            "You must be at least 18 years old to use the service",
+            "You agree to provide accurate and up-to-date information",
+            "You are responsible for the confidentiality of your password",
+          ],
+        },
+        {
+          title: "4. Subscriptions and payments",
+          items: [
+            "Subscriptions are automatically renewed at the end of each period",
+            "You can cancel your subscription at any time from \"My Subscription\"",
+            "Payments are processed by Stripe",
+            "No refund is made for periods already started",
+          ],
+        },
+        {
+          title: "5. User obligations",
+          items: [
+            "Use the service lawfully",
+            "Not attempt to circumvent security measures",
+            "Not use the application for fraudulent or illegal activities",
+          ],
+        },
+        {
+          title: "6. Intellectual property",
+          prose: "The application and its content are the exclusive property of MobileMoney Manager. Any unauthorised reproduction or use is prohibited.",
+        },
+        {
+          title: "7. Limitation of liability",
+          intro: "The Application is provided \"as is\". We cannot be held liable for:",
+          items: [
+            "Data entry errors",
+            "Financial losses resulting from use of the service",
+            "Technical issues related to your mobile operators",
+          ],
+        },
+        {
+          title: "8. Termination",
+          prose: "We may suspend or delete your account in the event of serious breach of these Terms.",
+        },
+        {
+          title: "9. Governing law and jurisdiction",
+          prose: "These Terms are governed by Luxembourg law. Any dispute shall be submitted to the competent courts of Luxembourg.",
+        },
+      ];
 
   return (
     <div style={{ minHeight: "100vh", background: "#fafaf9", display: "flex", flexDirection: "column" }}>
@@ -39,105 +160,48 @@ export default function Terms() {
       <main style={{ flex: 1, padding: "48px 24px 80px" }}>
         <div style={{ maxWidth: 760, margin: "0 auto" }}>
 
-          {/* Header */}
+          {/* Page title */}
           <div style={{ marginBottom: 40 }}>
             <h1 style={{ fontSize: "clamp(26px,4vw,38px)", fontWeight: 900, color: "#111", margin: "0 0 10px", letterSpacing: "-0.02em" }}>
-              {fr ? "Conditions d'Utilisation" : "Terms of Service"}
+              {fr ? "Conditions Générales d'Utilisation" : "Terms of Service"}
             </h1>
             <p style={{ fontSize: 14, color: "#9ca3af", margin: 0 }}>
               {fr ? "Dernière mise à jour : 27 avril 2026" : "Last updated: April 27, 2026"}
             </p>
           </div>
 
-          {/* Sections */}
-          {[
-            {
-              title: fr ? "1. Acceptation des conditions" : "1. Acceptance of terms",
-              prose: fr
-                ? "En utilisant MobileMoney Manager, vous acceptez ces conditions d'utilisation."
-                : "By using MobileMoney Manager, you agree to these terms of service.",
-            },
-            {
-              title: fr ? "2. Description du service" : "2. Service description",
-              prose: fr
-                ? "MobileMoney Manager est un outil de gestion financière destiné aux micro-entrepreneurs africains. Il permet de suivre les transactions (Orange Money, Wave, MTN MoMo, etc.), générer des rapports et exporter des données."
-                : "MobileMoney Manager is a financial management tool for African micro-entrepreneurs. It allows you to track transactions (Orange Money, Wave, MTN MoMo, etc.), generate reports and export data.",
-            },
-            {
-              title: fr ? "3. Abonnements et paiements" : "3. Subscriptions and payments",
-              items: fr
-                ? [
-                    "Les abonnements sont renouvelés automatiquement",
-                    "Vous pouvez annuler à tout moment depuis votre espace « Mon abonnement »",
-                    "Les remboursements ne sont pas possibles après utilisation du service",
-                  ]
-                : [
-                    "Subscriptions are automatically renewed",
-                    "You can cancel at any time from your \"My Subscription\" section",
-                    "Refunds are not possible after use of the service",
-                  ],
-            },
-            {
-              title: fr ? "4. Obligations de l'utilisateur" : "4. User obligations",
-              items: fr
-                ? [
-                    "Fournir des informations exactes",
-                    "Ne pas utiliser l'application pour des activités illégales",
-                    "Protéger votre mot de passe",
-                  ]
-                : [
-                    "Provide accurate information",
-                    "Not use the application for illegal activities",
-                    "Protect your password",
-                  ],
-            },
-            {
-              title: fr ? "5. Limitation de responsabilité" : "5. Limitation of liability",
-              prose: fr
-                ? "MobileMoney Manager est un outil d'aide à la gestion. Nous ne sommes pas responsables des erreurs de saisie, des pertes financières ou des problèmes liés à vos wallets mobiles."
-                : "MobileMoney Manager is a management assistance tool. We are not responsible for data entry errors, financial losses, or issues related to your mobile wallets.",
-            },
-            {
-              title: fr ? "6. Résiliation" : "6. Termination",
-              prose: fr
-                ? "Nous pouvons suspendre ou supprimer votre compte en cas de violation de ces conditions."
-                : "We may suspend or delete your account in case of violation of these terms.",
-            },
-            {
-              title: fr ? "7. Droit applicable" : "7. Governing law",
-              prose: fr
-                ? "Ces conditions sont régies par le droit luxembourgeois."
-                : "These terms are governed by Luxembourg law.",
-            },
-          ].map(({ title, prose, items }) => (
+          {/* Dynamic sections */}
+          {sections.map(({ title, prose, intro, items }) => (
             <section key={title} style={{ marginBottom: 36 }}>
               <h2 style={{
                 fontSize: 18, fontWeight: 800, color: "#111",
                 margin: "0 0 12px", paddingBottom: 10,
                 borderBottom: "2px solid #f0ede9",
               }}>{title}</h2>
+
+              {intro && (
+                <p style={{ fontSize: 14, color: "#374151", lineHeight: 1.7, margin: "0 0 10px" }}>{intro}</p>
+              )}
               {prose && (
                 <p style={{ fontSize: 14, color: "#374151", lineHeight: 1.7, margin: 0 }}>{prose}</p>
               )}
               {items && (
                 <ul style={{ margin: 0, paddingLeft: 20, display: "flex", flexDirection: "column", gap: 8 }}>
                   {items.map(item => (
-                    <li key={item} style={{ fontSize: 14, color: "#374151", lineHeight: 1.65 }}>
-                      {item}
-                    </li>
+                    <li key={item} style={{ fontSize: 14, color: "#374151", lineHeight: 1.65 }}>{item}</li>
                   ))}
                 </ul>
               )}
             </section>
           ))}
 
-          {/* Contact */}
+          {/* Contact box */}
           <div style={{
             background: "#fff", border: "1.5px solid #f0ede9", borderRadius: 16,
             padding: "20px 24px", marginTop: 8,
           }}>
             <p style={{ margin: "0 0 6px", fontSize: 14, color: "#6b7280" }}>
-              {fr ? "Pour toute question :" : "For any questions:"}
+              {fr ? "10. Contact — Pour toute question :" : "10. Contact — For any questions:"}
             </p>
             <a href="mailto:support@mobilemoneymanager.africa" style={{
               fontSize: 15, fontWeight: 700, color: ORANGE, textDecoration: "none",
