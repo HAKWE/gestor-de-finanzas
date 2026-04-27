@@ -86,6 +86,31 @@ router.get("/reports/monthly", requireAuth, async (req: any, res): Promise<void>
     percentage: catTotal > 0 ? Math.round((c.total / catTotal) * 100) : 0,
   }));
 
+  const prevMonth = month === 1 ? 12 : month - 1;
+  const prevYear = month === 1 ? year - 1 : year;
+  const prevStart = `${prevYear}-${String(prevMonth).padStart(2, "0")}-01`;
+  const prevLastDay = new Date(prevYear, prevMonth, 0).getDate();
+  const prevEnd = `${prevYear}-${String(prevMonth).padStart(2, "0")}-${String(prevLastDay).padStart(2, "0")}`;
+
+  const prevTransactions = await db
+    .select()
+    .from(transactionsTable)
+    .where(
+      and(
+        eq(transactionsTable.userId, userId),
+        gte(transactionsTable.date, prevStart),
+        lte(transactionsTable.date, prevEnd)
+      )
+    );
+
+  let prevIncome = 0;
+  let prevExpenses = 0;
+  for (const t of prevTransactions) {
+    const amt = parseFloat(t.amount);
+    if (t.type === "income") prevIncome += amt;
+    else prevExpenses += amt;
+  }
+
   res.json({
     summary: {
       totalIncome,
@@ -93,6 +118,12 @@ router.get("/reports/monthly", requireAuth, async (req: any, res): Promise<void>
       netBalance: totalIncome - totalExpenses,
       transactionCount: transactions.length,
       currency,
+    },
+    prevSummary: {
+      totalIncome: prevIncome,
+      totalExpenses: prevExpenses,
+      netBalance: prevIncome - prevExpenses,
+      transactionCount: prevTransactions.length,
     },
     daily: [...dailyMap.values()],
     categories,
