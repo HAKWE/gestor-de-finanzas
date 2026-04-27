@@ -59,12 +59,8 @@ export default function Legal() {
               padding: "18px 22px", display: "flex", flexDirection: "column", gap: 4,
             }}>
               <p style={{ margin: 0, fontWeight: 800, fontSize: 15, color: "#111" }}>MobileMoney Manager</p>
-              <p style={{ margin: 0, fontSize: 14, color: "#6b7280" }}>
-                {fr ? "Exploitée par :" : "Operated by:"}
-              </p>
               <p style={{ margin: 0, fontSize: 14, color: "#374151", lineHeight: 1.7 }}>
-                <strong>Houehou Sosthene Alfio</strong><br />
-                {fr ? "Travailleur Indépendant" : "Self-Employed"}<br />
+                SASU MobileMoney Manager<br />
                 Luxembourg
               </p>
               <a href="mailto:support@mobilemoneymanager.africa" style={{ fontSize: 14, color: ORANGE, fontWeight: 700, textDecoration: "none", marginTop: 4 }}>
@@ -82,13 +78,11 @@ export default function Legal() {
               background: "#fff", border: "1.5px solid #f0ede9", borderRadius: 16,
               padding: "18px 22px",
             }}>
-              <p style={{ margin: "0 0 4px", fontSize: 14, color: "#6b7280" }}>
-                {fr ? "L'application est hébergée par :" : "The application is hosted by:"}
-              </p>
               <p style={{ margin: 0, fontSize: 14, color: "#374151", lineHeight: 1.7 }}>
-                <strong>Replit, Inc.</strong><br />
-                160 Spear Street, Suite 350<br />
-                San Francisco, CA 94105, {fr ? "États-Unis" : "United States"}
+                {fr
+                  ? "L'application est hébergée par un prestataire de services professionnel situé aux États-Unis, conforme aux standards de sécurité européens."
+                  : "The application is hosted by a professional service provider based in the United States, compliant with European security standards."
+                }
               </p>
             </div>
           </section>
@@ -100,8 +94,8 @@ export default function Legal() {
             </h2>
             <p style={{ fontSize: 14, color: "#374151", lineHeight: 1.7, margin: "0 0 10px" }}>
               {fr
-                ? "L'ensemble du contenu de l'application MobileMoney Manager (structure, design, logos, textes, graphiques, base de données, etc.) est la propriété exclusive de Houehou Sosthene Alfio."
-                : "All content of the MobileMoney Manager application (structure, design, logos, texts, graphics, database, etc.) is the exclusive property of Houehou Sosthene Alfio."
+                ? "L'ensemble du contenu de l'application MobileMoney Manager (structure, design, logos, textes, graphiques, base de données, etc.) est la propriété exclusive de l'éditeur."
+                : "All content of the MobileMoney Manager application (structure, design, logos, texts, graphics, database, etc.) is the exclusive property of the publisher."
               }
             </p>
             <p style={{ fontSize: 14, color: "#374151", lineHeight: 1.7, margin: 0 }}>
