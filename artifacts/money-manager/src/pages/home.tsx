@@ -248,14 +248,6 @@ export default function Home() {
               </p>
             </div>
             <SignUpForm fullForm />
-            <p style={{ textAlign: "center", fontSize: 12, color: "#9ca3af", marginTop: 14 }}>
-              {fr ? "Déjà un compte ?" : "Already have an account?"}{" "}
-              <Link href="/sign-in">
-                <span style={{ color: ORANGE, fontWeight: 700, cursor: "pointer" }}>
-                  {fr ? "Se connecter" : "Sign in"}
-                </span>
-              </Link>
-            </p>
           </div>
         </div>
       </section>
