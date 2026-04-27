@@ -353,7 +353,7 @@ export default function Pricing() {
               background: "#f9fafb", border: "1px solid #e5e7eb",
               borderRadius: 8, padding: "5px 12px",
             }}>
-              💱 Prix en EUR&nbsp;•&nbsp;Facturé en FCFA selon le taux du jour (1 € ≈ 656 FCFA)
+              💱 Prix en EUR&nbsp;•&nbsp;Converti approximativement en FCFA (1 € ≈ 656 FCFA)
             </span>
           </div>
 

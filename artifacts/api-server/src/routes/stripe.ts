@@ -131,10 +131,11 @@ router.post("/stripe/checkout-by-plan", requireAuth, async (req: any, res): Prom
       product: match.id,
       active: true,
       type: "recurring",
+      currency: "eur",
       limit: 5,
     });
 
-    console.log(`[checkout-by-plan] Found ${prices.data.length} prices for product`);
+    console.log(`[checkout-by-plan] Found ${prices.data.length} EUR prices for product`);
 
     const price = prices.data.sort(
       (a, b) => (a.unit_amount ?? 0) - (b.unit_amount ?? 0)
