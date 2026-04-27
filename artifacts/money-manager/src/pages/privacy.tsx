@@ -73,7 +73,7 @@ export default function Privacy() {
           items: [
             "Stripe (pour le traitement des paiements)",
             "Clerk (pour l'authentification)",
-            "Prestataires d'hébergement (Replit) et outils analytiques",
+            "Prestataires d'hébergement et outils analytiques",
             "Autorités compétentes si requis par la loi",
           ],
         },
@@ -135,7 +135,7 @@ export default function Privacy() {
           items: [
             "Stripe (for payment processing)",
             "Clerk (for authentication)",
-            "Hosting providers (Replit) and analytics tools",
+            "Hosting providers and analytics tools",
             "Competent authorities if required by law",
           ],
         },
@@ -206,8 +206,8 @@ export default function Privacy() {
           }}>
             <p style={{ margin: 0, fontSize: 14, color: "#374151", lineHeight: 1.7 }}>
               {fr
-                ? <><strong>MobileMoney Manager</strong> (ci-après « l'Application » ou « nous ») est exploitée par <strong>Houehou Sosthene Alfio</strong>, Travailleur Indépendant au Luxembourg.</>
-                : <><strong>MobileMoney Manager</strong> (hereinafter "the Application" or "we") is operated by <strong>Houehou Sosthene Alfio</strong>, Self-Employed, Luxembourg.</>
+                ? <><strong>MobileMoney Manager</strong> (ci-après « l'Application » ou « nous ») est exploitée par une entreprise individuelle basée au Luxembourg.</>
+                : <><strong>MobileMoney Manager</strong> (hereinafter "the Application" or "we") is operated by an individual business based in Luxembourg.</>
               }
             </p>
           </div>
