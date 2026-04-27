@@ -1,0 +1,50 @@
+<h1>Conditions Générales d'Utilisation</h1>
+<p><strong>Dernière mise à jour :</strong> 27 avril 2026</p>
+
+<h2>1. Objet</h2>
+<p>Les présentes Conditions Générales d’Utilisation (CGU) régissent l’utilisation de l’application MobileMoney Manager.</p>
+
+<h2>2. Description du Service</h2>
+<p>MobileMoney Manager est une plateforme SaaS permettant aux micro-entrepreneurs de suivre leurs transactions mobiles (Orange Money, Wave, MTN MoMo, etc.), générer des rapports et exporter des données.</p>
+
+<h2>3. Inscription et Compte</h2>
+<ul>
+  <li>Vous devez avoir au moins 18 ans pour utiliser le service</li>
+  <li>Vous vous engagez à fournir des informations exactes et à jour</li>
+  <li>Vous êtes responsable de la confidentialité de votre mot de passe</li>
+</ul>
+
+<h2>4. Abonnements et Paiements</h2>
+<ul>
+  <li>Les abonnements sont renouvelés automatiquement à la fin de chaque période</li>
+  <li>Vous pouvez annuler votre abonnement à tout moment depuis « Mon abonnement »</li>
+  <li>Les paiements sont traités par Stripe</li>
+  <li>Aucun remboursement n’est effectué pour les périodes déjà commencées</li>
+</ul>
+
+<h2>5. Obligations de l’Utilisateur</h2>
+<ul>
+  <li>Utiliser le service de manière licite</li>
+  <li>Ne pas tenter de contourner les mesures de sécurité</li>
+  <li>Ne pas utiliser l’application pour des activités frauduleuses ou illégales</li>
+</ul>
+
+<h2>6. Propriété Intellectuelle</h2>
+<p>L’application et son contenu sont la propriété exclusive de MobileMoney Manager. Toute reproduction ou utilisation non autorisée est interdite.</p>
+
+<h2>7. Limitation de Responsabilité</h2>
+<p>L’Application est fournie « en l’état ». Nous ne pouvons être tenus responsables des :</p>
+<ul>
+  <li>Erreurs de saisie de vos données</li>
+  <li>Pertes financières résultant de l’utilisation du service</li>
+  <li>Problèmes techniques liés à vos opérateurs mobiles</li>
+</ul>
+
+<h2>8. Résiliation</h2>
+<p>Nous pouvons suspendre ou supprimer votre compte en cas de violation grave des CGU.</p>
+
+<h2>9. Droit applicable et juridiction</h2>
+<p>Les présentes CGU sont régies par le droit luxembourgeois. Tout litige sera soumis aux tribunaux compétents de Luxembourg.</p>
+
+<h2>10. Contact</h2>
+<p>Pour toute question : <strong>support@mobilemoneymanager.africa</strong></p>

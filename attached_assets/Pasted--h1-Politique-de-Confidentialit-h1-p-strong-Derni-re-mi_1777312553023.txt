@@ -1,0 +1,59 @@
+<h1>Politique de Confidentialité</h1>
+<p><strong>Dernière mise à jour :</strong> 27 avril 2026</p>
+
+<p>MobileMoney Manager (ci-après « l’Application » ou « nous ») est exploitée par Houehou Sosthene Alfio, Travailleur Indépendant au Luxembourg.</p>
+
+<h2>1. Introduction</h2>
+<p>Nous nous engageons à protéger votre vie privée et la sécurité de vos données financières. Cette Politique de Confidentialité explique comment nous collectons, utilisons, partageons et protégeons vos informations.</p>
+
+<h2>2. Informations que nous collectons</h2>
+<ul>
+  <li><strong>Informations de compte :</strong> Nom, prénom, adresse email, numéro de téléphone, mot de passe</li>
+  <li><strong>Données financières :</strong> Transactions (montant, date, catégorie, moyen de paiement : Orange Money, Wave, MTN MoMo, etc.)</li>
+  <li><strong>Données d’utilisation :</strong> Fréquence d’utilisation, pages visitées, appareils utilisés</li>
+  <li><strong>Données de paiement :</strong> Gérées par Stripe (nous ne stockons pas les numéros de carte)</li>
+</ul>
+
+<h2>3. Base légale du traitement</h2>
+<p>Nous traitons vos données sur la base de :</p>
+<ul>
+  <li>L’exécution du contrat (fourniture du service)</li>
+  <li>Notre intérêt légitime (amélioration du service et sécurité)</li>
+  <li>Votre consentement (pour les communications marketing)</li>
+</ul>
+
+<h2>4. Utilisation de vos données</h2>
+<p>Nous utilisons vos données pour :</p>
+<ul>
+  <li>Fournir, maintenir et améliorer l’Application</li>
+  <li>Générer des rapports, graphiques et export PDF</li>
+  <li>Assurer la sécurité du compte et prévenir la fraude</li>
+  <li>Vous envoyer des notifications importantes (vérification, mises à jour)</li>
+  <li>Respecter nos obligations légales</li>
+</ul>
+
+<h2>5. Partage des données</h2>
+<p>Nous ne vendons pas vos données. Nous pouvons les partager avec :</p>
+<ul>
+  <li>Stripe (pour le traitement des paiements)</li>
+  <li>Clerk (pour l’authentification)</li>
+  <li>Prestataires d’hébergement (Replit) et outils analytiques</li>
+  <li>Autorités compétentes si requis par la loi</li>
+</ul>
+
+<h2>6. Sécurité des données</h2>
+<p>Nous mettons en œuvre des mesures techniques et organisationnelles appropriées (chiffrement, accès restreint, audits réguliers). Cependant, aucune transmission sur Internet n’est 100% sécurisée.</p>
+
+<h2>7. Vos droits (RGPD)</h2>
+<p>Vous disposez des droits suivants :</p>
+<ul>
+  <li>Droit d’accès, de rectification, d’effacement</li>
+  <li>Droit d’opposition et de limitation du traitement</li>
+  <li>Droit à la portabilité des données</li>
+</ul>
+<p>Pour exercer ces droits, contactez-nous à : <strong>support@mobilemoneymanager.africa</strong></p>
+
+<h2>8. Conservation des données</h2>
+<p>Nous conservons vos données aussi longtemps que nécessaire pour fournir le service ou respecter nos obligations légales.</p>
+
+<p>Pour toute question, veuillez nous contacter à l’adresse ci-dessus.</p>
