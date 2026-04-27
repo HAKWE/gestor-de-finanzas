@@ -8,6 +8,15 @@ import {
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
+const EUR_TO_XOF = 655.957;
+
+function formatXOF(cents: number): string {
+  if (cents === 0) return "0";
+  const eur = cents / 100;
+  const xof = Math.ceil((eur * EUR_TO_XOF) / 100) * 100;
+  return new Intl.NumberFormat("fr-FR").format(xof);
+}
+
 const PLANS = [
   {
     key: "free",
@@ -241,12 +250,27 @@ export default function Pricing() {
                         </div>
                         <h2 className="text-xl font-bold text-foreground">{plan.name}</h2>
                       </div>
-                      <div className="flex items-baseline gap-1">
-                        <span className="text-4xl font-extrabold text-foreground">
-                          {formatPrice(plan.price, plan.currency)}
-                        </span>
-                        {!isFree && <span className="text-muted-foreground text-sm font-medium">/mois</span>}
-                        {isFree && <span className="text-muted-foreground text-sm font-medium">pour toujours</span>}
+                      <div>
+                        <div className="flex items-baseline gap-1">
+                          <span className="text-4xl font-extrabold text-foreground">
+                            {formatPrice(plan.price, plan.currency)}
+                          </span>
+                          {!isFree && <span className="text-muted-foreground text-sm font-medium">/mois</span>}
+                          {isFree && <span className="text-muted-foreground text-sm font-medium">pour toujours</span>}
+                        </div>
+                        {!isFree && (
+                          <div style={{
+                            marginTop: 4,
+                            display: "inline-flex", alignItems: "center", gap: 5,
+                            background: "#fff7ed", border: "1px solid #fed7aa",
+                            borderRadius: 8, padding: "3px 9px",
+                          }}>
+                            <span style={{ fontSize: 13, fontWeight: 700, color: "#c2410c" }}>
+                              ≈&nbsp;{formatXOF(plan.price)}&nbsp;FCFA
+                            </span>
+                            <span style={{ fontSize: 10, color: "#9ca3af", fontWeight: 500 }}>/mois</span>
+                          </div>
+                        )}
                       </div>
                     </div>
 
@@ -315,6 +339,22 @@ export default function Pricing() {
                 </div>
               );
             })}
+          </div>
+
+          {/* Currency note */}
+          <div style={{
+            textAlign: "center", marginTop: -8,
+            display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+            flexWrap: "wrap",
+          }}>
+            <span style={{
+              display: "inline-flex", alignItems: "center", gap: 6,
+              fontSize: 12, color: "#6b7280", fontWeight: 500,
+              background: "#f9fafb", border: "1px solid #e5e7eb",
+              borderRadius: 8, padding: "5px 12px",
+            }}>
+              💱 Prix en EUR&nbsp;•&nbsp;Facturé en FCFA selon le taux du jour (1 € ≈ 656 FCFA)
+            </span>
           </div>
 
           {/* Comparison table */}
