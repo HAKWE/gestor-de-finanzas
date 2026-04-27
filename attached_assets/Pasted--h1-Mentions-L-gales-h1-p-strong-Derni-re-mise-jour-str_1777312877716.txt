@@ -1,0 +1,41 @@
+<h1>Mentions Légales</h1>
+<p><strong>Dernière mise à jour :</strong> 27 avril 2026</p>
+
+<h2>1. Éditeur du site</h2>
+<p><strong>MobileMoney Manager</strong><br>
+Exploitée par :</p>
+<p><strong>Houehou Sosthene Alfio</strong><br>
+Travailleur Indépendant<br>
+Luxembourg</p>
+<p>Email : <a href="mailto:support@mobilemoneymanager.africa">support@mobilemoneymanager.africa</a></p>
+
+<h2>2. Hébergement</h2>
+<p>L’application est hébergée par :</p>
+<p><strong>Replit, Inc.</strong><br>
+Host : Replit<br>
+Adresse : 160 Spear Street, Suite 350, San Francisco, CA 94105, États-Unis</p>
+
+<h2>3. Propriété intellectuelle</h2>
+<p>L’ensemble du contenu de l’application MobileMoney Manager (structure, design, logos, textes, graphiques, base de données, etc.) est la propriété exclusive de Houehou Sosthene Alfio.</p>
+<p>Toute reproduction, représentation, modification ou adaptation totale ou partielle est strictement interdite sans autorisation écrite préalable.</p>
+
+<h2>4. Données personnelles</h2>
+<p>Le traitement des données personnelles est régi par notre <a href="/confidentialite">Politique de Confidentialité</a>. Conformément au RGPD, vous disposez d’un droit d’accès, de rectification, d’effacement et d’opposition à vos données.</p>
+
+<h2>5. Limitation de responsabilité</h2>
+<p>MobileMoney Manager est un outil d’aide à la gestion financière. L’éditeur ne saurait être tenu responsable :</p>
+<ul>
+  <li>Des erreurs ou omissions dans les données saisies par l’utilisateur</li>
+  <li>Des pertes financières résultant de l’utilisation de l’application</li>
+  <li>Des dysfonctionnements liés aux services des opérateurs mobiles (Orange Money, Wave, MTN MoMo, etc.)</li>
+  <li>Des interruptions de service dues à des cas de force majeure</li>
+</ul>
+
+<h2>6. Droit applicable</h2>
+<p>Les présentes mentions légales sont régies par le droit luxembourgeois. Tout litige sera soumis aux tribunaux compétents de la ville de Luxembourg.</p>
+
+<h2>7. Contact</h2>
+<p>Pour toute question relative à ces mentions légales ou à l’application :</p>
+<p>Email : <strong>support@mobilemoneymanager.africa</strong></p>
+
+<p>© 2026 MobileMoney Manager - Tous droits réservés</p>

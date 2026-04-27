@@ -150,6 +150,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             { href: "mailto:support@mobilemoneymanager.africa", label: "Contact" },
             { href: "/privacy", label: "Confidentialité" },
             { href: "/terms", label: "Conditions d'utilisation" },
+            { href: "/legal", label: "Mentions légales" },
             { href: "/pricing", label: "Tarifs" },
           ].map(({ href, label }) => (
             <a key={label} href={href} style={{ fontSize: 12, color: "#9ca3af", textDecoration: "none" }}>
