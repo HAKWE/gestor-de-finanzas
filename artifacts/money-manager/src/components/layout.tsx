@@ -135,19 +135,21 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
       <footer style={{
         borderTop: "1px solid #f0ede9",
-        padding: "16px 24px",
+        padding: "14px 24px",
         display: "flex", flexWrap: "wrap", alignItems: "center",
-        justifyContent: "space-between", gap: 12,
+        justifyContent: "space-between", gap: 10,
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
-          <img src="/logo.svg" alt="MobileMoney" style={{ width: 18, height: 18 }} />
-          <span style={{ fontSize: 12, color: "#9ca3af", fontWeight: 600 }}>MobileMoney Manager</span>
+          <img src="/logo.svg" alt="MobileMoney" style={{ width: 16, height: 16 }} />
+          <span style={{ fontSize: 12, color: "#9ca3af" }}>
+            © {new Date().getFullYear()} MobileMoney Manager
+          </span>
         </div>
         <nav style={{ display: "flex", flexWrap: "wrap", gap: 16 }}>
           {[
             { href: "mailto:support@mobilemoneymanager.africa", label: "Contact" },
             { href: "#privacy", label: "Confidentialité" },
-            { href: "#terms", label: "Conditions" },
+            { href: "#terms", label: "Conditions d'utilisation" },
             { href: "/pricing", label: "Tarifs" },
           ].map(({ href, label }) => (
             <a key={label} href={href} style={{ fontSize: 12, color: "#9ca3af", textDecoration: "none" }}>

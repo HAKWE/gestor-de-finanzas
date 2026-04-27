@@ -139,30 +139,114 @@ function SummaryCard({ label, value, trend: trendNode, color, icon }: {
   );
 }
 
-function StarterTeaser() {
+const PRO_FEATURES = [
+  { icon: "📊", label: "Graphiques Revenus vs Dépenses", sub: "Par semaine ou par jour" },
+  { icon: "🥧", label: "Répartition par catégorie", sub: "Diagramme camembert interactif" },
+  { icon: "📄", label: "Export PDF brandé", sub: "Rapport professionnel à partager" },
+  { icon: "📋", label: "Tableau de toutes les transactions", sub: "Filtrez et analysez en détail" },
+  { icon: "📈", label: "Comparaison mois précédent", sub: "Tendances sur revenus et dépenses" },
+];
+
+function StarterTeaser({ isStarter }: { isStarter: boolean }) {
   return (
     <div style={{
-      background: "#fff7ed", border: `1.5px solid ${ORANGE}`,
-      borderRadius: 16, padding: "32px 24px",
-      display: "flex", flexDirection: "column", alignItems: "center",
-      gap: 12, textAlign: "center",
+      borderRadius: 20, overflow: "hidden",
+      border: `1.5px solid ${ORANGE}`,
+      boxShadow: "0 4px 24px rgba(249,115,22,0.12)",
     }}>
-      <Crown style={{ color: ORANGE, width: 36, height: 36 }} />
-      <div style={{ fontWeight: 700, fontSize: 18, color: "#111" }}>
-        Débloquez les Rapports complets
-      </div>
-      <div style={{ color: "#6b7280", fontSize: 14, maxWidth: 320 }}>
-        Les graphiques détaillés, le tableau des transactions et l'export PDF branded
-        sont disponibles exclusivement avec l'abonnement <strong>Pro</strong>.
-      </div>
-      <Link href="/pricing">
-        <button style={{
-          background: ORANGE, color: "#fff", border: "none", borderRadius: 12,
-          padding: "12px 28px", fontWeight: 700, fontSize: 14, cursor: "pointer", marginTop: 4,
+      {/* Blurred chart preview */}
+      <div style={{
+        position: "relative", height: 120, overflow: "hidden",
+        background: "linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%)",
+      }}>
+        <div style={{
+          position: "absolute", inset: 0, display: "flex", alignItems: "flex-end",
+          padding: "12px 16px", gap: 6, opacity: 0.35,
         }}>
-          Voir les offres →
-        </button>
-      </Link>
+          {[55, 80, 45, 95, 60, 75, 40, 85, 50, 70, 65, 90].map((h, i) => (
+            <div key={i} style={{
+              flex: 1, background: i % 2 === 0 ? ORANGE : "#22c55e",
+              borderRadius: "3px 3px 0 0", height: `${h}%`,
+            }} />
+          ))}
+        </div>
+        <div style={{
+          position: "absolute", inset: 0,
+          backdropFilter: "blur(6px)",
+          WebkitBackdropFilter: "blur(6px)",
+          background: "rgba(255,247,237,0.60)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+        }}>
+          <div style={{
+            display: "flex", alignItems: "center", gap: 8,
+            background: "#fff", borderRadius: 999,
+            padding: "8px 18px",
+            boxShadow: "0 2px 16px rgba(0,0,0,0.10)",
+          }}>
+            <Crown style={{ width: 16, height: 16, color: ORANGE }} />
+            <span style={{ fontWeight: 700, fontSize: 13, color: "#111" }}>
+              Réservé aux abonnés Pro
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Content */}
+      <div style={{ background: "#fff", padding: "24px 24px 28px" }}>
+        <div style={{ marginBottom: 16 }}>
+          <h3 style={{ fontSize: 18, fontWeight: 800, color: "#111", margin: "0 0 6px" }}>
+            Débloquez les Rapports Pro complets
+          </h3>
+          <p style={{ fontSize: 13, color: "#6b7280", margin: 0, lineHeight: 1.55 }}>
+            {isStarter
+              ? "Vous êtes sur le plan Starter. Passez au Pro (seulement +6 €/mois) pour accéder aux analyses avancées."
+              : "Passez au plan Pro pour accéder aux graphiques, exports PDF et analyses détaillées."}
+          </p>
+        </div>
+
+        <div style={{
+          display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 20,
+        }}>
+          {PRO_FEATURES.map(({ icon, label, sub }) => (
+            <div key={label} style={{
+              display: "flex", alignItems: "flex-start", gap: 8,
+              background: "#fff7ed", borderRadius: 10, padding: "10px 12px",
+            }}>
+              <span style={{ fontSize: 18, flexShrink: 0, lineHeight: 1.2 }}>{icon}</span>
+              <div>
+                <div style={{ fontSize: 12, fontWeight: 700, color: "#111" }}>{label}</div>
+                <div style={{ fontSize: 11, color: "#9ca3af", marginTop: 1 }}>{sub}</div>
+              </div>
+            </div>
+          ))}
+          <div style={{
+            display: "flex", alignItems: "center", justifyContent: "center",
+            background: "#f9fafb", borderRadius: 10, padding: "10px 12px",
+            fontSize: 12, color: "#9ca3af", fontStyle: "italic",
+          }}>
+            + bien plus encore…
+          </div>
+        </div>
+
+        <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+          <Link href="/pricing" style={{ flex: 1, minWidth: 160 }}>
+            <button style={{
+              width: "100%", background: ORANGE, color: "#fff", border: "none",
+              borderRadius: 12, padding: "13px 24px", fontWeight: 800, fontSize: 14,
+              cursor: "pointer", boxShadow: "0 2px 12px rgba(249,115,22,0.30)",
+              display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+            }}>
+              <Crown style={{ width: 15, height: 15 }} />
+              Passer au Pro — 11 €/mois
+            </button>
+          </Link>
+          {isStarter && (
+            <div style={{ fontSize: 12, color: "#9ca3af", textAlign: "center" }}>
+              Seulement +6 €/mois<br />vs votre plan Starter
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
@@ -535,7 +619,7 @@ export default function Reports() {
             </div>
 
             {!isPro && (
-              <StarterTeaser />
+              <StarterTeaser isStarter={isPayingNotPro} />
             )}
 
             {isPro && isEmpty && (

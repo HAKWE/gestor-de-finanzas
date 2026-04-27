@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "wouter";
 import { Layout } from "../components/layout";
-import { Crown, Star, ExternalLink, ArrowLeft, CalendarDays, ShieldCheck, Loader2, AlertCircle } from "lucide-react";
+import { Crown, Star, ExternalLink, ArrowLeft, CalendarDays, ShieldCheck, Loader2, AlertCircle, Check, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
@@ -173,30 +173,81 @@ export default function Subscription() {
               </Button>
             </div>
 
-            {/* Upgrade to pro */}
+            {/* Starter → Pro upgrade */}
             {!isPro && (
               <div style={{
-                border: "1.5px solid hsl(var(--border))",
-                borderRadius: 16, padding: "18px 22px",
-                background: "hsl(var(--card))",
-                display: "flex", alignItems: "center", gap: 14,
+                borderRadius: 20, overflow: "hidden",
+                border: "1.5px solid #f97316",
+                boxShadow: "0 4px 20px rgba(249,115,22,0.10)",
               }}>
-                <Crown style={{ width: 22, height: 22, color: "#f97316", flexShrink: 0 }} />
-                <div style={{ flex: 1 }}>
-                  <p style={{ fontWeight: 700, fontSize: 14, margin: 0 }}>Passer au plan Pro</p>
-                  <p style={{ fontSize: 13, color: "hsl(var(--muted-foreground))", margin: "3px 0 0" }}>
-                    Export PDF, transactions illimitées, support prioritaire.
-                  </p>
-                </div>
-                <Link href="/pricing">
-                  <button style={{
-                    background: "#f97316", color: "white", border: "none",
-                    borderRadius: 10, padding: "8px 16px", fontWeight: 700,
-                    fontSize: 13, cursor: "pointer", whiteSpace: "nowrap",
+                <div style={{
+                  background: "linear-gradient(135deg, #431407 0%, #9a3412 100%)",
+                  padding: "18px 22px",
+                  display: "flex", alignItems: "center", gap: 12,
+                }}>
+                  <div style={{
+                    width: 40, height: 40, borderRadius: 12,
+                    background: "rgba(255,255,255,0.15)",
+                    display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
                   }}>
-                    Voir Pro →
-                  </button>
-                </Link>
+                    <Crown style={{ width: 20, height: 20, color: "#fed7aa" }} />
+                  </div>
+                  <div>
+                    <p style={{ fontWeight: 800, fontSize: 16, color: "#fff7ed", margin: 0 }}>
+                      Passez au plan Pro
+                    </p>
+                    <p style={{ fontSize: 12, color: "#fdba74", margin: "2px 0 0" }}>
+                      Seulement +6 €/mois de plus — annulable à tout moment
+                    </p>
+                  </div>
+                  <div style={{
+                    marginLeft: "auto", textAlign: "right", flexShrink: 0,
+                  }}>
+                    <div style={{ fontSize: 22, fontWeight: 900, color: "#fff7ed", lineHeight: 1 }}>11 €</div>
+                    <div style={{ fontSize: 11, color: "#fdba74" }}>/mois</div>
+                  </div>
+                </div>
+
+                <div style={{ background: "#fff", padding: "18px 22px" }}>
+                  <p style={{ fontSize: 12, fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.05em", margin: "0 0 12px" }}>
+                    Ce que Pro débloque pour vous
+                  </p>
+
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 18 }}>
+                    {[
+                      { icon: "📄", label: "Export PDF professionnel", sub: "Rapport brandé à partager avec votre comptable" },
+                      { icon: "📊", label: "Graphiques avancés", sub: "Revenus vs dépenses par semaine ou par jour" },
+                      { icon: "🔢", label: "Transactions illimitées", sub: "Aucune limite mensuelle sur vos enregistrements" },
+                      { icon: "📱", label: "Import SMS & relevés", sub: "Importez vos relevés Orange Money, Wave, MTN" },
+                      { icon: "⚡", label: "Support prioritaire", sub: "Réponse en moins de 24 h garanti" },
+                    ].map(({ icon, label, sub }) => (
+                      <div key={label} style={{
+                        display: "flex", alignItems: "flex-start", gap: 10,
+                        padding: "10px 12px", background: "#fff7ed", borderRadius: 10,
+                      }}>
+                        <span style={{ fontSize: 18, flexShrink: 0, lineHeight: 1.2 }}>{icon}</span>
+                        <div>
+                          <div style={{ fontSize: 13, fontWeight: 700, color: "#111" }}>{label}</div>
+                          <div style={{ fontSize: 11, color: "#9ca3af", marginTop: 2 }}>{sub}</div>
+                        </div>
+                        <Check style={{ width: 14, height: 14, color: "#f97316", flexShrink: 0, marginTop: 2, marginLeft: "auto" }} />
+                      </div>
+                    ))}
+                  </div>
+
+                  <Link href="/pricing">
+                    <button style={{
+                      width: "100%", background: "#f97316", color: "#fff",
+                      border: "none", borderRadius: 13, padding: "13px 24px",
+                      fontWeight: 800, fontSize: 14, cursor: "pointer",
+                      boxShadow: "0 2px 12px rgba(249,115,22,0.30)",
+                      display: "flex", alignItems: "center", justifyContent: "center", gap: 7,
+                    }}>
+                      <Zap style={{ width: 16, height: 16 }} />
+                      Passer au Pro maintenant →
+                    </button>
+                  </Link>
+                </div>
               </div>
             )}
           </>
