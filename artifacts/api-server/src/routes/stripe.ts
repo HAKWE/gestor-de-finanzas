@@ -258,6 +258,7 @@ router.get("/stripe/subscription-status", requireAuth, async (req: any, res): Pr
       SELECT
         s.id AS subscription_id,
         s.status,
+        s.cancel_at_period_end,
         p.name AS product_name,
         pr.unit_amount,
         pr.currency,
@@ -293,12 +294,52 @@ router.get("/stripe/subscription-status", requireAuth, async (req: any, res): Pr
       plan,
       planLabel: name,
       status: row.status,
+      cancelAtPeriodEnd: row.cancel_at_period_end === true || row.cancel_at_period_end === "true" || row.cancel_at_period_end === 1,
       subscriptionId: row.subscription_id,
       currentPeriodEnd,
     });
   } catch (err: any) {
     console.error("Subscription status error:", err.message);
     res.status(500).json({ error: "Erreur lors de la récupération du statut" });
+  }
+});
+
+router.post("/stripe/cancel-subscription", requireAuth, async (req: any, res): Promise<void> => {
+  const userId = req.userId;
+  try {
+    const profiles = await db
+      .select()
+      .from(userProfilesTable)
+      .where(eq(userProfilesTable.userId, userId))
+      .limit(1);
+
+    const profile = profiles[0];
+    if (!profile?.stripeCustomerId) {
+      res.status(400).json({ error: "Aucun abonnement actif trouvé" });
+      return;
+    }
+
+    const stripe = await getUncachableStripeClient();
+
+    const subscriptions = await stripe.subscriptions.list({
+      customer: profile.stripeCustomerId,
+      status: "active",
+      limit: 1,
+    });
+
+    if (subscriptions.data.length === 0) {
+      res.status(404).json({ error: "Aucun abonnement actif trouvé" });
+      return;
+    }
+
+    await stripe.subscriptions.update(subscriptions.data[0].id, {
+      cancel_at_period_end: true,
+    });
+
+    res.json({ success: true });
+  } catch (err: any) {
+    console.error("Cancel subscription error:", err.message);
+    res.status(500).json({ error: "Impossible d'annuler l'abonnement. Réessayez." });
   }
 });
 
