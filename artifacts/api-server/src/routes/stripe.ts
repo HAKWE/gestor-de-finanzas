@@ -1,8 +1,28 @@
 import { Router, type IRouter } from "express";
-import { getAuth } from "@clerk/express";
+import { getAuth, createClerkClient } from "@clerk/express";
 import { eq, sql } from "drizzle-orm";
 import { db, userProfilesTable } from "@workspace/db";
 import { getUncachableStripeClient } from "../stripeClient";
+
+async function getClerkUserEmail(userId: string): Promise<string | null> {
+  try {
+    const clerk = createClerkClient({ secretKey: process.env.CLERK_SECRET_KEY });
+    const user = await clerk.users.getUser(userId);
+    const email = user.emailAddresses.find(e => e.id === user.primaryEmailAddressId)?.emailAddress
+      ?? user.emailAddresses[0]?.emailAddress ?? null;
+    return email;
+  } catch {
+    return null;
+  }
+}
+
+async function upsertStripeCustomerId(userId: string, customerId: string): Promise<void> {
+  await db.execute(sql`
+    INSERT INTO user_profiles (user_id, stripe_customer_id)
+    VALUES (${userId}, ${customerId})
+    ON CONFLICT (user_id) DO UPDATE SET stripe_customer_id = ${customerId}
+  `);
+}
 
 const router: IRouter = Router();
 
@@ -159,12 +179,13 @@ router.post("/stripe/checkout-by-plan", requireAuth, async (req: any, res): Prom
     let customerId = profile?.stripeCustomerId;
 
     if (!customerId) {
-      const customer = await stripe.customers.create({ metadata: { userId } });
+      const email = await getClerkUserEmail(userId);
+      const customer = await stripe.customers.create({
+        email: email ?? undefined,
+        metadata: { userId },
+      });
       customerId = customer.id;
-      await db
-        .update(userProfilesTable)
-        .set({ stripeCustomerId: customerId })
-        .where(eq(userProfilesTable.userId, userId));
+      await upsertStripeCustomerId(userId, customerId);
     }
 
     const domain = process.env.APP_DOMAIN || process.env.REPLIT_DOMAINS?.split(",")[0] || req.get("host");
@@ -172,6 +193,7 @@ router.post("/stripe/checkout-by-plan", requireAuth, async (req: any, res): Prom
 
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
+      client_reference_id: userId,
       payment_method_types: ["card"],
       line_items: [{ price: price.id, quantity: 1 }],
       mode: "subscription",
@@ -209,21 +231,20 @@ router.post("/stripe/checkout", requireAuth, async (req: any, res): Promise<void
     let customerId = profile?.stripeCustomerId;
 
     if (!customerId) {
+      const email = await getClerkUserEmail(userId);
       const customer = await stripe.customers.create({
+        email: email ?? undefined,
         metadata: { userId },
       });
       customerId = customer.id;
-
-      await db
-        .update(userProfilesTable)
-        .set({ stripeCustomerId: customerId })
-        .where(eq(userProfilesTable.userId, userId));
+      await upsertStripeCustomerId(userId, customerId);
     }
 
     const domain = process.env.APP_DOMAIN || process.env.REPLIT_DOMAINS?.split(",")[0] || req.get("host");
 
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
+      client_reference_id: userId,
       payment_method_types: ["card"],
       line_items: [{ price: priceId, quantity: 1 }],
       mode: "subscription",
@@ -241,61 +262,82 @@ router.post("/stripe/checkout", requireAuth, async (req: any, res): Promise<void
 router.get("/stripe/subscription-status", requireAuth, async (req: any, res): Promise<void> => {
   const userId = req.userId;
   try {
+    const stripe = await getUncachableStripeClient();
+
+    // Step 1: get stripeCustomerId from user_profiles
     const profiles = await db
       .select()
       .from(userProfilesTable)
       .where(eq(userProfilesTable.userId, userId))
       .limit(1);
 
-    const profile = profiles[0];
+    let customerId = profiles[0]?.stripeCustomerId ?? null;
 
-    if (!profile?.stripeCustomerId) {
+    // Step 2: if no customerId saved, try to find by Clerk email in Stripe
+    if (!customerId) {
+      const email = await getClerkUserEmail(userId);
+      if (email) {
+        const customers = await stripe.customers.list({ email, limit: 5 });
+        const live = customers.data.find(c => c.livemode);
+        if (live) {
+          customerId = live.id;
+          await upsertStripeCustomerId(userId, customerId);
+          console.log(`[subscription-status] Auto-linked ${userId} → ${customerId} via email ${email}`);
+        }
+      }
+    }
+
+    if (!customerId) {
       res.json({ plan: "free", planLabel: "Gratuit" });
       return;
     }
 
-    const rows = await db.execute(sql`
-      SELECT
-        s.id AS subscription_id,
-        s.status,
-        s.cancel_at_period_end,
-        p.name AS product_name,
-        pr.unit_amount,
-        pr.currency,
-        s.current_period_end
-      FROM stripe.subscriptions s
-      JOIN stripe.subscription_items si ON si.subscription = s.id
-      JOIN stripe.prices pr ON pr.id = si.price
-      JOIN stripe.products p ON p.id = pr.product
-      WHERE s.customer = ${profile.stripeCustomerId}
-        AND s.status IN ('active', 'trialing')
-      ORDER BY pr.unit_amount DESC
-      LIMIT 1
-    `);
+    // Step 3: query live Stripe API directly for accurate subscription data
+    const subscriptions = await stripe.subscriptions.list({
+      customer: customerId,
+      status: "all",
+      limit: 10,
+      expand: ["data.items.data.price.product"],
+    });
 
-    if (rows.rows.length === 0) {
+    const active = subscriptions.data.find(s => s.status === "active" || s.status === "trialing");
+
+    if (!active) {
       res.json({ plan: "free", planLabel: "Gratuit" });
       return;
     }
 
-    const row = rows.rows[0] as any;
-    const name: string = row.product_name || "";
+    const item = active.items.data[0];
+    const product = item?.price?.product as any;
+    const name: string = product?.name || "";
     const plan = name.toLowerCase().includes("pro") ? "pro"
       : name.toLowerCase().includes("starter") ? "starter"
       : "paid";
 
-    // current_period_end is a Unix timestamp (integer) in the stripe schema
-    const rawEnd = row.current_period_end;
-    const currentPeriodEnd = rawEnd
-      ? (typeof rawEnd === "number" ? new Date(rawEnd * 1000).toISOString() : new Date(rawEnd).toISOString())
-      : (profile.subscriptionPeriodEnd ? profile.subscriptionPeriodEnd.toISOString() : null);
+    // Resolve access end date: prefer current_period_end, fall back to cancel_at
+    const rawEnd = (active as any).current_period_end ?? (active as any).cancel_at ?? null;
+    const currentPeriodEnd = rawEnd ? new Date(rawEnd * 1000).toISOString() : null;
+
+    // Also sync to user_profiles for future quick lookups
+    if (active.status === "active" || active.status === "trialing") {
+      const periodEnd = rawEnd ? new Date(rawEnd * 1000) : null;
+      await db
+        .update(userProfilesTable)
+        .set({
+          stripeSubscriptionId: active.id,
+          stripePriceId: item?.price?.id ?? null,
+          subscriptionPlan: plan,
+          subscriptionPeriodEnd: periodEnd,
+        })
+        .where(eq(userProfilesTable.userId, userId));
+    }
 
     res.json({
       plan,
       planLabel: name,
-      status: row.status,
-      cancelAtPeriodEnd: row.cancel_at_period_end === true || row.cancel_at_period_end === "true" || row.cancel_at_period_end === 1,
-      subscriptionId: row.subscription_id,
+      status: active.status,
+      cancelAtPeriodEnd: active.cancel_at_period_end === true,
+      subscriptionId: active.id,
       currentPeriodEnd,
     });
   } catch (err: any) {

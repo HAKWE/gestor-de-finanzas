@@ -1,9 +1,17 @@
 import { Request, Response } from "express";
 import Stripe from "stripe";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { db, userProfilesTable } from "@workspace/db";
 import { logger } from "../lib/logger";
 import { getUncachableStripeClient } from "../stripeClient";
+
+async function upsertCustomerLink(userId: string, customerId: string): Promise<void> {
+  await db.execute(sql`
+    INSERT INTO user_profiles (user_id, stripe_customer_id)
+    VALUES (${userId}, ${customerId})
+    ON CONFLICT (user_id) DO UPDATE SET stripe_customer_id = ${customerId}
+  `);
+}
 
 function getPlanFromProductName(name: string): "starter" | "pro" | null {
   const lower = name.toLowerCase();
@@ -113,24 +121,35 @@ export async function handleStripeWebhook(req: Request, res: Response): Promise<
     switch (event.type) {
       case "checkout.session.completed": {
         const session = event.data.object as Stripe.Checkout.Session;
+        const userId = session.client_reference_id;
+        const customerId = session.customer as string;
         logger.info(
-          { sessionId: session.id, customerId: session.customer, subscriptionId: session.subscription },
+          { sessionId: session.id, customerId, subscriptionId: session.subscription, userId },
           "[stripe-webhook] checkout.session.completed"
         );
 
-        if (session.mode === "subscription" && session.subscription && session.customer) {
+        // Link the Clerk userId → Stripe customerId if client_reference_id was set
+        if (userId && customerId) {
+          await upsertCustomerLink(userId, customerId);
+          logger.info({ userId, customerId }, "[stripe-webhook] Customer linked to user");
+        }
+
+        if (session.mode === "subscription" && session.subscription && customerId) {
           const stripe = await getUncachableStripeClient();
           const subscription = await stripe.subscriptions.retrieve(
             session.subscription as string
           );
           const item = subscription.items.data[0];
           if (item) {
+            const periodEnd = (subscription as any).current_period_end
+              ?? (subscription as any).cancel_at
+              ?? null;
             await updateUserSubscription(
-              session.customer as string,
+              customerId,
               subscription.id,
               item.price.id,
               subscription.status,
-              (subscription as any).current_period_end ?? null
+              periodEnd
             );
           }
         }
