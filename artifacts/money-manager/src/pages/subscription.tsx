@@ -83,7 +83,7 @@ export default function Subscription() {
   return (
     <Layout>
       {/* ─── Cancel confirmation modal ─── */}
-      {showCancelModal && sub?.currentPeriodEnd && (
+      {showCancelModal && (
         <div style={{
           position: "fixed", inset: 0, zIndex: 100,
           background: "rgba(0,0,0,0.50)", backdropFilter: "blur(4px)",
@@ -103,10 +103,10 @@ export default function Subscription() {
               </div>
               <div>
                 <h2 style={{ fontSize: 17, fontWeight: 800, color: "#111", margin: "0 0 4px" }}>
-                  Annuler l'abonnement ?
+                  Annuler mon abonnement ?
                 </h2>
                 <p style={{ fontSize: 13, color: "#6b7280", margin: 0, lineHeight: 1.5 }}>
-                  Cette action peut être effectuée avant la fin de la période.
+                  Votre accès restera disponible jusqu'à la fin de la période.
                 </p>
               </div>
               <button
@@ -125,8 +125,9 @@ export default function Subscription() {
               <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
                 <CalendarDays style={{ width: 15, height: 15, color: ORANGE, flexShrink: 0, marginTop: 1 }} />
                 <p style={{ fontSize: 13, color: "#92400e", margin: 0, lineHeight: 1.6 }}>
-                  Votre abonnement restera <strong>actif jusqu'à la fin de la période en cours</strong>{" "}
-                  (<strong>{formatDate(sub.currentPeriodEnd!)}</strong>). Aucun remboursement ne sera effectué.
+                  Votre abonnement <strong>{sub?.planLabel}</strong> restera actif jusqu'à la fin de la période en cours
+                  {sub?.currentPeriodEnd ? <> (<strong>{formatDate(sub.currentPeriodEnd)}</strong>)</> : null}.{" "}
+                  Aucun remboursement ne sera effectué.
                 </p>
               </div>
             </div>
@@ -181,7 +182,7 @@ export default function Subscription() {
                   border: "1.5px solid #e5e7eb", fontWeight: 600, fontSize: 14, cursor: "pointer",
                 }}
               >
-                Garder mon abonnement
+                Annuler
               </button>
             </div>
           </div>
@@ -294,7 +295,7 @@ export default function Subscription() {
                   <CalendarDays style={{ width: 16, height: 16, color: "#fdba74", flexShrink: 0 }} />
                   <p style={{ color: "#fed7aa", fontSize: 13, margin: 0, lineHeight: 1.5 }}>
                     {isCancelled
-                      ? <>Accès garanti jusqu'au <strong style={{ color: "#fff7ed" }}>{formatDate(sub.currentPeriodEnd)}</strong>. Aucun renouvellement.</>
+                      ? <>Annulé — Accès jusqu'au <strong style={{ color: "#fff7ed" }}>{formatDate(sub.currentPeriodEnd)}</strong></>
                       : <>Prochain renouvellement : <strong style={{ color: "#fff7ed" }}>{formatDate(sub.currentPeriodEnd)}</strong></>
                     }
                   </p>
