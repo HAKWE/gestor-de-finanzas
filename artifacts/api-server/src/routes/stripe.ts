@@ -314,9 +314,12 @@ router.get("/stripe/subscription-status", requireAuth, async (req: any, res): Pr
       : name.toLowerCase().includes("starter") ? "starter"
       : "paid";
 
-    // Resolve access end date: prefer current_period_end, fall back to cancel_at
+    // Resolve access end date: prefer current_period_end, fall back to cancel_at,
+    // then fall back to subscriptionPeriodEnd saved in user_profiles (written on cancel)
     const rawEnd = (active as any).current_period_end ?? (active as any).cancel_at ?? null;
-    const currentPeriodEnd = rawEnd ? new Date(rawEnd * 1000).toISOString() : null;
+    const currentPeriodEnd = rawEnd
+      ? new Date(rawEnd * 1000).toISOString()
+      : (profiles[0]?.subscriptionPeriodEnd ? profiles[0].subscriptionPeriodEnd.toISOString() : null);
 
     // Also sync to user_profiles for future quick lookups
     if (active.status === "active" || active.status === "trialing") {
@@ -374,11 +377,25 @@ router.post("/stripe/cancel-subscription", requireAuth, async (req: any, res): P
       return;
     }
 
-    await stripe.subscriptions.update(subscriptions.data[0].id, {
+    const updated = await stripe.subscriptions.update(subscriptions.data[0].id, {
       cancel_at_period_end: true,
     });
 
-    res.json({ success: true });
+    // Stripe sets cancel_at to the period-end date after enable cancel_at_period_end
+    const rawEnd = (updated as any).cancel_at
+      ?? (updated as any).current_period_end
+      ?? null;
+    const currentPeriodEnd = rawEnd ? new Date(rawEnd * 1000).toISOString() : null;
+
+    // Sync the period end to user_profiles so the status endpoint can use it as fallback
+    if (currentPeriodEnd) {
+      await db
+        .update(userProfilesTable)
+        .set({ subscriptionPeriodEnd: new Date(currentPeriodEnd) })
+        .where(eq(userProfilesTable.userId, userId));
+    }
+
+    res.json({ success: true, currentPeriodEnd });
   } catch (err: any) {
     console.error("Cancel subscription error:", err.message);
     res.status(500).json({ error: "Impossible d'annuler l'abonnement. Réessayez." });

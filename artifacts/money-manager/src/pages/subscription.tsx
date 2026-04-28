@@ -68,7 +68,12 @@ export default function Subscription() {
       if (!res.ok) throw new Error(data.error || "Erreur");
       setCancelSuccess(true);
       setShowCancelModal(false);
-      setSub(prev => prev ? { ...prev, cancelAtPeriodEnd: true } : prev);
+      // Merge returned date so the UI shows the exact end date immediately
+      setSub(prev => prev ? {
+        ...prev,
+        cancelAtPeriodEnd: true,
+        currentPeriodEnd: data.currentPeriodEnd ?? prev.currentPeriodEnd,
+      } : prev);
     } catch (err: any) {
       setCancelError(err.message);
     } finally {
@@ -288,17 +293,30 @@ export default function Subscription() {
 
               {/* Date pill */}
               {sub?.currentPeriodEnd && (
-                <div style={{
-                  background: "rgba(0,0,0,0.20)", borderRadius: 12,
-                  padding: "12px 16px", display: "flex", alignItems: "center", gap: 10,
-                }}>
-                  <CalendarDays style={{ width: 16, height: 16, color: "#fdba74", flexShrink: 0 }} />
-                  <p style={{ color: "#fed7aa", fontSize: 13, margin: 0, lineHeight: 1.5 }}>
-                    {isCancelled
-                      ? <>Annulé — Accès jusqu'au <strong style={{ color: "#fff7ed" }}>{formatDate(sub.currentPeriodEnd)}</strong></>
-                      : <>Prochain renouvellement : <strong style={{ color: "#fff7ed" }}>{formatDate(sub.currentPeriodEnd)}</strong></>
-                    }
-                  </p>
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  <div style={{
+                    background: "rgba(0,0,0,0.20)", borderRadius: 12,
+                    padding: "12px 16px", display: "flex", alignItems: "center", gap: 10,
+                  }}>
+                    <CalendarDays style={{ width: 16, height: 16, color: "#fdba74", flexShrink: 0 }} />
+                    <p style={{ color: "#fed7aa", fontSize: 13, margin: 0, lineHeight: 1.5 }}>
+                      {isCancelled
+                        ? <>Annulé — Accès jusqu'au <strong style={{ color: "#fff7ed" }}>{formatDate(sub.currentPeriodEnd)}</strong></>
+                        : <>Prochain renouvellement : <strong style={{ color: "#fff7ed" }}>{formatDate(sub.currentPeriodEnd)}</strong></>
+                      }
+                    </p>
+                  </div>
+                  {isCancelled && (
+                    <div style={{
+                      background: "rgba(255,255,255,0.08)", borderRadius: 10,
+                      padding: "10px 14px", display: "flex", alignItems: "flex-start", gap: 8,
+                    }}>
+                      <Check style={{ width: 13, height: 13, color: "#4ade80", flexShrink: 0, marginTop: 1 }} />
+                      <p style={{ color: "#d1d5db", fontSize: 12, margin: 0, lineHeight: 1.5 }}>
+                        Vous pouvez continuer à utiliser les fonctionnalités {sub.planLabel} jusqu'à la fin de la période.
+                      </p>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
