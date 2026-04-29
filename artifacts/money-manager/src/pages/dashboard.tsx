@@ -18,6 +18,27 @@ const BANNER_DURATION = 8000;
 const ORANGE = "#f97316";
 const GREEN = "#22c55e";
 const RED = "#ef4444";
+const IS_DEV = import.meta.env.MODE === "development";
+const CLERK_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY ?? "";
+const clerkMode = CLERK_KEY.startsWith("pk_live_") ? "Live" : "Test";
+
+interface EnvStatus { nodeEnv: string; stripeMode: string; clerkMode: string; }
+
+function useEnvStatus() {
+  const [status, setStatus] = useState<EnvStatus | null>(null);
+  useEffect(() => {
+    if (!IS_DEV) return;
+    fetch(`${basePath}/api/env-status`)
+      .then(r => r.json())
+      .then((d: EnvStatus) => {
+        setStatus(d);
+        const env = d.nodeEnv === "production" ? "PRODUCTION" : "DEVELOPMENT";
+        console.log(`🚀 Running in ${env} mode | Stripe: ${d.stripeMode.toUpperCase()} | Clerk: ${clerkMode.toUpperCase()} (frontend key)`);
+      })
+      .catch(() => {});
+  }, []);
+  return status;
+}
 
 function fmtShort(v: number) {
   if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1)}M`;
@@ -586,6 +607,8 @@ export default function Dashboard() {
     { query: { refetchInterval: 30_000, staleTime: 10_000 } },
   );
 
+  const envStatus = useEnvStatus();
+
   const [showTour, setShowTour] = useState(() => !localStorage.getItem("welcome-tour-v1"));
   const closeTour = () => { localStorage.setItem("welcome-tour-v1", "1"); setShowTour(false); };
 
@@ -1022,6 +1045,36 @@ export default function Dashboard() {
         )}
 
       </div>
+
+      {IS_DEV && envStatus && (
+        <div style={{
+          margin: "32px 16px 8px",
+          padding: "12px 16px",
+          background: "#f1f5f9",
+          border: "1px solid #cbd5e1",
+          borderRadius: 10,
+          fontFamily: "monospace",
+          fontSize: 12,
+          color: "#475569",
+          lineHeight: 1.7,
+        }}>
+          <strong style={{ color: "#334155", fontSize: 11, textTransform: "uppercase", letterSpacing: 1 }}>
+            🛠 Env Status (dev only)
+          </strong>
+          <br />
+          Environment: <strong style={{ color: envStatus.nodeEnv === "production" ? "#16a34a" : "#ea580c" }}>
+            {envStatus.nodeEnv === "production" ? "PRODUCTION" : "DEVELOPMENT"}
+          </strong>
+          <br />
+          Stripe: <strong style={{ color: envStatus.stripeMode === "live" ? "#16a34a" : "#6366f1" }}>
+            {envStatus.stripeMode === "live" ? "🟢 LIVE" : "🔵 TEST"}
+          </strong>
+          <br />
+          Clerk: <strong style={{ color: clerkMode === "Live" ? "#16a34a" : "#6366f1" }}>
+            {clerkMode === "Live" ? "🟢 LIVE" : "🔵 TEST (dev key)"}
+          </strong>
+        </div>
+      )}
 
       <style>{`
         @keyframes pulse {

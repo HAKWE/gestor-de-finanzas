@@ -17,4 +17,15 @@ router.use(profileRouter);
 router.use(stripeRouter);
 router.use(reportsRouter);
 
+router.get("/env-status", (_req, res) => {
+  const stripeKey = process.env.STRIPE_SECRET_KEY ?? "";
+  const clerkKey = process.env.CLERK_SECRET_KEY ?? "";
+  const nodeEnv = process.env.NODE_ENV ?? "unknown";
+  res.json({
+    nodeEnv,
+    stripeMode: stripeKey.startsWith("sk_live_") ? "live" : "test",
+    clerkMode: clerkKey.startsWith("sk_live_") ? "live" : "test",
+  });
+});
+
 export default router;
