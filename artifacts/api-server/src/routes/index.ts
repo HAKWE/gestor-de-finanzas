@@ -6,6 +6,7 @@ import inventoryRouter from "./inventory";
 import profileRouter from "./profile";
 import stripeRouter from "./stripe";
 import reportsRouter from "./reports";
+import adminRouter from "./admin";
 
 const router: IRouter = Router();
 
@@ -16,6 +17,7 @@ router.use(inventoryRouter);
 router.use(profileRouter);
 router.use(stripeRouter);
 router.use(reportsRouter);
+router.use(adminRouter);
 
 router.get("/env-status", (_req, res) => {
   const stripeKey = process.env.STRIPE_SECRET_KEY ?? "";
