@@ -4,24 +4,80 @@ import { useLanguage } from "../lib/language-context";
 import { Layout } from "../components/layout";
 import { useGetDashboardSummary, useGetWeeklySummary, useListTransactions } from "@workspace/api-client-react";
 import {
-  Wallet, ArrowDownRight, ArrowUpRight, Hash,
-  Zap, Star, Crown, X, Plus, Sparkles, Receipt,
-  TrendingUp, TrendingDown,
+  Wallet, ArrowDownRight, ArrowUpRight,
+  Zap, Crown, X, Plus, Receipt,
+  TrendingUp, TrendingDown, BarChart2, Download,
 } from "lucide-react";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid,
   Tooltip as RechartsTooltip, ResponsiveContainer,
 } from "recharts";
 
+// ── Constants ─────────────────────────────────────────────────────────────────
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 const BANNER_DURATION = 8000;
 const ORANGE = "#f97316";
-const GREEN = "#22c55e";
-const RED = "#ef4444";
+const GREEN = "#16a34a";
+const GREEN_LIGHT = "#22c55e";
+const RED = "#dc2626";
 const IS_DEV = import.meta.env.MODE === "development";
 const CLERK_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY ?? "";
 const clerkMode = CLERK_KEY.startsWith("pk_live_") ? "Live" : "Test";
 
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function fmtShort(v: number) {
+  if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1)}M`;
+  if (v >= 1_000) return `${(v / 1_000).toFixed(0)}k`;
+  return String(Math.round(v));
+}
+
+function fmtDate(d: string) {
+  return new Date(d + "T00:00:00").toLocaleDateString("fr-FR", { day: "2-digit", month: "short" });
+}
+
+function getGreeting() {
+  const h = new Date().getHours();
+  if (h < 12) return "Bonjour";
+  if (h < 18) return "Bon après-midi";
+  return "Bonsoir";
+}
+
+function getGreetingEmoji() {
+  const h = new Date().getHours();
+  if (h < 12) return "☀️";
+  if (h < 18) return "🌤️";
+  return "🌙";
+}
+
+function getTodayLabel() {
+  return new Date().toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" });
+}
+
+// ── Category icons ─────────────────────────────────────────────────────────────
+const CATEGORY_ICONS: Record<string, string> = {
+  alimentation: "🍲", nourriture: "🍲", courses: "🛒",
+  transport: "🚌", carburant: "⛽", moto: "🏍️",
+  vente: "💼", ventes: "💼", commande: "📦",
+  salaire: "💰", revenus: "💰", recette: "💰",
+  loyer: "🏠", maison: "🏠",
+  eau: "💧", électricité: "⚡", facture: "📋",
+  "mobile money": "📱", orange: "📱", wave: "🌊", mtn: "📶",
+  santé: "💊", médecin: "🏥",
+  éducation: "📚", école: "📚",
+  téléphone: "📞", internet: "🌐",
+  épargne: "🏦", transfert: "↗️",
+  autre: "📁",
+};
+
+function getCategoryIcon(category: string): string {
+  const key = category?.toLowerCase().trim() ?? "";
+  for (const [k, v] of Object.entries(CATEGORY_ICONS)) {
+    if (key.includes(k)) return v;
+  }
+  return "📁";
+}
+
+// ── Env status (dev only) ─────────────────────────────────────────────────────
 interface EnvStatus { nodeEnv: string; stripeMode: string; clerkMode: string; }
 
 function useEnvStatus() {
@@ -40,18 +96,7 @@ function useEnvStatus() {
   return status;
 }
 
-function fmtShort(v: number) {
-  if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1)}M`;
-  if (v >= 1_000) return `${(v / 1_000).toFixed(0)}k`;
-  return String(Math.round(v));
-}
-
-function fmtDate(d: string) {
-  return new Date(d + "T00:00:00").toLocaleDateString("fr-FR", {
-    day: "2-digit", month: "short",
-  });
-}
-
+// ── Confetti ──────────────────────────────────────────────────────────────────
 function ConfettiCanvas({ active }: { active: boolean }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   useEffect(() => {
@@ -106,158 +151,26 @@ function ConfettiCanvas({ active }: { active: boolean }) {
   );
 }
 
+// ── Subscription status interface ─────────────────────────────────────────────
 interface SubscriptionStatus {
   plan: "free" | "starter" | "pro" | "paid";
   planLabel: string;
   status?: string;
 }
 
-function PlanBadge({ plan, label }: { plan: string; label: string }) {
-  if (plan === "free") return null;
-  const isPro = plan === "pro";
-  return (
-    <span style={{
-      display: "inline-flex", alignItems: "center", gap: 5,
-      padding: "5px 12px", borderRadius: 999, fontSize: 12, fontWeight: 700,
-      backgroundColor: isPro ? ORANGE : "#fff7ed",
-      color: isPro ? "white" : ORANGE,
-      border: isPro ? "none" : `2px solid ${ORANGE}`,
-      boxShadow: isPro ? "0 2px 8px rgba(249,115,22,0.30)" : "none",
-    }}>
-      {isPro ? <Crown style={{ width: 12, height: 12 }} /> : <Star style={{ width: 12, height: 12 }} />}
-      {label}
-    </span>
-  );
-}
-
-function UpgradeBanner({ plan, onDismiss }: { plan: string; onDismiss: () => void }) {
-  if (plan === "pro") return null;
-  const isStarter = plan === "starter";
-
-  const proFeatures = isStarter
-    ? [
-        { icon: "📄", text: "Export PDF professionnel" },
-        { icon: "📱", text: "Import SMS Orange Money, Wave" },
-        { icon: "📊", text: "Rapports avancés & graphiques" },
-        { icon: "♾️", text: "Transactions illimitées" },
-      ]
-    : [
-        { icon: "📊", text: "Rapports & tableau de bord complet" },
-        { icon: "📄", text: "Export PDF professionnel" },
-        { icon: "📱", text: "Import SMS & relevés bancaires" },
-        { icon: "🗂️", text: "Jusqu'à 3 wallets (Starter)" },
-      ];
-
+// ── Skeleton ──────────────────────────────────────────────────────────────────
+function Skeleton({ h = 80, radius = 16 }: { h?: number; radius?: number }) {
   return (
     <div style={{
-      borderRadius: 20, overflow: "hidden",
-      background: "linear-gradient(135deg, #431407 0%, #7c2d12 50%, #9a3412 100%)",
-      boxShadow: "0 6px 28px rgba(249,115,22,0.25)",
-      position: "relative",
-    }}>
-      {/* Decorative glows */}
-      <div style={{ position: "absolute", top: -20, right: -20, width: 100, height: 100, borderRadius: "50%", background: "rgba(249,115,22,0.12)", pointerEvents: "none" }} />
-      <div style={{ position: "absolute", bottom: -15, left: -15, width: 70, height: 70, borderRadius: "50%", background: "rgba(253,186,116,0.08)", pointerEvents: "none" }} />
-
-      <div style={{ padding: "18px 20px 16px", position: "relative" }}>
-        {/* Header row */}
-        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 10, marginBottom: 12 }}>
-          <div style={{ flex: 1 }}>
-            {/* Plan progression label */}
-            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 5, flexWrap: "wrap" }}>
-              <span style={{
-                display: "inline-flex", alignItems: "center", gap: 4,
-                background: "rgba(255,255,255,0.12)", borderRadius: 999,
-                padding: "3px 10px", fontSize: 11, fontWeight: 700, color: "#fed7aa",
-              }}>
-                {isStarter ? (
-                  <><Star style={{ width: 10, height: 10 }} /> Starter → <Crown style={{ width: 10, height: 10 }} /> Pro</>
-                ) : (
-                  <><Zap style={{ width: 10, height: 10 }} /> Plan Gratuit → Pro</>
-                )}
-              </span>
-              <span style={{
-                display: "inline-flex", alignItems: "center",
-                background: ORANGE, borderRadius: 999,
-                padding: "3px 10px", fontSize: 11, fontWeight: 800, color: "#fff",
-              }}>
-                {isStarter ? "+6 €/mois" : "dès 5 €/mois"}
-              </span>
-            </div>
-            <p style={{ fontSize: 15, fontWeight: 800, color: "#fff7ed", margin: 0, lineHeight: 1.3 }}>
-              {isStarter
-                ? "Passez au Pro — un cran au-dessus"
-                : "Gérez votre activité comme un pro"}
-            </p>
-            <p style={{ fontSize: 11, color: "#fdba74", margin: "3px 0 0", lineHeight: 1.4 }}>
-              {isStarter
-                ? "Seulement +6 € de plus que Starter. Annulable à tout moment."
-                : "Commencez gratuitement, évoluez quand vous grandissez."}
-            </p>
-          </div>
-          <button onClick={onDismiss} style={{
-            background: "rgba(255,255,255,0.10)", border: "none", cursor: "pointer",
-            color: "#fdba74", padding: 5, borderRadius: 7, flexShrink: 0,
-            display: "flex", alignItems: "center",
-          }}>
-            <X style={{ width: 13, height: 13 }} />
-          </button>
-        </div>
-
-        {/* Feature grid */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 5, marginBottom: 12 }}>
-          {proFeatures.map(f => (
-            <div key={f.text} style={{
-              background: "rgba(255,255,255,0.07)", borderRadius: 9,
-              padding: "7px 10px", display: "flex", alignItems: "center", gap: 7,
-              border: "1px solid rgba(255,255,255,0.06)",
-            }}>
-              <span style={{ fontSize: 14, flexShrink: 0, lineHeight: 1 }}>{f.icon}</span>
-              <span style={{ fontSize: 11, color: "#fff7ed", fontWeight: 600, lineHeight: 1.3 }}>{f.text}</span>
-            </div>
-          ))}
-        </div>
-
-        {/* CTA */}
-        <Link href="/pricing">
-          <button style={{
-            width: "100%", background: ORANGE, color: "#fff",
-            border: "none", borderRadius: 12, padding: "12px 20px",
-            fontWeight: 800, fontSize: 13, cursor: "pointer",
-            display: "flex", alignItems: "center", justifyContent: "center", gap: 7,
-            boxShadow: "0 3px 12px rgba(249,115,22,0.45)",
-          }}>
-            <Crown style={{ width: 14, height: 14 }} />
-            {isStarter ? "Passer au Pro maintenant →" : "Voir les offres →"}
-          </button>
-        </Link>
-
-        {/* Referral nudge */}
-        <div style={{
-          marginTop: 10, padding: "8px 12px",
-          background: "rgba(255,255,255,0.06)", borderRadius: 10,
-          display: "flex", alignItems: "center", gap: 8,
-          border: "1px solid rgba(253,186,116,0.20)",
-        }}>
-          <span style={{ fontSize: 14, flexShrink: 0 }}>🎁</span>
-          <span style={{ fontSize: 11, color: "#fdba74", lineHeight: 1.4 }}>
-            <strong style={{ color: "#fff7ed" }}>Parrainez un ami</strong> → vous recevez tous les deux <strong style={{ color: "#4ade80" }}>1 mois Pro gratuit</strong>.
-          </span>
-          <Link href="/settings" style={{ flexShrink: 0 }}>
-            <span style={{
-              fontSize: 10, fontWeight: 700, color: "#fed7aa",
-              background: "rgba(255,255,255,0.10)", borderRadius: 6, padding: "3px 8px",
-              cursor: "pointer", whiteSpace: "nowrap",
-            }}>
-              En savoir +
-            </span>
-          </Link>
-        </div>
-      </div>
-    </div>
+      height: h, borderRadius: radius,
+      background: "linear-gradient(90deg, #f0ede9 25%, #e8e4e0 50%, #f0ede9 75%)",
+      backgroundSize: "200% 100%",
+      animation: "shimmer 1.4s infinite",
+    }} />
   );
 }
 
+// ── Trend badge ───────────────────────────────────────────────────────────────
 function TrendBadge({ current, prev, invert = false }: { current: number; prev: number; invert?: boolean }) {
   if (prev === 0) return null;
   const pct = ((current - prev) / prev) * 100;
@@ -265,7 +178,7 @@ function TrendBadge({ current, prev, invert = false }: { current: number; prev: 
   const good = invert ? !isUp : isUp;
   return (
     <span style={{
-      display: "inline-flex", alignItems: "center", gap: 3,
+      display: "inline-flex", alignItems: "center", gap: 2,
       padding: "2px 7px", borderRadius: 999, fontSize: 11, fontWeight: 700,
       background: good ? "#f0fdf4" : "#fef2f2",
       color: good ? "#16a34a" : "#dc2626",
@@ -275,324 +188,121 @@ function TrendBadge({ current, prev, invert = false }: { current: number; prev: 
   );
 }
 
-function KpiCard({ label, value, sub, color, icon, hero, trend }: {
-  label: string; value: string; sub?: string; color: string;
-  icon: React.ReactNode; hero?: boolean;
-  trend?: React.ReactNode;
-}) {
-  const [hovered, setHovered] = useState(false);
-  if (hero) {
-    return (
-      <div
-        onMouseEnter={() => setHovered(true)}
-        onMouseLeave={() => setHovered(false)}
-        style={{
-          background: `linear-gradient(135deg, #fb923c 0%, #f97316 55%, #ea580c 100%)`,
-          borderRadius: 20, padding: "24px 22px",
-          boxShadow: hovered
-            ? "0 12px 36px rgba(249,115,22,0.55), 0 0 0 1px rgba(249,115,22,0.20)"
-            : "0 6px 24px rgba(249,115,22,0.40), 0 0 0 1px rgba(249,115,22,0.15)",
-          transform: hovered ? "translateY(-3px) scale(1.01)" : "none",
-          transition: "box-shadow 0.20s, transform 0.20s",
-          display: "flex", flexDirection: "column", gap: 10,
-          cursor: "default", position: "relative", overflow: "hidden",
-        }}
-      >
-        <div style={{
-          position: "absolute", top: -20, right: -20,
-          width: 90, height: 90, borderRadius: "50%",
-          background: "rgba(255,255,255,0.08)",
-          pointerEvents: "none",
-        }} />
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <span style={{ fontSize: 11, color: "rgba(255,255,255,0.85)", fontWeight: 700, letterSpacing: "0.05em", textTransform: "uppercase" }}>
-            {label}
-          </span>
-          <span style={{
-            width: 38, height: 38, borderRadius: 11,
-            background: "rgba(255,255,255,0.22)", display: "flex",
-            alignItems: "center", justifyContent: "center", color: "#fff",
-          }}>{icon}</span>
-        </div>
-        <div style={{ fontSize: 32, fontWeight: 900, color: "#fff", lineHeight: 1, letterSpacing: "-0.02em" }}>{value}</div>
-        {sub && <div style={{ fontSize: 12, color: "rgba(255,255,255,0.75)", marginTop: -2 }}>{sub}</div>}
-      </div>
-    );
-  }
-  return (
-    <div
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      style={{
-        background: "#fff", borderRadius: 20, padding: "20px 18px",
-        border: "1px solid #f0ede9",
-        boxShadow: hovered
-          ? "0 8px 24px rgba(0,0,0,0.11)"
-          : "0 1px 4px rgba(0,0,0,0.05)",
-        transform: hovered ? "translateY(-2px)" : "none",
-        transition: "box-shadow 0.18s, transform 0.18s",
-        display: "flex", flexDirection: "column", gap: 8, cursor: "default",
-      }}
-    >
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <span style={{ fontSize: 11, color: "#9ca3af", fontWeight: 600, letterSpacing: "0.03em", textTransform: "uppercase" }}>{label}</span>
-        <span style={{
-          width: 36, height: 36, borderRadius: 10,
-          background: color + "15", display: "flex",
-          alignItems: "center", justifyContent: "center", color, flexShrink: 0,
-        }}>{icon}</span>
-      </div>
-      <div style={{ fontSize: 24, fontWeight: 900, color: "#111", lineHeight: 1, letterSpacing: "-0.02em" }}>{value}</div>
-      <div style={{ display: "flex", alignItems: "center", gap: 7, flexWrap: "wrap" }}>
-        {trend}
-        {sub && <div style={{ fontSize: 11, color: "#9ca3af" }}>{sub}</div>}
-      </div>
-    </div>
-  );
-}
-
-function KpiSkeleton() {
-  return (
-    <div style={{
-      background: "#f3f4f6", borderRadius: 18, height: 110,
-      animation: "pulse 1.5s ease-in-out infinite",
-    }} />
-  );
-}
-
-function ChartEmptyState() {
-  return (
-    <div style={{
-      display: "flex", flexDirection: "column", alignItems: "center",
-      justifyContent: "center", height: "100%", gap: 14, padding: 24,
-    }}>
-      <div style={{
-        width: 64, height: 64, borderRadius: 18,
-        background: "#fff7ed", display: "flex", alignItems: "center", justifyContent: "center",
-      }}>
-        <TrendingUp style={{ width: 30, height: 30, color: ORANGE }} />
-      </div>
-      <div style={{ fontWeight: 700, fontSize: 15, color: "#374151", textAlign: "center" }}>
-        Pas encore d'activité cette semaine
-      </div>
-      <div style={{ fontSize: 13, color: "#9ca3af", textAlign: "center", maxWidth: 220 }}>
-        Les barres apparaîtront dès votre première transaction.
-      </div>
-      <Link href="/transactions/new">
-        <button style={{
-          background: ORANGE, color: "#fff", border: "none", borderRadius: 10,
-          padding: "9px 20px", fontWeight: 700, fontSize: 13, cursor: "pointer",
-          display: "flex", alignItems: "center", gap: 6,
-        }}>
-          <Plus style={{ width: 14, height: 14 }} />
-          Première transaction
-        </button>
-      </Link>
-    </div>
-  );
-}
-
-function TxEmptyState() {
-  const [btnHovered, setBtnHovered] = useState(false);
-  return (
-    <div style={{
-      display: "flex", flexDirection: "column", alignItems: "center",
-      padding: "48px 24px 52px", gap: 16, textAlign: "center",
-    }}>
-      <div style={{
-        width: 80, height: 80, borderRadius: 24,
-        background: "linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%)",
-        border: "2px solid #fed7aa",
-        display: "flex", alignItems: "center", justifyContent: "center",
-        boxShadow: "0 4px 16px rgba(249,115,22,0.12)",
-      }}>
-        <Receipt style={{ width: 38, height: 38, color: ORANGE }} />
-      </div>
-      <div>
-        <div style={{ fontWeight: 800, fontSize: 18, color: "#111", marginBottom: 6 }}>
-          Aucune transaction pour le moment
-        </div>
-        <div style={{ color: "#6b7280", fontSize: 13, maxWidth: 260, lineHeight: 1.6 }}>
-          Commencez par enregistrer votre première recette ou dépense pour voir votre tableau de bord prendre vie.
-        </div>
-      </div>
-      <Link href="/transactions/new">
-        <button
-          onMouseEnter={() => setBtnHovered(true)}
-          onMouseLeave={() => setBtnHovered(false)}
-          style={{
-            background: btnHovered ? "#ea580c" : ORANGE,
-            color: "#fff", border: "none", borderRadius: 14,
-            padding: "13px 28px", fontWeight: 800, fontSize: 14, cursor: "pointer",
-            display: "flex", alignItems: "center", gap: 8,
-            boxShadow: btnHovered
-              ? "0 6px 20px rgba(249,115,22,0.45)"
-              : "0 4px 14px rgba(249,115,22,0.35)",
-            transform: btnHovered ? "translateY(-1px)" : "none",
-            transition: "all 0.15s",
-            marginTop: 4,
-          }}
-        >
-          <Plus style={{ width: 17, height: 17 }} />
-          Ajouter ma première transaction
-        </button>
-      </Link>
-    </div>
-  );
-}
-
+// ── Chart tooltip ─────────────────────────────────────────────────────────────
 function CustomTooltip({ active, payload, label, currency }: any) {
   if (!active || !payload?.length) return null;
+  const fmt = (v: number) => new Intl.NumberFormat("fr-FR", {
+    style: "currency", currency: currency || "XOF", maximumFractionDigits: 0,
+  }).format(v);
   return (
     <div style={{
-      background: "#fff", border: "1px solid #e5e7eb", borderRadius: 12,
-      padding: "10px 14px", boxShadow: "0 4px 16px rgba(0,0,0,0.10)", fontSize: 13,
+      background: "#1a1a1a", borderRadius: 12, padding: "10px 14px",
+      boxShadow: "0 8px 24px rgba(0,0,0,0.20)", fontSize: 13, minWidth: 140,
     }}>
-      <div style={{ fontWeight: 600, color: "#374151", marginBottom: 6 }}>
-        {label}
-      </div>
-      {payload.map((p: any) => (
-        <div key={p.name} style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 3 }}>
-          <div style={{ width: 8, height: 8, borderRadius: 2, background: p.fill || p.color }} />
-          <span style={{ color: "#6b7280" }}>{p.name === "income" ? "Revenus" : "Dépenses"} :</span>
-          <span style={{ fontWeight: 700, color: "#111" }}>
-            {new Intl.NumberFormat("fr-FR", { style: "currency", currency, maximumFractionDigits: 0 }).format(p.value)}
-          </span>
-        </div>
+      <p style={{ color: "#9ca3af", margin: "0 0 8px", fontSize: 11, fontWeight: 600, textTransform: "uppercase" }}>{label}</p>
+      {payload.map((e: any) => (
+        <p key={e.name} style={{ margin: "3px 0", color: e.name === "income" ? "#4ade80" : "#f87171", fontWeight: 700 }}>
+          {e.name === "income" ? "Revenus" : "Dépenses"} : {fmt(e.value)}
+        </p>
       ))}
     </div>
   );
 }
 
-const TOUR_STEPS = [
-  {
-    emoji: "👋",
-    title: "Bienvenue sur MobileMoney Manager !",
-    body: "Vous y êtes ! Quelques secondes pour découvrir l'essentiel.",
-    cta: null,
-  },
-  {
-    emoji: "➕",
-    title: "Ajoutez votre première transaction",
-    body: "Enregistrez revenus et dépenses — Orange Money, Wave, MTN MoMo, espèces. Tout est pris en charge en quelques secondes.",
-    cta: { label: "Ajouter maintenant", href: "/transactions/new" },
-  },
-  {
-    emoji: "📊",
-    title: "Suivez vos revenus et dépenses",
-    body: "Votre tableau de bord se met à jour en temps réel. Tendances, soldes, et activité hebdomadaire d'un seul coup d'œil.",
-    cta: null,
-  },
-  {
-    emoji: "📄",
-    title: "Exportez vos rapports PDF",
-    body: "Chaque mois, générez un rapport complet pour votre comptable ou pour piloter votre activité. Pro inclut des rapports avancés.",
-    cta: { label: "Voir les rapports", href: "/reports" },
-  },
-];
-
-function WelcomeTour({ onClose }: { onClose: () => void }) {
-  const [step, setStep] = useState(0);
-  const current = TOUR_STEPS[step];
-  const isLast = step === TOUR_STEPS.length - 1;
-
+// ── Upgrade banner ────────────────────────────────────────────────────────────
+function UpgradeBanner({ plan, onDismiss }: { plan: string; onDismiss: () => void }) {
+  if (plan === "pro") return null;
+  const isStarter = plan === "starter";
+  const features = isStarter
+    ? ["📄 Export PDF professionnel", "📱 Import SMS Orange Money", "📊 Rapports avancés", "♾️ Transactions illimitées"]
+    : ["📊 Tableau de bord complet", "📄 Export PDF", "📱 Import SMS & relevés", "🗂️ Jusqu'à 3 wallets"];
   return (
     <div style={{
-      position: "fixed", inset: 0, zIndex: 1000,
-      background: "rgba(0,0,0,0.50)", backdropFilter: "blur(4px)",
-      display: "flex", alignItems: "center", justifyContent: "center",
-      padding: 20,
+      borderRadius: 20, overflow: "hidden", position: "relative",
+      background: "linear-gradient(135deg, #431407 0%, #7c2d12 60%, #9a3412 100%)",
+      boxShadow: "0 6px 28px rgba(249,115,22,0.22)",
     }}>
-      <div style={{
-        background: "#fff", borderRadius: 24, padding: "32px 28px",
-        width: "100%", maxWidth: 420, position: "relative",
-        boxShadow: "0 24px 64px rgba(0,0,0,0.18)",
-      }}>
-        <button
-          onClick={onClose}
-          style={{
-            position: "absolute", top: 16, right: 16,
-            background: "#f3f4f6", border: "none", cursor: "pointer",
-            width: 30, height: 30, borderRadius: "50%",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            color: "#6b7280", fontSize: 16, lineHeight: 1,
-          }}
-        >
-          <X style={{ width: 14, height: 14 }} />
-        </button>
-
-        <div style={{ display: "flex", gap: 6, marginBottom: 24 }}>
-          {TOUR_STEPS.map((_, i) => (
-            <div key={i} style={{
-              flex: 1, height: 4, borderRadius: 2,
-              background: i <= step ? ORANGE : "#e5e7eb",
-              transition: "background 0.3s",
-            }} />
+      <div style={{ position: "absolute", top: -24, right: -24, width: 100, height: 100, borderRadius: "50%", background: "rgba(255,255,255,0.06)", pointerEvents: "none" }} />
+      <div style={{ padding: "18px 20px 16px", position: "relative" }}>
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 10 }}>
+          <div>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 4, background: "rgba(255,255,255,0.12)", borderRadius: 999, padding: "3px 10px", fontSize: 11, fontWeight: 700, color: "#fed7aa", marginBottom: 6 }}>
+              {isStarter ? "⚡ Starter → 👑 Pro" : "🎁 Plan Gratuit → Pro"}
+              <strong style={{ color: "#fff", marginLeft: 4 }}>{isStarter ? "+6 €/mois" : "dès 5 €/mois"}</strong>
+            </span>
+            <p style={{ fontSize: 15, fontWeight: 800, color: "#fff7ed", margin: 0 }}>
+              {isStarter ? "Passez au Pro — un cran au-dessus" : "Gérez votre activité comme un pro"}
+            </p>
+          </div>
+          <button onClick={onDismiss} style={{ background: "rgba(255,255,255,0.10)", border: "none", cursor: "pointer", color: "#fdba74", padding: 5, borderRadius: 7, flexShrink: 0, display: "flex", alignItems: "center" }}>
+            <X style={{ width: 13, height: 13 }} />
+          </button>
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 5, marginBottom: 12 }}>
+          {features.map(f => (
+            <div key={f} style={{ background: "rgba(255,255,255,0.07)", borderRadius: 9, padding: "7px 10px", fontSize: 11, color: "#fff7ed", fontWeight: 600, border: "1px solid rgba(255,255,255,0.06)" }}>
+              {f}
+            </div>
           ))}
         </div>
-
-        <div style={{ textAlign: "center", marginBottom: 24 }}>
-          <div style={{ fontSize: 52, marginBottom: 16, lineHeight: 1 }}>{current.emoji}</div>
-          <h2 style={{ fontSize: 20, fontWeight: 800, color: "#111", margin: "0 0 10px", lineHeight: 1.25 }}>
-            {current.title}
-          </h2>
-          <p style={{ fontSize: 14, color: "#6b7280", lineHeight: 1.65, margin: 0 }}>
-            {current.body}
-          </p>
-        </div>
-
-        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-          {current.cta && (
-            <Link href={current.cta.href} onClick={onClose}>
-              <button style={{
-                width: "100%", background: ORANGE, color: "#fff", border: "none",
-                borderRadius: 12, padding: "12px 20px", fontWeight: 700, fontSize: 14,
-                cursor: "pointer", boxShadow: "0 2px 10px rgba(249,115,22,0.30)",
-              }}>
-                {current.cta.label} →
-              </button>
-            </Link>
-          )}
-          <button
-            onClick={() => isLast ? onClose() : setStep(s => s + 1)}
-            style={{
-              width: "100%",
-              background: current.cta ? "#f3f4f6" : ORANGE,
-              color: current.cta ? "#374151" : "#fff",
-              border: "none", borderRadius: 12,
-              padding: "12px 20px", fontWeight: 700, fontSize: 14,
-              cursor: "pointer",
-              boxShadow: current.cta ? "none" : "0 2px 10px rgba(249,115,22,0.30)",
-            }}
-          >
-            {isLast ? "Commencer 🚀" : "Suivant →"}
+        <Link href="/pricing">
+          <button style={{ width: "100%", background: ORANGE, color: "#fff", border: "none", borderRadius: 12, padding: "12px 20px", fontWeight: 800, fontSize: 13, cursor: "pointer", boxShadow: "0 3px 12px rgba(249,115,22,0.45)" }}>
+            <Crown style={{ width: 14, height: 14, display: "inline", marginRight: 6, verticalAlign: "middle" }} />
+            {isStarter ? "Passer au Pro maintenant →" : "Voir les offres →"}
           </button>
-          {step > 0 && !isLast && (
-            <button onClick={() => setStep(s => s - 1)} style={{
-              background: "none", border: "none", cursor: "pointer",
-              fontSize: 13, color: "#9ca3af", padding: "4px 0",
-            }}>
-              ← Précédent
-            </button>
-          )}
-          {step === 0 && (
-            <button onClick={onClose} style={{
-              background: "none", border: "none", cursor: "pointer",
-              fontSize: 13, color: "#9ca3af", padding: "4px 0",
-            }}>
-              Passer l'introduction
-            </button>
-          )}
-        </div>
-
-        <p style={{ textAlign: "center", fontSize: 11, color: "#d1d5db", marginTop: 16 }}>
-          {step + 1} / {TOUR_STEPS.length}
-        </p>
+        </Link>
       </div>
     </div>
   );
 }
 
+// ── Welcome tour ──────────────────────────────────────────────────────────────
+function WelcomeTour({ onClose }: { onClose: () => void }) {
+  const steps = [
+    { icon: "📊", title: "Tableau de bord", desc: "Suivez vos revenus et dépenses en temps réel." },
+    { icon: "➕", title: "Ajouter des transactions", desc: "Enregistrez chaque recette et dépense instantanément." },
+    { icon: "📈", title: "Rapports & analyses", desc: "Visualisez votre activité sur la semaine ou le mois." },
+  ];
+  const [step, setStep] = useState(0);
+  return (
+    <div style={{ position: "fixed", inset: 0, zIndex: 200, background: "rgba(0,0,0,0.55)", backdropFilter: "blur(4px)", display: "flex", alignItems: "flex-end", justifyContent: "center", padding: "0 16px 32px" }}>
+      <div style={{ background: "#fff", borderRadius: 24, padding: "28px 24px", maxWidth: 420, width: "100%", boxShadow: "0 24px 64px rgba(0,0,0,0.22)" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+          <span style={{ fontSize: 12, color: "#9ca3af", fontWeight: 600 }}>Étape {step + 1} / {steps.length}</span>
+          <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: "#9ca3af", display: "flex", alignItems: "center" }}>
+            <X style={{ width: 18, height: 18 }} />
+          </button>
+        </div>
+        <div style={{ textAlign: "center", marginBottom: 24 }}>
+          <div style={{ fontSize: 48, marginBottom: 12 }}>{steps[step].icon}</div>
+          <h3 style={{ fontSize: 18, fontWeight: 800, color: "#111", margin: "0 0 8px" }}>{steps[step].title}</h3>
+          <p style={{ color: "#6b7280", fontSize: 14, lineHeight: 1.6, margin: 0 }}>{steps[step].desc}</p>
+        </div>
+        <div style={{ display: "flex", gap: 6, justifyContent: "center", marginBottom: 20 }}>
+          {steps.map((_, i) => (
+            <div key={i} style={{ width: i === step ? 24 : 8, height: 8, borderRadius: 4, background: i === step ? ORANGE : "#e5e7eb", transition: "width 0.2s" }} />
+          ))}
+        </div>
+        <div style={{ display: "flex", gap: 10 }}>
+          {step < steps.length - 1 ? (
+            <>
+              <button onClick={onClose} style={{ flex: 1, background: "#f3f4f6", color: "#6b7280", border: "none", borderRadius: 12, padding: "12px", fontWeight: 600, fontSize: 13, cursor: "pointer" }}>Passer</button>
+              <button onClick={() => setStep(s => s + 1)} style={{ flex: 2, background: ORANGE, color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>Suivant →</button>
+            </>
+          ) : (
+            <button onClick={onClose} style={{ flex: 1, background: ORANGE, color: "#fff", border: "none", borderRadius: 12, padding: "13px", fontWeight: 800, fontSize: 14, cursor: "pointer", boxShadow: "0 4px 14px rgba(249,115,22,0.35)" }}>
+              C'est parti ! 🚀
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// DASHBOARD PAGE
+// ─────────────────────────────────────────────────────────────────────────────
 export default function Dashboard() {
   const { language } = useLanguage();
 
@@ -655,304 +365,331 @@ export default function Dashboard() {
       .catch(() => setSubStatus({ plan: "free", planLabel: "Gratuit" }));
   }, []);
 
-  const formatCurrency = (amount: number) =>
+  const fmt = (amount: number) =>
     new Intl.NumberFormat("fr-FR", {
       style: "currency", currency: summary?.currency || "XOF", maximumFractionDigits: 0,
     }).format(amount);
 
   const isPaid = subStatus && subStatus.plan !== "free";
-  const isPro = subStatus?.plan === "pro";
+  const isPro  = subStatus?.plan === "pro";
 
   const chartData = (weekly ?? []).map(d => ({
     ...d,
-    label: new Date(d.date + "T00:00:00").toLocaleDateString("fr-FR", { weekday: "short" })
-      .replace(".", ""),
+    label: new Date(d.date + "T00:00:00").toLocaleDateString("fr-FR", { weekday: "short" }).replace(".", ""),
   }));
   const hasChartData = chartData.some(d => (d.income || 0) + (d.expenses || 0) > 0);
+
+  const weekNet = (summary?.weekIncome ?? 0) - (summary?.weekExpenses ?? 0);
 
   return (
     <Layout>
       <ConfettiCanvas active={showSuccessBanner} />
       {showTour && <WelcomeTour onClose={closeTour} />}
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 20, paddingBottom: 32 }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: 16, paddingBottom: 32 }}>
 
+        {/* ── Success banner ──────────────────────────────────────────────── */}
         {showSuccessBanner && (
           <div style={{
             position: "relative", overflow: "hidden", borderRadius: 20,
-            background: "linear-gradient(135deg, #052e16 0%, #14532d 50%, #166534 100%)",
+            background: "linear-gradient(135deg, #052e16 0%, #14532d 60%, #166534 100%)",
             padding: "0 0 4px",
             boxShadow: "0 8px 32px rgba(21,128,61,0.35)",
           }}>
-            <div style={{
-              position: "absolute", bottom: 0, left: 0, height: 4,
-              width: `${bannerProgress}%`, backgroundColor: "#4ade80",
-              borderRadius: 4, transition: "width 0.1s linear",
-            }} />
-            <div style={{ position: "absolute", top: 10, right: 60, fontSize: 28, opacity: 0.25, pointerEvents: "none" }}>🎊</div>
-            <div style={{ position: "absolute", top: 20, right: 140, fontSize: 20, opacity: 0.20, pointerEvents: "none" }}>✨</div>
-            <div style={{ padding: "22px 24px", display: "flex", alignItems: "flex-start", gap: 16 }}>
-              <div style={{
-                width: 52, height: 52, borderRadius: 16, flexShrink: 0,
-                background: "rgba(74,222,128,0.20)", border: "1.5px solid rgba(74,222,128,0.40)",
-                display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26,
-              }}>🏆</div>
+            <div style={{ position: "absolute", bottom: 0, left: 0, height: 4, width: `${bannerProgress}%`, backgroundColor: "#4ade80", borderRadius: 4, transition: "width 0.1s linear" }} />
+            <div style={{ padding: "20px 22px", display: "flex", alignItems: "center", gap: 14 }}>
+              <div style={{ fontSize: 30, flexShrink: 0 }}>🏆</div>
               <div style={{ flex: 1 }}>
-                <p style={{ fontWeight: 800, fontSize: 17, color: "#f0fdf4", margin: 0 }}>Félicitations&nbsp;! 🎉</p>
-                <p style={{ fontSize: 14, color: "#86efac", margin: "5px 0 0", lineHeight: 1.5 }}>
-                  {subStatus && subStatus.plan !== "free"
-                    ? <>Votre abonnement <strong style={{ color: "#4ade80" }}>{subStatus.planLabel}</strong> est maintenant actif. Profitez de toutes vos fonctionnalités&nbsp;!</>
-                    : <>Votre abonnement est maintenant actif. Vos nouvelles fonctionnalités sont disponibles.</>
-                  }
+                <p style={{ fontWeight: 800, fontSize: 16, color: "#f0fdf4", margin: "0 0 4px" }}>Félicitations !</p>
+                <p style={{ fontSize: 13, color: "#86efac", margin: 0, lineHeight: 1.5 }}>
+                  {subStatus?.plan !== "free"
+                    ? <>Abonnement <strong style={{ color: "#4ade80" }}>{subStatus?.planLabel}</strong> activé. Toutes vos fonctionnalités sont disponibles.</>
+                    : "Votre abonnement est maintenant actif."}
                 </p>
               </div>
-              <button onClick={() => setShowSuccessBanner(false)} style={{
-                background: "rgba(255,255,255,0.10)", border: "none", cursor: "pointer",
-                color: "#86efac", padding: 6, borderRadius: 8, flexShrink: 0,
-                display: "flex", alignItems: "center",
-              }}>
+              <button onClick={() => setShowSuccessBanner(false)} style={{ background: "rgba(255,255,255,0.10)", border: "none", cursor: "pointer", color: "#86efac", padding: 6, borderRadius: 8, flexShrink: 0, display: "flex" }}>
                 <X style={{ width: 15, height: 15 }} />
               </button>
             </div>
           </div>
         )}
 
-        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
+        {/* ── Greeting ────────────────────────────────────────────────────── */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
           <div>
-            <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-              <h1 style={{ fontSize: 26, fontWeight: 800, margin: 0, color: "#111" }}>Tableau de bord</h1>
-              {subStatus && <PlanBadge plan={subStatus.plan} label={subStatus.planLabel} />}
-            </div>
-            <p style={{ margin: "4px 0 0", color: "#6b7280", fontSize: 14 }}>Voici le résumé de votre activité.</p>
+            <p style={{ margin: 0, fontSize: 13, color: "#9ca3af", fontWeight: 500, textTransform: "capitalize" }}>
+              {getTodayLabel()}
+            </p>
+            <h1 style={{ margin: "2px 0 0", fontSize: 22, fontWeight: 800, color: "#111" }}>
+              {getGreeting()} {getGreetingEmoji()}
+            </h1>
           </div>
           <Link href="/transactions/new">
             <button style={{
-              background: ORANGE, color: "#fff", border: "none", borderRadius: 12,
-              padding: "10px 20px", fontWeight: 700, fontSize: 14, cursor: "pointer",
-              display: "flex", alignItems: "center", gap: 8, flexShrink: 0,
-              boxShadow: "0 2px 10px rgba(249,115,22,0.32)",
+              background: ORANGE, color: "#fff", border: "none", borderRadius: 14,
+              padding: "11px 18px", fontWeight: 700, fontSize: 14, cursor: "pointer",
+              display: "flex", alignItems: "center", gap: 7, flexShrink: 0,
+              boxShadow: "0 4px 14px rgba(249,115,22,0.38)",
             }}>
               <Plus style={{ width: 17, height: 17 }} />
-              <span>Ajouter</span>
+              Ajouter
             </button>
           </Link>
         </div>
 
+        {/* ── Hero balance card ────────────────────────────────────────────── */}
         <div style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
-          gap: 12,
+          borderRadius: 24, overflow: "hidden", position: "relative",
+          background: "linear-gradient(135deg, #fb923c 0%, #f97316 40%, #ea580c 100%)",
+          boxShadow: "0 8px 32px rgba(249,115,22,0.40)",
+          padding: "28px 24px 24px",
         }}>
-          {isLoadingSummary ? (
-            <><KpiSkeleton /><KpiSkeleton /><KpiSkeleton /><KpiSkeleton /></>
-          ) : (
-            <>
-              <KpiCard
-                label="Solde d'aujourd'hui"
-                value={formatCurrency(summary?.todayBalance ?? 0)}
-                sub="revenus − dépenses du jour"
-                color={ORANGE}
-                hero
-                icon={<Wallet style={{ width: 18, height: 18 }} />}
-              />
-              <KpiCard
-                label="Revenus cette semaine"
-                value={formatCurrency(summary?.weekIncome ?? 0)}
-                sub={`mois : ${formatCurrency(summary?.monthIncome ?? 0)}`}
-                color={GREEN}
-                icon={<TrendingUp style={{ width: 17, height: 17 }} />}
-                trend={
-                  <TrendBadge
-                    current={summary?.weekIncome ?? 0}
-                    prev={summary?.prevWeekIncome ?? 0}
-                  />
+          {/* Decorative circles */}
+          <div style={{ position: "absolute", top: -30, right: -30, width: 130, height: 130, borderRadius: "50%", background: "rgba(255,255,255,0.07)", pointerEvents: "none" }} />
+          <div style={{ position: "absolute", bottom: -20, right: 60, width: 80, height: 80, borderRadius: "50%", background: "rgba(255,255,255,0.05)", pointerEvents: "none" }} />
+
+          <div style={{ position: "relative" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+              <span style={{ fontSize: 11, color: "rgba(255,255,255,0.80)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em" }}>
+                Solde d'aujourd'hui
+              </span>
+              <div style={{ background: "rgba(255,255,255,0.18)", borderRadius: 999, padding: "4px 12px", display: "flex", alignItems: "center", gap: 5 }}>
+                <Wallet style={{ width: 12, height: 12, color: "rgba(255,255,255,0.85)" }} />
+                <span style={{ fontSize: 11, color: "rgba(255,255,255,0.85)", fontWeight: 700 }}>
+                  {summary?.currency ?? "XOF"}
+                </span>
+              </div>
+            </div>
+
+            {isLoadingSummary ? (
+              <div style={{ height: 52, background: "rgba(255,255,255,0.15)", borderRadius: 12, marginBottom: 12, animation: "pulse 1.5s ease-in-out infinite" }} />
+            ) : (
+              <div style={{ fontSize: 40, fontWeight: 900, color: "#fff", lineHeight: 1, letterSpacing: "-0.02em", marginBottom: 12 }}>
+                {fmt(summary?.todayBalance ?? 0)}
+              </div>
+            )}
+
+            <div style={{ height: 1, background: "rgba(255,255,255,0.18)", marginBottom: 16 }} />
+
+            {/* Income vs Expenses mini summary */}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+              <div>
+                <p style={{ margin: 0, fontSize: 11, color: "rgba(255,255,255,0.70)", fontWeight: 600, marginBottom: 3 }}>Revenus semaine</p>
+                {isLoadingSummary
+                  ? <div style={{ height: 20, background: "rgba(255,255,255,0.15)", borderRadius: 6, animation: "pulse 1.5s ease-in-out infinite" }} />
+                  : <p style={{ margin: 0, fontSize: 17, fontWeight: 800, color: "#fff" }}>{fmt(summary?.weekIncome ?? 0)}</p>
                 }
-              />
-              <KpiCard
-                label="Dépenses cette semaine"
-                value={formatCurrency(summary?.weekExpenses ?? 0)}
-                sub={`mois : ${formatCurrency(summary?.monthExpenses ?? 0)}`}
-                color={RED}
-                icon={<TrendingDown style={{ width: 17, height: 17 }} />}
-                trend={
-                  <TrendBadge
-                    current={summary?.weekExpenses ?? 0}
-                    prev={summary?.prevWeekExpenses ?? 0}
-                    invert
-                  />
+              </div>
+              <div>
+                <p style={{ margin: 0, fontSize: 11, color: "rgba(255,255,255,0.70)", fontWeight: 600, marginBottom: 3 }}>Dépenses semaine</p>
+                {isLoadingSummary
+                  ? <div style={{ height: 20, background: "rgba(255,255,255,0.15)", borderRadius: 6, animation: "pulse 1.5s ease-in-out infinite" }} />
+                  : <p style={{ margin: 0, fontSize: 17, fontWeight: 800, color: "#fff" }}>{fmt(summary?.weekExpenses ?? 0)}</p>
                 }
-              />
-              <KpiCard
-                label="Total transactions"
-                value={String(summary?.totalTransactions ?? 0)}
-                sub="depuis le début"
-                color="#6366f1"
-                icon={<Hash style={{ width: 17, height: 17 }} />}
-              />
-            </>
-          )}
+              </div>
+            </div>
+          </div>
         </div>
 
+        {/* ── Stats row ────────────────────────────────────────────────────── */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 }}>
+          {/* Profit net semaine */}
+          <div style={{ background: "#fff", borderRadius: 18, padding: "16px 14px", border: "1px solid #f0ede9", boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}>
+            <div style={{ width: 32, height: 32, borderRadius: 10, background: weekNet >= 0 ? "#f0fdf4" : "#fef2f2", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 8 }}>
+              {weekNet >= 0
+                ? <TrendingUp style={{ width: 16, height: 16, color: GREEN }} />
+                : <TrendingDown style={{ width: 16, height: 16, color: RED }} />
+              }
+            </div>
+            <p style={{ margin: 0, fontSize: 10, color: "#9ca3af", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: 4 }}>Bénéfice net</p>
+            {isLoadingSummary
+              ? <Skeleton h={20} radius={6} />
+              : <p style={{ margin: 0, fontSize: 15, fontWeight: 800, color: weekNet >= 0 ? GREEN : RED, lineHeight: 1 }}>
+                  {weekNet >= 0 ? "+" : ""}{fmtShort(Math.abs(weekNet))}
+                </p>
+            }
+          </div>
+
+          {/* Ce mois revenus */}
+          <div style={{ background: "#fff", borderRadius: 18, padding: "16px 14px", border: "1px solid #f0ede9", boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}>
+            <div style={{ width: 32, height: 32, borderRadius: 10, background: "#fff7ed", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 8 }}>
+              <ArrowUpRight style={{ width: 16, height: 16, color: ORANGE }} />
+            </div>
+            <p style={{ margin: 0, fontSize: 10, color: "#9ca3af", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: 4 }}>Mois (revenus)</p>
+            {isLoadingSummary
+              ? <Skeleton h={20} radius={6} />
+              : <p style={{ margin: 0, fontSize: 15, fontWeight: 800, color: "#111", lineHeight: 1 }}>{fmtShort(summary?.monthIncome ?? 0)}</p>
+            }
+          </div>
+
+          {/* Transactions */}
+          <div style={{ background: "#fff", borderRadius: 18, padding: "16px 14px", border: "1px solid #f0ede9", boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}>
+            <div style={{ width: 32, height: 32, borderRadius: 10, background: "#eef2ff", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 8 }}>
+              <Receipt style={{ width: 16, height: 16, color: "#6366f1" }} />
+            </div>
+            <p style={{ margin: 0, fontSize: 10, color: "#9ca3af", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: 4 }}>Transactions</p>
+            {isLoadingSummary
+              ? <Skeleton h={20} radius={6} />
+              : <p style={{ margin: 0, fontSize: 15, fontWeight: 800, color: "#111", lineHeight: 1 }}>{summary?.totalTransactions ?? 0}</p>
+            }
+          </div>
+        </div>
+
+        {/* ── Quick actions ─────────────────────────────────────────────────── */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 }}>
+          {[
+            { label: "Transaction", icon: <Plus style={{ width: 18, height: 18 }} />, href: "/transactions/new", primary: true },
+            { label: "Rapports",    icon: <BarChart2 style={{ width: 18, height: 18 }} />, href: "/reports", primary: false },
+            { label: "Importer",   icon: <Download style={{ width: 18, height: 18 }} />, href: "/import", primary: false },
+          ].map(a => (
+            <Link key={a.label} href={a.href}>
+              <button style={{
+                width: "100%",
+                background: a.primary ? ORANGE : "#fff",
+                color: a.primary ? "#fff" : "#374151",
+                border: a.primary ? "none" : "1.5px solid #e5e7eb",
+                borderRadius: 14, padding: "12px 8px",
+                fontWeight: 700, fontSize: 12, cursor: "pointer",
+                display: "flex", flexDirection: "column", alignItems: "center", gap: 6,
+                boxShadow: a.primary ? "0 4px 12px rgba(249,115,22,0.30)" : "0 1px 3px rgba(0,0,0,0.05)",
+              }}>
+                {a.icon}
+                {a.label}
+              </button>
+            </Link>
+          ))}
+        </div>
+
+        {/* ── Upgrade banner ────────────────────────────────────────────────── */}
         {showUpgradeBanner && subStatus && subStatus.plan !== "pro" && (
           <UpgradeBanner plan={subStatus.plan} onDismiss={dismissUpgradeBanner} />
         )}
 
-        <div style={{
-          background: "#fff", borderRadius: 18, border: "1px solid #f0ede9",
-          boxShadow: "0 1px 4px rgba(0,0,0,0.05)", overflow: "hidden",
-        }}>
-          <div style={{
-            padding: "18px 20px 0", display: "flex",
-            alignItems: "center", justifyContent: "space-between",
-          }}>
-            <h2 style={{ fontSize: 15, fontWeight: 700, margin: 0, color: "#111" }}>
-              Activité de la semaine
-            </h2>
-            <div style={{ display: "flex", gap: 14 }}>
-              {[{ color: GREEN, label: "Revenus" }, { color: RED, label: "Dépenses" }].map(l => (
-                <div key={l.label} style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12, color: "#6b7280" }}>
-                  <div style={{ width: 9, height: 9, borderRadius: 3, background: l.color }} />
+        {/* ── Weekly chart ──────────────────────────────────────────────────── */}
+        <div style={{ background: "#fff", borderRadius: 20, border: "1px solid #f0ede9", boxShadow: "0 1px 4px rgba(0,0,0,0.05)", overflow: "hidden" }}>
+          <div style={{ padding: "18px 20px 0", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <div>
+              <h2 style={{ fontSize: 15, fontWeight: 700, margin: 0, color: "#111" }}>Activité de la semaine</h2>
+              {!isLoadingSummary && (
+                <p style={{ margin: "3px 0 0", fontSize: 12, color: "#9ca3af" }}>
+                  {(summary?.weekIncome ?? 0) > 0 || (summary?.weekExpenses ?? 0) > 0
+                    ? `Revenus vs dépenses · ${summary?.currency ?? "XOF"}`
+                    : "Aucune activité cette semaine"
+                  }
+                </p>
+              )}
+            </div>
+            <div style={{ display: "flex", gap: 12 }}>
+              {[{ color: GREEN_LIGHT, label: "Revenus" }, { color: "#f87171", label: "Dépenses" }].map(l => (
+                <div key={l.label} style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11, color: "#9ca3af", fontWeight: 600 }}>
+                  <div style={{ width: 8, height: 8, borderRadius: 3, background: l.color }} />
                   {l.label}
                 </div>
               ))}
             </div>
           </div>
 
-          <div style={{ height: 260, padding: "8px 8px 4px" }}>
+          <div style={{ height: 220, padding: "8px 8px 4px" }}>
             {isLoadingWeekly ? (
-              <div style={{
-                height: "100%", background: "#f3f4f6", borderRadius: 12,
-                animation: "pulse 1.5s ease-in-out infinite",
-              }} />
+              <div style={{ height: "100%", padding: 16 }}><Skeleton h={180} /></div>
             ) : !hasChartData ? (
-              <ChartEmptyState />
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%", gap: 10, padding: 20, textAlign: "center" }}>
+                <div style={{ fontSize: 36, opacity: 0.4 }}>📊</div>
+                <p style={{ fontWeight: 700, fontSize: 14, color: "#374151", margin: 0 }}>Pas encore d'activité</p>
+                <p style={{ fontSize: 12, color: "#9ca3af", margin: 0 }}>Les courbes apparaîtront dès votre première transaction.</p>
+                <Link href="/transactions/new">
+                  <button style={{ background: ORANGE, color: "#fff", border: "none", borderRadius: 10, padding: "9px 18px", fontWeight: 700, fontSize: 12, cursor: "pointer", marginTop: 4 }}>
+                    + Première transaction
+                  </button>
+                </Link>
+              </div>
             ) : (
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={chartData}
-                  margin={{ top: 8, right: 12, left: 0, bottom: 0 }}
-                  barGap={4}
-                  barCategoryGap="30%"
-                >
+                <BarChart data={chartData} margin={{ top: 8, right: 12, left: 0, bottom: 0 }} barGap={3} barCategoryGap="32%">
                   <defs>
                     <linearGradient id="incomeGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#22c55e" />
+                      <stop offset="0%" stopColor="#4ade80" />
                       <stop offset="100%" stopColor="#16a34a" />
                     </linearGradient>
                     <linearGradient id="expenseGrad" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="0%" stopColor="#f87171" />
-                      <stop offset="100%" stopColor="#ef4444" />
+                      <stop offset="100%" stopColor="#dc2626" />
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" vertical={false} />
-                  <XAxis
-                    dataKey="label"
-                    axisLine={false} tickLine={false}
-                    tick={{ fontSize: 12, fill: "#9ca3af", fontWeight: 600 }}
-                  />
-                  <YAxis
-                    axisLine={false} tickLine={false}
-                    tick={{ fontSize: 11, fill: "#9ca3af" }}
-                    tickFormatter={fmtShort}
-                    width={42}
-                  />
-                  <RechartsTooltip
-                    content={<CustomTooltip currency={summary?.currency ?? "XOF"} />}
-                    cursor={{ fill: "rgba(249,115,22,0.05)", radius: 6 } as any}
-                  />
-                  <Bar
-                    dataKey="income"
-                    name="income"
-                    fill="url(#incomeGrad)"
-                    radius={[6, 6, 0, 0]}
-                    maxBarSize={32}
-                  />
-                  <Bar
-                    dataKey="expenses"
-                    name="expenses"
-                    fill="url(#expenseGrad)"
-                    radius={[6, 6, 0, 0]}
-                    maxBarSize={32}
-                  />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f5f3f0" vertical={false} />
+                  <XAxis dataKey="label" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: "#9ca3af", fontWeight: 600 }} />
+                  <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: "#9ca3af" }} tickFormatter={fmtShort} width={40} />
+                  <RechartsTooltip content={<CustomTooltip currency={summary?.currency ?? "XOF"} />} cursor={{ fill: "rgba(249,115,22,0.04)", radius: 6 } as any} />
+                  <Bar dataKey="income" name="income" fill="url(#incomeGrad)" radius={[6, 6, 0, 0]} maxBarSize={28} />
+                  <Bar dataKey="expenses" name="expenses" fill="url(#expenseGrad)" radius={[6, 6, 0, 0]} maxBarSize={28} />
                 </BarChart>
               </ResponsiveContainer>
             )}
           </div>
         </div>
 
-        <div style={{
-          background: "#fff", borderRadius: 18, border: "1px solid #f0ede9",
-          boxShadow: "0 1px 4px rgba(0,0,0,0.05)", overflow: "hidden",
-        }}>
-          <div style={{
-            padding: "16px 20px", borderBottom: "1px solid #f5f3f0",
-            display: "flex", alignItems: "center", justifyContent: "space-between",
-          }}>
-            <h2 style={{ fontSize: 15, fontWeight: 700, margin: 0, color: "#111" }}>
-              Transactions récentes
-            </h2>
+        {/* ── Recent transactions ───────────────────────────────────────────── */}
+        <div style={{ background: "#fff", borderRadius: 20, border: "1px solid #f0ede9", boxShadow: "0 1px 4px rgba(0,0,0,0.05)", overflow: "hidden" }}>
+          <div style={{ padding: "16px 20px", borderBottom: "1px solid #f5f3f0", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <h2 style={{ fontSize: 15, fontWeight: 700, margin: 0, color: "#111" }}>Transactions récentes</h2>
             <Link href="/transactions">
-              <span style={{ fontSize: 13, color: ORANGE, fontWeight: 600, cursor: "pointer" }}>
-                Voir tout →
-              </span>
+              <span style={{ fontSize: 13, color: ORANGE, fontWeight: 600, cursor: "pointer" }}>Voir tout →</span>
             </Link>
           </div>
 
           {isLoadingTxs ? (
-            <div style={{ padding: "12px 20px", display: "flex", flexDirection: "column", gap: 10 }}>
-              {[0, 1, 2].map(i => (
-                <div key={i} style={{
-                  height: 48, background: "#f3f4f6", borderRadius: 10,
-                  animation: "pulse 1.5s ease-in-out infinite",
-                }} />
-              ))}
+            <div style={{ padding: "12px 16px", display: "flex", flexDirection: "column", gap: 8 }}>
+              {[0, 1, 2].map(i => <Skeleton key={i} h={52} radius={12} />)}
             </div>
           ) : !recentTxs || recentTxs.length === 0 ? (
-            <TxEmptyState />
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "40px 24px", gap: 14, textAlign: "center" }}>
+              <div style={{ width: 72, height: 72, borderRadius: 22, background: "#fff7ed", border: "2px solid #fed7aa", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <Receipt style={{ width: 34, height: 34, color: ORANGE }} />
+              </div>
+              <div>
+                <p style={{ fontWeight: 800, fontSize: 16, color: "#111", margin: "0 0 6px" }}>Aucune transaction</p>
+                <p style={{ color: "#6b7280", fontSize: 13, maxWidth: 240, lineHeight: 1.6, margin: 0 }}>
+                  Enregistrez votre première recette ou dépense pour voir votre activité ici.
+                </p>
+              </div>
+              <Link href="/transactions/new">
+                <button style={{ background: ORANGE, color: "#fff", border: "none", borderRadius: 14, padding: "12px 24px", fontWeight: 800, fontSize: 13, cursor: "pointer", boxShadow: "0 4px 14px rgba(249,115,22,0.35)" }}>
+                  + Ajouter ma première transaction
+                </button>
+              </Link>
+            </div>
           ) : (
             <>
-              <ul style={{ margin: 0, padding: 0, listStyle: "none" }}>
+              <ul style={{ margin: 0, padding: "4px 0", listStyle: "none" }}>
                 {recentTxs.slice(0, 5).map((tx: any, i: number) => {
                   const isIncome = tx.type === "income";
                   const amount = typeof tx.amount === "string" ? parseFloat(tx.amount) : tx.amount;
+                  const emoji = getCategoryIcon(tx.category);
                   return (
-                    <li key={tx.id} style={{
-                      display: "flex", alignItems: "center", gap: 12,
-                      padding: "12px 20px",
-                      borderTop: i === 0 ? "none" : "1px solid #f5f3f0",
-                      transition: "background 0.12s",
-                    }}
-                    onMouseEnter={e => (e.currentTarget.style.background = "#fafafa")}
-                    onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+                    <li key={tx.id}
+                      style={{ display: "flex", alignItems: "center", gap: 12, padding: "11px 18px", borderTop: i === 0 ? "none" : "1px solid #fafaf9", transition: "background 0.12s" }}
+                      onMouseEnter={e => (e.currentTarget.style.background = "#fafafa")}
+                      onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
                     >
-                      <div style={{
-                        width: 38, height: 38, borderRadius: 12, flexShrink: 0,
-                        background: isIncome ? "#f0fdf4" : "#fef2f2",
-                        display: "flex", alignItems: "center", justifyContent: "center",
-                      }}>
-                        {isIncome
-                          ? <ArrowUpRight style={{ width: 17, height: 17, color: GREEN }} />
-                          : <ArrowDownRight style={{ width: 17, height: 17, color: RED }} />
-                        }
+                      {/* Icon */}
+                      <div style={{ width: 40, height: 40, borderRadius: 13, flexShrink: 0, background: isIncome ? "#f0fdf4" : "#fef2f2", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>
+                        {emoji}
                       </div>
+                      {/* Info */}
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: "#111", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                           {tx.category}
                         </p>
                         <p style={{ margin: 0, fontSize: 11, color: "#9ca3af", marginTop: 2 }}>
                           {tx.paymentMethod}
-                          <span style={{ margin: "0 5px", opacity: 0.5 }}>·</span>
+                          <span style={{ margin: "0 4px", opacity: 0.5 }}>·</span>
                           {fmtDate(tx.date)}
                         </p>
                       </div>
-                      <span style={{
-                        fontSize: 13, fontWeight: 700, flexShrink: 0,
-                        color: isIncome ? GREEN : RED,
-                      }}>
+                      {/* Amount */}
+                      <span style={{ fontSize: 14, fontWeight: 800, flexShrink: 0, color: isIncome ? GREEN : RED }}>
                         {isIncome ? "+" : "−"}
-                        {new Intl.NumberFormat("fr-FR", {
-                          style: "currency", currency: tx.currency || "XOF", maximumFractionDigits: 0,
-                        }).format(amount)}
+                        {new Intl.NumberFormat("fr-FR", { style: "currency", currency: tx.currency || "XOF", maximumFractionDigits: 0 }).format(amount)}
                       </span>
                     </li>
                   );
@@ -962,7 +699,7 @@ export default function Dashboard() {
                 <div style={{ padding: "12px 20px", borderTop: "1px solid #f5f3f0", textAlign: "center" }}>
                   <Link href="/transactions">
                     <span style={{ fontSize: 13, color: ORANGE, fontWeight: 600, cursor: "pointer" }}>
-                      Voir {recentTxs.length - 5} transaction{recentTxs.length - 5 > 1 ? "s" : ""} de plus →
+                      + {recentTxs.length - 5} transaction{recentTxs.length - 5 > 1 ? "s" : ""} →
                     </span>
                   </Link>
                 </div>
@@ -971,116 +708,48 @@ export default function Dashboard() {
           )}
         </div>
 
-        {!isPaid && (
-          <div style={{
-            borderRadius: 18, padding: "18px 20px",
-            background: "linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%)",
-            border: "1px solid #fed7aa",
-            display: "flex", flexWrap: "wrap", alignItems: "center", gap: 14,
-          }}>
-            <div style={{
-              width: 42, height: 42, background: ORANGE, borderRadius: 12, flexShrink: 0,
-              display: "flex", alignItems: "center", justifyContent: "center",
-            }}>
-              <Zap style={{ width: 20, height: 20, color: "#fff" }} />
-            </div>
-            <div style={{ flex: 1, minWidth: 180 }}>
-              <p style={{ margin: 0, fontWeight: 700, fontSize: 14, color: "#111" }}>
-                Passez à Starter ou Pro
-              </p>
-              <p style={{ margin: "2px 0 0", fontSize: 13, color: "#6b7280" }}>
-                Transactions illimitées, rapports avancés, et bien plus.
-              </p>
-            </div>
-            <Link href="/pricing">
-              <button style={{
-                background: ORANGE, color: "#fff", border: "none", borderRadius: 10,
-                padding: "9px 18px", fontWeight: 700, fontSize: 13, cursor: "pointer",
-                whiteSpace: "nowrap",
-              }}>
-                Voir les offres
-              </button>
-            </Link>
-          </div>
-        )}
-
+        {/* ── Pro active banner ─────────────────────────────────────────────── */}
         {isPaid && (
           <div style={{
-            borderRadius: 20, overflow: "hidden",
-            background: isPro
-              ? "linear-gradient(135deg, #431407 0%, #7c2d12 50%, #9a3412 100%)"
-              : "linear-gradient(135deg, #431407 0%, #c2410c 100%)",
-            boxShadow: "0 4px 20px rgba(249,115,22,0.25)",
-            padding: 22,
-            display: "flex", flexWrap: "wrap", alignItems: "center", gap: 16,
+            borderRadius: 18, padding: "16px 18px",
+            background: "linear-gradient(135deg, #431407, #7c2d12)",
+            display: "flex", flexWrap: "wrap", alignItems: "center", gap: 14,
+            boxShadow: "0 4px 16px rgba(249,115,22,0.18)",
           }}>
-            <div style={{
-              width: 48, height: 48, borderRadius: 14, flexShrink: 0,
-              background: "rgba(255,255,255,0.15)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-            }}>
-              {isPro
-                ? <Crown style={{ width: 24, height: 24, color: "#fed7aa" }} />
-                : <Sparkles style={{ width: 24, height: 24, color: "#fed7aa" }} />
-              }
+            <div style={{ width: 40, height: 40, background: "rgba(255,255,255,0.15)", borderRadius: 12, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              {isPro ? <Crown style={{ width: 20, height: 20, color: "#fed7aa" }} /> : <Zap style={{ width: 20, height: 20, color: "#fed7aa" }} />}
             </div>
-            <div style={{ flex: 1, minWidth: 180 }}>
-              <p style={{ fontWeight: 700, fontSize: 15, color: "#fff7ed", margin: 0 }}>
+            <div style={{ flex: 1, minWidth: 160 }}>
+              <p style={{ fontWeight: 700, fontSize: 14, color: "#fff7ed", margin: 0 }}>
                 Abonnement <span style={{ color: "#fdba74" }}>{subStatus?.planLabel}</span> actif ✓
               </p>
-              <p style={{ fontSize: 13, color: "#fed7aa", margin: "4px 0 0", opacity: 0.85 }}>
+              <p style={{ fontSize: 12, color: "#fdba74", margin: "3px 0 0", opacity: 0.85 }}>
                 Vous bénéficiez de toutes les fonctionnalités de votre offre.
               </p>
             </div>
             <Link href="/subscription">
-              <button style={{
-                background: "rgba(255,255,255,0.15)", border: "1.5px solid rgba(255,255,255,0.25)",
-                color: "#fff7ed", fontWeight: 600, fontSize: 13, padding: "8px 18px",
-                borderRadius: 10, cursor: "pointer", whiteSpace: "nowrap",
-              }}>
+              <button style={{ background: "rgba(255,255,255,0.14)", border: "1.5px solid rgba(255,255,255,0.22)", color: "#fff7ed", fontWeight: 600, fontSize: 12, padding: "8px 16px", borderRadius: 10, cursor: "pointer", whiteSpace: "nowrap" }}>
                 Mon abonnement →
               </button>
             </Link>
           </div>
         )}
 
+        {/* ── Env status (dev only) ─────────────────────────────────────────── */}
+        {IS_DEV && envStatus && (
+          <div style={{ margin: "8px 0 0", padding: "12px 16px", background: "#f1f5f9", border: "1px solid #cbd5e1", borderRadius: 10, fontFamily: "monospace", fontSize: 12, color: "#475569", lineHeight: 1.7 }}>
+            <strong style={{ color: "#334155", fontSize: 11, textTransform: "uppercase", letterSpacing: 1 }}>🛠 Env Status (dev only)</strong><br />
+            Environment: <strong style={{ color: envStatus.nodeEnv === "production" ? "#16a34a" : "#ea580c" }}>{envStatus.nodeEnv === "production" ? "PRODUCTION" : "DEVELOPMENT"}</strong><br />
+            Stripe: <strong style={{ color: envStatus.stripeMode === "live" ? "#16a34a" : "#6366f1" }}>{envStatus.stripeMode === "live" ? "🟢 LIVE" : "🔵 TEST"}</strong><br />
+            Clerk: <strong style={{ color: clerkMode === "Live" ? "#16a34a" : "#6366f1" }}>{clerkMode === "Live" ? "🟢 LIVE" : "🔵 TEST (dev key)"}</strong>
+          </div>
+        )}
+
       </div>
 
-      {IS_DEV && envStatus && (
-        <div style={{
-          margin: "32px 16px 8px",
-          padding: "12px 16px",
-          background: "#f1f5f9",
-          border: "1px solid #cbd5e1",
-          borderRadius: 10,
-          fontFamily: "monospace",
-          fontSize: 12,
-          color: "#475569",
-          lineHeight: 1.7,
-        }}>
-          <strong style={{ color: "#334155", fontSize: 11, textTransform: "uppercase", letterSpacing: 1 }}>
-            🛠 Env Status (dev only)
-          </strong>
-          <br />
-          Environment: <strong style={{ color: envStatus.nodeEnv === "production" ? "#16a34a" : "#ea580c" }}>
-            {envStatus.nodeEnv === "production" ? "PRODUCTION" : "DEVELOPMENT"}
-          </strong>
-          <br />
-          Stripe: <strong style={{ color: envStatus.stripeMode === "live" ? "#16a34a" : "#6366f1" }}>
-            {envStatus.stripeMode === "live" ? "🟢 LIVE" : "🔵 TEST"}
-          </strong>
-          <br />
-          Clerk: <strong style={{ color: clerkMode === "Live" ? "#16a34a" : "#6366f1" }}>
-            {clerkMode === "Live" ? "🟢 LIVE" : "🔵 TEST (dev key)"}
-          </strong>
-        </div>
-      )}
-
       <style>{`
-        @keyframes pulse {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.5; }
-        }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
       `}</style>
     </Layout>
   );
