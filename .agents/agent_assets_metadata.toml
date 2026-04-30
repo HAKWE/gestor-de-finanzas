@@ -1,0 +1,8 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "wr0KwgEKLBqo4Vn4qklmW"
+uri = "file://tools/admin-dashboard.tar.gz"
+type = "unspecified"
+title = "Admin Dashboard — admin-dashboard.html"

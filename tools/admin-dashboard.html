@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="fr" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard — MobileMoney Manager</title>
+
+  <!-- Tailwind CSS via CDN (dark mode class-based) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: '#f97316',
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide icons via CDN -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+
+  <style>
+    /* Scrollbar personnalisée */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #1e2535; }
+    ::-webkit-scrollbar-thumb { background: #374151; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #4b5563; }
+
+    /* Transition globale pour le toggle dark/light */
+    * { transition: background-color 0.2s, border-color 0.2s, color 0.2s; }
+
+    /* Animation d'entrée pour les lignes du tableau */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .row-animate { animation: fadeInUp 0.25s ease forwards; }
+
+    /* Animation pour la modal */
+    @keyframes slideIn {
+      from { opacity: 0; transform: scale(0.95) translateY(-10px); }
+      to   { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    .modal-animate { animation: slideIn 0.2s ease forwards; }
+  </style>
+</head>
+
+<body class="dark bg-gray-950 text-gray-100 min-h-screen font-sans antialiased">
+
+<!-- ╔══════════════════════════════════════════════════════════╗ -->
+<!-- ║  NAVBAR                                                   ║ -->
+<!-- ╚══════════════════════════════════════════════════════════╝ -->
+<nav class="bg-gray-900 border-b border-gray-800 sticky top-0 z-40">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex items-center justify-between h-16">
+
+      <!-- Logo + Titre -->
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-lg bg-orange-500 flex items-center justify-center font-bold text-white text-sm">MM</div>
+        <span class="font-semibold text-white">MobileMoney Admin</span>
+        <span class="hidden sm:inline-block text-xs bg-orange-500/20 text-orange-400 px-2 py-0.5 rounded-full font-medium">v1.0</span>
+      </div>
+
+      <!-- Actions navbar -->
+      <div class="flex items-center gap-3">
+        <!-- Toggle Dark/Light -->
+        <button
+          onclick="toggleDarkMode()"
+          id="darkToggle"
+          class="p-2 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-400 hover:text-white"
+          title="Toggle dark/light mode"
+        >
+          <i data-lucide="sun" class="w-4 h-4 hidden" id="iconSun"></i>
+          <i data-lucide="moon" class="w-4 h-4" id="iconMoon"></i>
+        </button>
+        <!-- Avatar admin -->
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center text-xs font-bold text-white">A</div>
+          <span class="hidden sm:inline text-sm text-gray-300">Admin</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- ╔══════════════════════════════════════════════════════════╗ -->
+<!-- ║  CONTENU PRINCIPAL                                        ║ -->
+<!-- ╚══════════════════════════════════════════════════════════╝ -->
+<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+  <!-- En-tête page -->
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+    <div>
+      <h1 class="text-2xl font-bold text-white">Gestion des Utilisateurs</h1>
+      <p class="text-sm text-gray-400 mt-1">Gérez les comptes, abonnements et accès de vos utilisateurs.</p>
+    </div>
+    <!-- Bouton Ajouter un utilisateur -->
+    <button
+      onclick="openModal()"
+      class="flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white font-semibold px-4 py-2.5 rounded-xl text-sm shadow-lg hover:shadow-orange-500/25 active:scale-95"
+    >
+      <i data-lucide="user-plus" class="w-4 h-4"></i>
+      Ajouter un utilisateur
+    </button>
+  </div>
+
+  <!-- ── CARTES STATISTIQUES ─────────────────────────────── -->
+  <!-- Modifiez les IDs des cartes pour changer les valeurs dynamiquement -->
+  <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8" id="statsGrid">
+
+    <!-- Carte : Total -->
+    <div class="col-span-2 md:col-span-1 bg-gray-900 border border-gray-800 rounded-2xl p-4 flex flex-col gap-2">
+      <div class="flex items-center justify-between">
+        <span class="text-xs text-gray-400 font-medium uppercase tracking-wide">Total</span>
+        <div class="w-8 h-8 rounded-lg bg-blue-500/15 flex items-center justify-center">
+          <i data-lucide="users" class="w-4 h-4 text-blue-400"></i>
+        </div>
+      </div>
+      <p class="text-3xl font-bold text-white" id="statTotal">—</p>
+      <p class="text-xs text-gray-500">utilisateurs inscrits</p>
+    </div>
+
+    <!-- Carte : Gratuit -->
+    <div class="bg-gray-900 border border-gray-800 rounded-2xl p-4 flex flex-col gap-2">
+      <div class="flex items-center justify-between">
+        <span class="text-xs text-gray-400 font-medium uppercase tracking-wide">Gratuit</span>
+        <div class="w-8 h-8 rounded-lg bg-gray-500/15 flex items-center justify-center">
+          <i data-lucide="gift" class="w-4 h-4 text-gray-400"></i>
+        </div>
+      </div>
+      <p class="text-3xl font-bold text-white" id="statFree">—</p>
+      <p class="text-xs text-gray-500" id="statFreePct">—</p>
+    </div>
+
+    <!-- Carte : Starter -->
+    <div class="bg-gray-900 border border-gray-800 rounded-2xl p-4 flex flex-col gap-2">
+      <div class="flex items-center justify-between">
+        <span class="text-xs text-gray-400 font-medium uppercase tracking-wide">Starter</span>
+        <div class="w-8 h-8 rounded-lg bg-violet-500/15 flex items-center justify-center">
+          <i data-lucide="zap" class="w-4 h-4 text-violet-400"></i>
+        </div>
+      </div>
+      <p class="text-3xl font-bold text-white" id="statStarter">—</p>
+      <p class="text-xs text-gray-500" id="statStarterPct">—</p>
+    </div>
+
+    <!-- Carte : Pro -->
+    <div class="bg-gray-900 border border-gray-800 rounded-2xl p-4 flex flex-col gap-2">
+      <div class="flex items-center justify-between">
+        <span class="text-xs text-gray-400 font-medium uppercase tracking-wide">Pro</span>
+        <div class="w-8 h-8 rounded-lg bg-orange-500/15 flex items-center justify-center">
+          <i data-lucide="crown" class="w-4 h-4 text-orange-400"></i>
+        </div>
+      </div>
+      <p class="text-3xl font-bold text-white" id="statPro">—</p>
+      <p class="text-xs text-gray-500" id="statProPct">—</p>
+    </div>
+
+    <!-- Carte : Taux de conversion -->
+    <div class="bg-gradient-to-br from-orange-950/60 to-gray-900 border border-orange-900/40 rounded-2xl p-4 flex flex-col gap-2">
+      <div class="flex items-center justify-between">
+        <span class="text-xs text-orange-300/80 font-medium uppercase tracking-wide">Conversion</span>
+        <div class="w-8 h-8 rounded-lg bg-orange-500/15 flex items-center justify-center">
+          <i data-lucide="trending-up" class="w-4 h-4 text-orange-400"></i>
+        </div>
+      </div>
+      <p class="text-3xl font-bold text-orange-400" id="statConv">—</p>
+      <p class="text-xs text-orange-300/60">taux Pro (payant)</p>
+    </div>
+
+  </div>
+
+  <!-- ── FILTRES ─────────────────────────────────────────── -->
+  <div class="bg-gray-900 border border-gray-800 rounded-2xl p-4 mb-6">
+    <div class="flex flex-col sm:flex-row gap-3">
+
+      <!-- Recherche -->
+      <div class="relative flex-1">
+        <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none"></i>
+        <input
+          type="text"
+          id="searchInput"
+          placeholder="Rechercher par nom ou email..."
+          oninput="renderTable()"
+          class="w-full bg-gray-800 border border-gray-700 rounded-xl pl-9 pr-4 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
+        />
+      </div>
+
+      <!-- Filtre par package -->
+      <select
+        id="packageFilter"
+        onchange="renderTable()"
+        class="bg-gray-800 border border-gray-700 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 cursor-pointer"
+      >
+        <option value="all">Tous les packages</option>
+        <option value="free">Gratuit</option>
+        <option value="starter">Starter</option>
+        <option value="pro">Pro</option>
+      </select>
+
+      <!-- Filtre par statut -->
+      <select
+        id="statusFilter"
+        onchange="renderTable()"
+        class="bg-gray-800 border border-gray-700 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 cursor-pointer"
+      >
+        <option value="all">Tous les statuts</option>
+        <option value="active">Actif</option>
+        <option value="inactive">Inactif</option>
+      </select>
+
+      <!-- Tri -->
+      <select
+        id="sortOrder"
+        onchange="renderTable()"
+        class="bg-gray-800 border border-gray-700 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 cursor-pointer"
+      >
+        <option value="desc">Plus récent d'abord</option>
+        <option value="asc">Plus ancien d'abord</option>
+        <option value="name">Nom A→Z</option>
+      </select>
+
+      <!-- Bouton reset -->
+      <button
+        onclick="resetFilters()"
+        class="flex items-center gap-1.5 text-sm text-gray-400 hover:text-white bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded-xl px-3 py-2.5"
+        title="Réinitialiser les filtres"
+      >
+        <i data-lucide="x" class="w-4 h-4"></i>
+        <span class="hidden sm:inline">Réinitialiser</span>
+      </button>
+
+    </div>
+
+    <!-- Compteur résultats -->
+    <p class="text-xs text-gray-500 mt-3" id="resultCount"></p>
+  </div>
+
+  <!-- ── TABLEAU ─────────────────────────────────────────── -->
+  <div class="bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden">
+
+    <!-- Wrapper scroll horizontal (mobile) -->
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="border-b border-gray-800">
+            <th class="text-left text-xs font-semibold text-gray-400 uppercase tracking-wider px-5 py-3.5">Utilisateur</th>
+            <th class="text-left text-xs font-semibold text-gray-400 uppercase tracking-wider px-5 py-3.5 hidden md:table-cell">Email</th>
+            <th class="text-left text-xs font-semibold text-gray-400 uppercase tracking-wider px-5 py-3.5">Package</th>
+            <th class="text-left text-xs font-semibold text-gray-400 uppercase tracking-wider px-5 py-3.5">Statut</th>
+            <th class="text-left text-xs font-semibold text-gray-400 uppercase tracking-wider px-5 py-3.5 hidden lg:table-cell">Inscription</th>
+            <th class="text-left text-xs font-semibold text-gray-400 uppercase tracking-wider px-5 py-3.5 hidden xl:table-cell">Dernière connexion</th>
+            <th class="text-right text-xs font-semibold text-gray-400 uppercase tracking-wider px-5 py-3.5">Actions</th>
+          </tr>
+        </thead>
+        <!-- Les lignes sont injectées par JavaScript -->
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+
+    <!-- Message aucun résultat -->
+    <div id="emptyState" class="hidden text-center py-16 text-gray-500">
+      <i data-lucide="search-x" class="w-10 h-10 mx-auto mb-3 opacity-30"></i>
+      <p class="font-medium">Aucun utilisateur trouvé</p>
+      <p class="text-xs mt-1">Essayez d'ajuster vos filtres</p>
+    </div>
+
+  </div>
+
+  <!-- Pied de page -->
+  <p class="text-center text-xs text-gray-600 mt-8">
+    MobileMoney Manager Admin · Données stockées localement (localStorage) · <span id="lastUpdate"></span>
+  </p>
+
+</main>
+
+<!-- ╔══════════════════════════════════════════════════════════╗ -->
+<!-- ║  MODAL — AJOUTER UN UTILISATEUR                           ║ -->
+<!-- ╚══════════════════════════════════════════════════════════╝ -->
+<div id="modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4" style="background:rgba(0,0,0,0.7); backdrop-filter:blur(4px);">
+  <div class="modal-animate bg-gray-900 border border-gray-700 rounded-2xl w-full max-w-md shadow-2xl">
+
+    <!-- En-tête modal -->
+    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-800">
+      <h2 class="font-semibold text-white text-base">Ajouter un utilisateur</h2>
+      <button onclick="closeModal()" class="text-gray-500 hover:text-white p-1 rounded-lg hover:bg-gray-800">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+    </div>
+
+    <!-- Formulaire modal -->
+    <form onsubmit="addUser(event)" class="px-6 py-5 flex flex-col gap-4">
+
+      <!-- Nom complet -->
+      <div>
+        <label class="block text-xs font-medium text-gray-400 mb-1.5">Nom complet *</label>
+        <input
+          type="text"
+          id="newName"
+          required
+          placeholder="Ex: Aminata Diallo"
+          class="w-full bg-gray-800 border border-gray-700 rounded-xl px-3 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
+        />
+      </div>
+
+      <!-- Email -->
+      <div>
+        <label class="block text-xs font-medium text-gray-400 mb-1.5">Email *</label>
+        <input
+          type="email"
+          id="newEmail"
+          required
+          placeholder="aminata@example.com"
+          class="w-full bg-gray-800 border border-gray-700 rounded-xl px-3 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
+        />
+      </div>
+
+      <!-- Package -->
+      <div>
+        <label class="block text-xs font-medium text-gray-400 mb-1.5">Package</label>
+        <select
+          id="newPackage"
+          class="w-full bg-gray-800 border border-gray-700 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 cursor-pointer"
+        >
+          <option value="free">Gratuit</option>
+          <option value="starter">Starter</option>
+          <option value="pro">Pro</option>
+        </select>
+      </div>
+
+      <!-- Statut -->
+      <div>
+        <label class="block text-xs font-medium text-gray-400 mb-1.5">Statut</label>
+        <select
+          id="newStatus"
+          class="w-full bg-gray-800 border border-gray-700 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 cursor-pointer"
+        >
+          <option value="active">Actif</option>
+          <option value="inactive">Inactif</option>
+        </select>
+      </div>
+
+      <!-- Message d'erreur -->
+      <p id="modalError" class="text-xs text-red-400 hidden"></p>
+
+      <!-- Boutons -->
+      <div class="flex gap-3 pt-1">
+        <button
+          type="button"
+          onclick="closeModal()"
+          class="flex-1 bg-gray-800 hover:bg-gray-700 text-gray-300 font-medium px-4 py-2.5 rounded-xl text-sm"
+        >
+          Annuler
+        </button>
+        <button
+          type="submit"
+          class="flex-1 bg-orange-500 hover:bg-orange-600 text-white font-semibold px-4 py-2.5 rounded-xl text-sm active:scale-95"
+        >
+          Ajouter
+        </button>
+      </div>
+
+    </form>
+  </div>
+</div>
+
+<!-- ╔══════════════════════════════════════════════════════════╗ -->
+<!-- ║  TOAST NOTIFICATION                                       ║ -->
+<!-- ╚══════════════════════════════════════════════════════════╝ -->
+<div id="toast" class="fixed bottom-6 right-6 z-50 hidden">
+  <div class="bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 shadow-xl flex items-center gap-3 text-sm text-white min-w-56">
+    <i data-lucide="check-circle" class="w-4 h-4 text-green-400 shrink-0" id="toastIcon"></i>
+    <span id="toastMsg">Message</span>
+  </div>
+</div>
+
+
+<!-- ╔══════════════════════════════════════════════════════════╗ -->
+<!-- ║  JAVASCRIPT                                               ║ -->
+<!-- ╚══════════════════════════════════════════════════════════╝ -->
+<script>
+// ─────────────────────────────────────────────────────────────
+// DONNÉES INITIALES
+// Modifiez ce tableau pour changer les utilisateurs par défaut.
+// Distribution : ~40% Gratuit, ~35% Starter, ~25% Pro
+// ─────────────────────────────────────────────────────────────
+const SEED_USERS = [
+  { id: 1,  name: "Aminata Diallo",      email: "aminata.diallo@gmail.com",    package: "free",    status: "active",   createdAt: "2025-01-15", lastLogin: "2026-04-28" },
+  { id: 2,  name: "Moussa Konaté",       email: "moussa.konate@yahoo.fr",       package: "pro",     status: "active",   createdAt: "2025-02-03", lastLogin: "2026-04-27" },
+  { id: 3,  name: "Fatou Sow",           email: "fatou.sow@orange.sn",          package: "starter", status: "active",   createdAt: "2025-02-18", lastLogin: "2026-04-25" },
+  { id: 4,  name: "Ibrahim Touré",       email: "ibrahim.toure@wave.sn",        package: "free",    status: "inactive", createdAt: "2025-03-05", lastLogin: "2026-02-10" },
+  { id: 5,  name: "Mariam Coulibaly",    email: "mariam.c@gmail.com",           package: "pro",     status: "active",   createdAt: "2025-03-22", lastLogin: "2026-04-29" },
+  { id: 6,  name: "Seydou Traoré",       email: "seydou.traore@hotmail.com",    package: "starter", status: "active",   createdAt: "2025-04-01", lastLogin: "2026-04-20" },
+  { id: 7,  name: "Rokia Bamba",         email: "rokia.bamba@gmail.com",        package: "free",    status: "active",   createdAt: "2025-04-14", lastLogin: "2026-03-30" },
+  { id: 8,  name: "Oumar Diop",          email: "oumar.diop@orange.ci",         package: "starter", status: "inactive", createdAt: "2025-05-02", lastLogin: "2026-01-15" },
+  { id: 9,  name: "Kadiatou Barry",      email: "kadi.barry@gmail.com",         package: "pro",     status: "active",   createdAt: "2025-05-19", lastLogin: "2026-04-28" },
+  { id: 10, name: "Cheikh Ndiaye",       email: "cheikh.ndiaye@gmail.com",      package: "free",    status: "active",   createdAt: "2025-06-07", lastLogin: "2026-04-10" },
+  { id: 11, name: "Awa Camara",          email: "awa.camara@yahoo.fr",          package: "starter", status: "active",   createdAt: "2025-06-25", lastLogin: "2026-04-22" },
+  { id: 12, name: "Boubacar Baldé",      email: "boubacar.balde@gmail.com",     package: "free",    status: "inactive", createdAt: "2025-07-08", lastLogin: "2025-12-20" },
+  { id: 13, name: "Aïssatou Kouyaté",   email: "aissatou.k@gmail.com",         package: "pro",     status: "active",   createdAt: "2025-07-21", lastLogin: "2026-04-27" },
+  { id: 14, name: "Mamadou Keita",       email: "mamadou.keita@mtn.ci",         package: "starter", status: "active",   createdAt: "2025-08-03", lastLogin: "2026-04-15" },
+  { id: 15, name: "Ndeye Fall",          email: "ndeye.fall@gmail.com",         package: "free",    status: "active",   createdAt: "2025-08-19", lastLogin: "2026-04-01" },
+  { id: 16, name: "Lamine Diabaté",      email: "lamine.diabate@gmail.com",     package: "starter", status: "active",   createdAt: "2025-09-11", lastLogin: "2026-04-26" },
+  { id: 17, name: "Coumba Gueye",        email: "coumba.gueye@orange.sn",       package: "free",    status: "active",   createdAt: "2025-10-04", lastLogin: "2026-04-18" },
+  { id: 18, name: "Adama Sanogo",        email: "adama.sanogo@gmail.com",       package: "pro",     status: "active",   createdAt: "2025-11-17", lastLogin: "2026-04-29" },
+  { id: 19, name: "Bintou Sylla",        email: "bintou.sylla@hotmail.fr",      package: "free",    status: "inactive", createdAt: "2025-12-02", lastLogin: "2026-01-30" },
+  { id: 20, name: "Ismaël Fofana",       email: "ismael.fofana@wave.sn",        package: "starter", status: "active",   createdAt: "2026-01-09", lastLogin: "2026-04-23" },
+];
+
+// ─────────────────────────────────────────────────────────────
+// ÉTAT GLOBAL — chargé depuis localStorage si disponible
+// ─────────────────────────────────────────────────────────────
+let users = loadUsers();
+let nextId = users.length ? Math.max(...users.map(u => u.id)) + 1 : 1;
+let isDark = true; // dark mode par défaut
+
+// ─────────────────────────────────────────────────────────────
+// PERSISTANCE — localStorage
+// ─────────────────────────────────────────────────────────────
+
+/** Charge les utilisateurs depuis localStorage (ou les données initiales) */
+function loadUsers() {
+  try {
+    const saved = localStorage.getItem('mmm_admin_users');
+    return saved ? JSON.parse(saved) : SEED_USERS;
+  } catch {
+    return SEED_USERS;
+  }
+}
+
+/** Sauvegarde les utilisateurs dans localStorage */
+function saveUsers() {
+  localStorage.setItem('mmm_admin_users', JSON.stringify(users));
+  document.getElementById('lastUpdate').textContent =
+    'Mis à jour : ' + new Date().toLocaleString('fr-FR');
+}
+
+// ─────────────────────────────────────────────────────────────
+// CONFIGURATION DES BADGES (package + statut)
+// Modifiez les classes Tailwind ici pour changer les couleurs
+// ─────────────────────────────────────────────────────────────
+const PACKAGE_CONFIG = {
+  free:    { label: 'Gratuit', cls: 'bg-gray-700 text-gray-300',          icon: 'gift' },
+  starter: { label: 'Starter', cls: 'bg-violet-500/20 text-violet-300',   icon: 'zap' },
+  pro:     { label: 'Pro',     cls: 'bg-orange-500/20 text-orange-300',   icon: 'crown' },
+};
+
+const STATUS_CONFIG = {
+  active:   { label: 'Actif',    cls: 'bg-green-500/15 text-green-400',  dot: '#22c55e' },
+  inactive: { label: 'Inactif',  cls: 'bg-gray-700 text-gray-400',       dot: '#6b7280' },
+};
+
+// ─────────────────────────────────────────────────────────────
+// FORMATAGE DES DATES
+// ─────────────────────────────────────────────────────────────
+function fmtDate(dateStr) {
+  if (!dateStr) return '—';
+  return new Date(dateStr).toLocaleDateString('fr-FR', {
+    day: '2-digit', month: 'short', year: 'numeric'
+  });
+}
+
+function fmtRelative(dateStr) {
+  if (!dateStr) return '—';
+  const diff = (Date.now() - new Date(dateStr).getTime()) / 1000;
+  if (diff < 3600)   return 'Il y a ' + Math.round(diff / 60) + ' min';
+  if (diff < 86400)  return 'Il y a ' + Math.round(diff / 3600) + ' h';
+  if (diff < 604800) return 'Il y a ' + Math.round(diff / 86400) + ' j';
+  return fmtDate(dateStr);
+}
+
+// ─────────────────────────────────────────────────────────────
+// GÉNÉRATION DES INITIALES (pour l'avatar)
+// ─────────────────────────────────────────────────────────────
+function getInitials(name) {
+  return name.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase();
+}
+
+// Palette de couleurs pour les avatars
+const AVATAR_COLORS = [
+  'from-blue-500 to-blue-700', 'from-violet-500 to-violet-700',
+  'from-green-500 to-green-700', 'from-pink-500 to-pink-700',
+  'from-yellow-500 to-orange-500', 'from-teal-500 to-teal-700',
+];
+function avatarColor(id) {
+  return AVATAR_COLORS[id % AVATAR_COLORS.length];
+}
+
+// ─────────────────────────────────────────────────────────────
+// CALCUL ET AFFICHAGE DES STATISTIQUES
+// ─────────────────────────────────────────────────────────────
+function updateStats() {
+  const total   = users.length;
+  const free    = users.filter(u => u.package === 'free').length;
+  const starter = users.filter(u => u.package === 'starter').length;
+  const pro     = users.filter(u => u.package === 'pro').length;
+  const convRate = total > 0 ? ((pro / total) * 100).toFixed(1) : '0.0';
+
+  document.getElementById('statTotal').textContent   = total;
+  document.getElementById('statFree').textContent    = free;
+  document.getElementById('statStarter').textContent = starter;
+  document.getElementById('statPro').textContent     = pro;
+  document.getElementById('statConv').textContent    = convRate + '%';
+
+  const pct = n => total > 0 ? Math.round((n / total) * 100) + '% du total' : '0%';
+  document.getElementById('statFreePct').textContent    = pct(free);
+  document.getElementById('statStarterPct').textContent = pct(starter);
+  document.getElementById('statProPct').textContent     = pct(pro);
+}
+
+// ─────────────────────────────────────────────────────────────
+// RENDU DU TABLEAU
+// Lecture des filtres → tri → injection HTML dans #tableBody
+// ─────────────────────────────────────────────────────────────
+function renderTable() {
+  const search  = document.getElementById('searchInput').value.toLowerCase().trim();
+  const pkg     = document.getElementById('packageFilter').value;
+  const status  = document.getElementById('statusFilter').value;
+  const sort    = document.getElementById('sortOrder').value;
+
+  // 1. Filtrage
+  let filtered = users.filter(u => {
+    const matchSearch  = !search || u.name.toLowerCase().includes(search) || u.email.toLowerCase().includes(search);
+    const matchPkg     = pkg === 'all' || u.package === pkg;
+    const matchStatus  = status === 'all' || u.status === status;
+    return matchSearch && matchPkg && matchStatus;
+  });
+
+  // 2. Tri
+  filtered.sort((a, b) => {
+    if (sort === 'asc')  return new Date(a.createdAt) - new Date(b.createdAt);
+    if (sort === 'name') return a.name.localeCompare(b.name, 'fr');
+    return new Date(b.createdAt) - new Date(a.createdAt); // desc par défaut
+  });
+
+  // 3. Injection HTML
+  const tbody = document.getElementById('tableBody');
+  const empty = document.getElementById('emptyState');
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = '';
+    empty.classList.remove('hidden');
+    document.getElementById('resultCount').textContent = 'Aucun résultat trouvé.';
+    return;
+  }
+
+  empty.classList.add('hidden');
+  document.getElementById('resultCount').textContent =
+    filtered.length + ' utilisateur' + (filtered.length > 1 ? 's' : '') + ' affiché' + (filtered.length > 1 ? 's' : '');
+
+  // Construction des lignes du tableau
+  tbody.innerHTML = filtered.map((u, i) => {
+    const pkg    = PACKAGE_CONFIG[u.package] || PACKAGE_CONFIG.free;
+    const status = STATUS_CONFIG[u.status] || STATUS_CONFIG.inactive;
+
+    return `
+      <tr
+        class="row-animate border-b border-gray-800/60 hover:bg-gray-800/50 group cursor-default"
+        style="animation-delay:${i * 30}ms"
+        data-id="${u.id}"
+      >
+        <!-- Nom + Avatar -->
+        <td class="px-5 py-3.5">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-full bg-gradient-to-br ${avatarColor(u.id)} flex items-center justify-center text-xs font-bold text-white shrink-0">
+              ${getInitials(u.name)}
+            </div>
+            <div>
+              <p class="font-medium text-white text-sm leading-tight">${u.name}</p>
+              <p class="text-xs text-gray-500 md:hidden">${u.email}</p>
+            </div>
+          </div>
+        </td>
+
+        <!-- Email (masqué sur mobile) -->
+        <td class="px-5 py-3.5 hidden md:table-cell">
+          <span class="text-gray-400 text-sm">${u.email}</span>
+        </td>
+
+        <!-- Badge Package -->
+        <td class="px-5 py-3.5">
+          <span class="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full ${pkg.cls}">
+            <i data-lucide="${pkg.icon}" class="w-3 h-3"></i>
+            ${pkg.label}
+          </span>
+        </td>
+
+        <!-- Badge Statut -->
+        <td class="px-5 py-3.5">
+          <span class="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full ${status.cls}">
+            <span class="w-1.5 h-1.5 rounded-full" style="background:${status.dot}"></span>
+            ${status.label}
+          </span>
+        </td>
+
+        <!-- Date d'inscription -->
+        <td class="px-5 py-3.5 hidden lg:table-cell">
+          <span class="text-gray-400 text-sm">${fmtDate(u.createdAt)}</span>
+        </td>
+
+        <!-- Dernière connexion -->
+        <td class="px-5 py-3.5 hidden xl:table-cell">
+          <span class="text-gray-400 text-sm">${fmtRelative(u.lastLogin)}</span>
+        </td>
+
+        <!-- Boutons d'action -->
+        <td class="px-5 py-3.5 text-right">
+          <div class="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            <!-- Toggle statut -->
+            <button
+              onclick="toggleStatus(${u.id})"
+              class="p-1.5 rounded-lg hover:bg-gray-700 text-gray-400 hover:text-white"
+              title="${u.status === 'active' ? 'Désactiver' : 'Activer'}"
+            >
+              <i data-lucide="${u.status === 'active' ? 'user-x' : 'user-check'}" class="w-3.5 h-3.5"></i>
+            </button>
+            <!-- Supprimer -->
+            <button
+              onclick="deleteUser(${u.id})"
+              class="p-1.5 rounded-lg hover:bg-red-500/20 text-gray-400 hover:text-red-400"
+              title="Supprimer"
+            >
+              <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+            </button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+
+  // Re-init les icônes Lucide sur le nouveau contenu
+  lucide.createIcons();
+}
+
+// ─────────────────────────────────────────────────────────────
+// ACTIONS UTILISATEUR
+// ─────────────────────────────────────────────────────────────
+
+/** Bascule le statut actif/inactif d'un utilisateur */
+function toggleStatus(id) {
+  users = users.map(u =>
+    u.id === id ? { ...u, status: u.status === 'active' ? 'inactive' : 'active' } : u
+  );
+  saveUsers();
+  updateStats();
+  renderTable();
+  showToast('Statut mis à jour', 'check-circle', 'text-green-400');
+}
+
+/** Supprime un utilisateur (avec confirmation) */
+function deleteUser(id) {
+  const user = users.find(u => u.id === id);
+  if (!user) return;
+  if (!confirm(`Supprimer définitivement "${user.name}" ?`)) return;
+  users = users.filter(u => u.id !== id);
+  saveUsers();
+  updateStats();
+  renderTable();
+  showToast('Utilisateur supprimé', 'trash-2', 'text-red-400');
+}
+
+/** Remet les filtres à leur valeur par défaut */
+function resetFilters() {
+  document.getElementById('searchInput').value = '';
+  document.getElementById('packageFilter').value = 'all';
+  document.getElementById('statusFilter').value = 'all';
+  document.getElementById('sortOrder').value = 'desc';
+  renderTable();
+}
+
+// ─────────────────────────────────────────────────────────────
+// MODAL — Ajouter un utilisateur
+// ─────────────────────────────────────────────────────────────
+function openModal() {
+  document.getElementById('modal').style.display = 'flex';
+  document.getElementById('newName').value  = '';
+  document.getElementById('newEmail').value = '';
+  document.getElementById('newPackage').value = 'free';
+  document.getElementById('newStatus').value  = 'active';
+  document.getElementById('modalError').classList.add('hidden');
+  setTimeout(() => document.getElementById('newName').focus(), 100);
+}
+
+function closeModal() {
+  document.getElementById('modal').style.display = 'none';
+}
+
+/** Soumission du formulaire — ajoute l'utilisateur et persiste */
+function addUser(event) {
+  event.preventDefault();
+  const name  = document.getElementById('newName').value.trim();
+  const email = document.getElementById('newEmail').value.trim().toLowerCase();
+  const pkg   = document.getElementById('newPackage').value;
+  const status = document.getElementById('newStatus').value;
+  const errEl = document.getElementById('modalError');
+
+  // Validation : email unique
+  if (users.some(u => u.email === email)) {
+    errEl.textContent = 'Cet email est déjà utilisé.';
+    errEl.classList.remove('hidden');
+    return;
+  }
+
+  const today = new Date().toISOString().split('T')[0];
+  users.push({ id: nextId++, name, email, package: pkg, status, createdAt: today, lastLogin: today });
+
+  saveUsers();
+  updateStats();
+  renderTable();
+  closeModal();
+  showToast(`${name} ajouté(e) avec succès`, 'user-plus', 'text-green-400');
+}
+
+// Fermer la modal en cliquant à l'extérieur
+document.getElementById('modal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+// ─────────────────────────────────────────────────────────────
+// DARK / LIGHT MODE
+// ─────────────────────────────────────────────────────────────
+function toggleDarkMode() {
+  isDark = !isDark;
+  document.documentElement.classList.toggle('dark', isDark);
+  document.body.classList.toggle('bg-gray-950', isDark);
+  document.body.classList.toggle('bg-gray-100', !isDark);
+  document.getElementById('iconSun').classList.toggle('hidden', !isDark);
+  document.getElementById('iconMoon').classList.toggle('hidden', isDark);
+  localStorage.setItem('mmm_admin_dark', isDark ? '1' : '0');
+}
+
+// ─────────────────────────────────────────────────────────────
+// TOAST NOTIFICATION
+// ─────────────────────────────────────────────────────────────
+let toastTimer;
+function showToast(msg, icon = 'check-circle', iconCls = 'text-green-400') {
+  clearTimeout(toastTimer);
+  const toast = document.getElementById('toast');
+  document.getElementById('toastMsg').textContent = msg;
+  const iconEl = document.getElementById('toastIcon');
+  iconEl.setAttribute('data-lucide', icon);
+  iconEl.className = `w-4 h-4 shrink-0 ${iconCls}`;
+  lucide.createIcons();
+  toast.style.display = 'block';
+  toast.classList.remove('hidden');
+  toastTimer = setTimeout(() => { toast.style.display = 'none'; }, 3000);
+}
+
+// ─────────────────────────────────────────────────────────────
+// INITIALISATION
+// Lancé au chargement de la page
+// ─────────────────────────────────────────────────────────────
+function init() {
+  // Restaurer le préférence dark/light
+  const savedDark = localStorage.getItem('mmm_admin_dark');
+  if (savedDark === '0') toggleDarkMode();
+
+  // Initialiser les icônes Lucide
+  lucide.createIcons();
+
+  // Afficher les stats et le tableau
+  updateStats();
+  renderTable();
+
+  // Timestamp
+  document.getElementById('lastUpdate').textContent =
+    'Chargé le ' + new Date().toLocaleString('fr-FR');
+}
+
+// Lancement
+init();
+</script>
+
+</body>
+</html>
