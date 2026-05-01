@@ -239,11 +239,23 @@ function AdminSignInForm() {
   ) : null;
 
   const submitBtn = (label: string) => (
-    <button type="submit" disabled={loading || !isLoaded}
+    <button type="submit" disabled={loading}
       style={{ width: "100%", background: "#f97316", color: "#fff", border: "none", borderRadius: 9, padding: "12px 0", fontWeight: 700, fontSize: 15, cursor: loading ? "default" : "pointer", opacity: loading ? 0.7 : 1, fontFamily: "inherit" }}>
       {loading ? "Connexion…" : label}
     </button>
   );
+
+  // Show a small spinner while Clerk's signIn object is initialising
+  if (!isLoaded) {
+    return (
+      <div style={{ width: "100%", maxWidth: 380, padding: "0 16px" }}>
+        <div style={{ background: "#161b22", border: "1px solid #21262d", borderRadius: 12, padding: "60px 28px", textAlign: "center" }}>
+          <div style={{ width: 36, height: 36, border: "3px solid #21262d", borderTopColor: "#f97316", borderRadius: "50%", animation: "spin 0.8s linear infinite", margin: "0 auto 14px" }} />
+          <p style={{ color: "#7d8590", fontSize: 13, margin: 0 }}>Initialisation…</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ width: "100%", maxWidth: 380, padding: "0 16px" }}>
