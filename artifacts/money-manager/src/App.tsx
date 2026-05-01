@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { ClerkProvider, Show, useClerk, useAuth, useUser, SignIn } from '@clerk/react';
+import { ClerkProvider, Show, useClerk, useAuth, useUser, useSignIn } from '@clerk/react';
 import { Switch, Route, useLocation, Router as WouterRouter, Redirect } from 'wouter';
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider, useQueryClient, useQuery } from "@tanstack/react-query";
@@ -149,6 +149,114 @@ function AdminTopBar() {
   );
 }
 
+// ── Custom admin sign-in form (full style control, email+password only) ───────
+function AdminSignInForm() {
+  const { signIn, setActive, isLoaded } = useSignIn();
+  const [email, setEmail]         = useState("");
+  const [password, setPassword]   = useState("");
+  const [showPwd, setShowPwd]     = useState(false);
+  const [loading, setLoading]     = useState(false);
+  const [error, setError]         = useState("");
+
+  const inputStyle: React.CSSProperties = {
+    width: "100%", boxSizing: "border-box",
+    background: "#0d1117",
+    border: "1px solid #30363d",
+    borderRadius: 8,
+    padding: "11px 14px",
+    fontSize: 14,
+    color: "#e6edf3",
+    outline: "none",
+    fontFamily: "inherit",
+  };
+  const labelStyle: React.CSSProperties = {
+    display: "block", fontSize: 13, fontWeight: 600,
+    color: "#8b949e", marginBottom: 6,
+  };
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!isLoaded || loading) return;
+    setError("");
+    setLoading(true);
+    try {
+      const result = await signIn!.create({ identifier: email.trim(), password });
+      if (result.status === "complete") {
+        await setActive!({ session: result.createdSessionId });
+      } else {
+        setError("Authentification incomplète. Vérifiez vos identifiants.");
+      }
+    } catch (err: any) {
+      const msg = err?.errors?.[0]?.longMessage
+               || err?.errors?.[0]?.message
+               || "Email ou mot de passe incorrect.";
+      setError(msg);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit} style={{ width: "100%", maxWidth: 380, padding: "0 16px" }}>
+      <div style={{ background: "#161b22", border: "1px solid #21262d", borderRadius: 12, padding: "32px 28px" }}>
+        {/* Header */}
+        <div style={{ textAlign: "center", marginBottom: 28 }}>
+          <div style={{ width: 44, height: 44, borderRadius: 12, background: "linear-gradient(135deg,#fb923c,#ea580c)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, fontWeight: 800, color: "#fff", margin: "0 auto 14px" }}>MM</div>
+          <h2 style={{ fontSize: 18, fontWeight: 700, color: "#e6edf3", margin: "0 0 6px" }}>Connexion administrateur</h2>
+          <p style={{ fontSize: 13, color: "#7d8590", margin: 0 }}>Email + mot de passe uniquement</p>
+        </div>
+
+        {/* Email */}
+        <div style={{ marginBottom: 16 }}>
+          <label style={labelStyle}>Adresse e-mail</label>
+          <input
+            type="email" required autoComplete="username"
+            value={email} onChange={e => setEmail(e.target.value)}
+            placeholder="sosthen@gmail.com"
+            style={inputStyle}
+          />
+        </div>
+
+        {/* Password */}
+        <div style={{ marginBottom: 20 }}>
+          <label style={labelStyle}>Mot de passe</label>
+          <div style={{ position: "relative" }}>
+            <input
+              type={showPwd ? "text" : "password"} required autoComplete="current-password"
+              value={password} onChange={e => setPassword(e.target.value)}
+              placeholder="••••••••"
+              style={{ ...inputStyle, paddingRight: 44 }}
+            />
+            <button
+              type="button"
+              onClick={() => setShowPwd(v => !v)}
+              style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", color: "#7d8590", cursor: "pointer", fontSize: 18, lineHeight: 1, padding: 0 }}
+              aria-label={showPwd ? "Masquer" : "Afficher"}
+            >
+              {showPwd ? "🙈" : "👁️"}
+            </button>
+          </div>
+        </div>
+
+        {/* Error */}
+        {error && (
+          <div style={{ background: "#1a0808", border: "1px solid #7f1d1d", borderRadius: 8, padding: "10px 14px", marginBottom: 16, fontSize: 13, color: "#f85149" }}>
+            {error}
+          </div>
+        )}
+
+        {/* Submit */}
+        <button
+          type="submit" disabled={loading || !isLoaded}
+          style={{ width: "100%", background: "#f97316", color: "#fff", border: "none", borderRadius: 9, padding: "12px 0", fontWeight: 700, fontSize: 15, cursor: loading ? "default" : "pointer", opacity: loading ? 0.7 : 1, fontFamily: "inherit" }}
+        >
+          {loading ? "Connexion…" : "Se connecter"}
+        </button>
+      </div>
+    </form>
+  );
+}
+
 // ── AdminGuard: three possible outcomes ───────────────────────────────────────
 //   1. Not loaded / forcing sign-out → spinner
 //   2. Not signed in  → embedded Clerk sign-in form (no sign-up, no redirect away)
@@ -205,41 +313,13 @@ function AdminGuard() {
     );
   }
 
-  // ── 2. Not signed in — login form only, no sign-up ──────────────────────────
+  // ── 2. Not signed in — custom login form (email + password only) ────────────
   if (!isSignedIn) {
     return (
       <div style={S.page}>
         <AdminTopBar />
         <div style={S.center}>
-          <p style={{ color: "#7d8590", fontSize: 13, marginBottom: 22, textAlign: "center", maxWidth: 360 }}>
-            Accès administrateur — email + mot de passe uniquement.
-          </p>
-          <SignIn
-            routing="hash"
-            forceRedirectUrl={typeof window !== "undefined" ? window.location.href : "/admin"}
-            appearance={{
-              variables: {
-                colorPrimary: "#f97316",
-                colorBackground: "#161b22",
-                colorText: "#e6edf3",
-                colorInputBackground: "#0d1117",
-                colorInputText: "#e6edf3",
-                borderRadius: "10px",
-              },
-              elements: {
-                card: { boxShadow: "none", border: "1px solid #21262d", background: "#161b22" },
-                footer: { display: "none" },
-                footerAction: { display: "none" },
-                headerTitle: { color: "#e6edf3" },
-                headerSubtitle: { color: "#7d8590" },
-                // ── Disable all social/OAuth logins on admin page ──
-                socialButtonsRoot: { display: "none" },
-                socialButtonsBlockButton: { display: "none" },
-                dividerRow: { display: "none" },
-                dividerText: { display: "none" },
-              },
-            }}
-          />
+          <AdminSignInForm />
         </div>
         <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
       </div>
