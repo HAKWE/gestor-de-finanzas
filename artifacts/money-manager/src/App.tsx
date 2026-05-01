@@ -131,66 +131,119 @@ function ProtectedRoute({ component: Component }: { component: any }) {
 // ── Admin emails allowed (client-side guard — real security is on the API) ────
 const ADMIN_EMAILS = ["sosthen@gmail.com"];
 
+// Shared screen shell for admin access errors
+function AdminAccessScreen({
+  icon, code, title, message, detail, actions,
+}: {
+  icon: string; code?: string; title: string; message: string; detail?: string;
+  actions: React.ReactNode;
+}) {
+  return (
+    <div style={{ minHeight: "100dvh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", background: "#0d1117", fontFamily: "'Inter', system-ui, sans-serif", padding: 24 }}>
+      {/* Logo strip */}
+      <div style={{ position: "fixed", top: 0, left: 0, right: 0, height: 52, background: "#161b22", borderBottom: "1px solid #21262d", display: "flex", alignItems: "center", padding: "0 24px", gap: 10 }}>
+        <div style={{ width: 28, height: 28, borderRadius: 8, background: "linear-gradient(135deg, #fb923c, #ea580c)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 800, color: "#fff" }}>MM</div>
+        <span style={{ fontSize: 14, fontWeight: 600, color: "#e6edf3" }}>Admin Dashboard <span style={{ color: "#7d8590", fontWeight: 400 }}>— MobileMoney Manager</span></span>
+      </div>
+
+      <div style={{ textAlign: "center", maxWidth: 440 }}>
+        {/* Icon */}
+        <div style={{ width: 80, height: 80, borderRadius: 24, background: "#1a0808", border: "1px solid #7f1d1d", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px", fontSize: 38 }}>
+          {icon}
+        </div>
+        {/* Error code badge */}
+        {code && (
+          <div style={{ display: "inline-block", background: "#1a0808", border: "1px solid #7f1d1d", borderRadius: 8, padding: "3px 14px", marginBottom: 14 }}>
+            <span style={{ fontFamily: "monospace", fontSize: 12, color: "#f85149", fontWeight: 700, letterSpacing: "0.06em" }}>{code}</span>
+          </div>
+        )}
+        {/* Title */}
+        <h1 style={{ fontSize: 22, fontWeight: 800, color: "#e6edf3", margin: "0 0 10px", letterSpacing: "-0.02em" }}>{title}</h1>
+        {/* Message */}
+        <p style={{ color: "#7d8590", fontSize: 14, lineHeight: 1.65, margin: "0 0 6px" }}>{message}</p>
+        {/* Detail (e.g. email) */}
+        {detail && (
+          <p style={{ fontFamily: "monospace", fontSize: 12, color: "#484f58", background: "#161b22", border: "1px solid #21262d", borderRadius: 8, padding: "7px 14px", display: "inline-block", margin: "6px 0 24px" }}>
+            {detail}
+          </p>
+        )}
+        {!detail && <div style={{ height: 20 }} />}
+        {/* Actions */}
+        <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
+          {actions}
+        </div>
+      </div>
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+    </div>
+  );
+}
+
 function AdminGuard() {
   const { isLoaded, isSignedIn } = useAuth();
   const { user } = useUser();
+  const base = (import.meta.env.BASE_URL || "/").replace(/\/$/, "") || "/";
 
+  // Clerk still loading
   if (!isLoaded) {
     return (
-      <div style={{ minHeight: "100dvh", display: "flex", alignItems: "center", justifyContent: "center", background: "#030712" }}>
+      <div style={{ minHeight: "100dvh", display: "flex", alignItems: "center", justifyContent: "center", background: "#0d1117" }}>
         <div style={{ textAlign: "center" }}>
-          <div style={{ width: 44, height: 44, border: "3px solid #21262d", borderTopColor: "#f97316", borderRadius: "50%", animation: "spin 0.8s linear infinite", margin: "0 auto 16px" }} />
-          <p style={{ color: "#7d8590", fontSize: 14, fontFamily: "system-ui, sans-serif" }}>Vérification en cours…</p>
+          <div style={{ width: 44, height: 44, border: "3px solid #21262d", borderTopColor: "#f97316", borderRadius: "50%", animation: "spin 0.8s linear infinite", margin: "0 auto 14px" }} />
+          <p style={{ color: "#7d8590", fontSize: 14, fontFamily: "system-ui" }}>Vérification de l'accès…</p>
         </div>
         <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       </div>
     );
   }
 
+  // Not signed in
   if (!isSignedIn) {
-    return <Redirect to="/" />;
+    return (
+      <AdminAccessScreen
+        icon="🔒"
+        title="Accès administrateur uniquement"
+        message="Cette page est réservée à l'administrateur. Veuillez vous connecter avec le compte autorisé pour continuer."
+        actions={
+          <>
+            <a href={`${base}/sign-in`} style={{ textDecoration: "none" }}>
+              <button style={{ background: "#f97316", color: "#fff", border: "none", borderRadius: 11, padding: "10px 24px", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>
+                Se connecter
+              </button>
+            </a>
+            <a href={base || "/"} style={{ textDecoration: "none" }}>
+              <button style={{ background: "#161b22", border: "1px solid #30363d", color: "#e6edf3", borderRadius: 11, padding: "10px 24px", fontWeight: 600, fontSize: 14, cursor: "pointer" }}>
+                ← Accueil
+              </button>
+            </a>
+          </>
+        }
+      />
+    );
   }
 
+  // Get primary email
   const email =
     user?.emailAddresses.find(e => e.id === user.primaryEmailAddressId)?.emailAddress
     ?? user?.emailAddresses[0]?.emailAddress
     ?? "";
 
-  const isAdmin = ADMIN_EMAILS.includes(email.toLowerCase());
-
-  if (!isAdmin) {
+  // Not admin
+  if (!ADMIN_EMAILS.includes(email.toLowerCase())) {
     return (
-      <div style={{ minHeight: "100dvh", display: "flex", alignItems: "center", justifyContent: "center", background: "#030712", fontFamily: "'Inter', system-ui, sans-serif" }}>
-        <div style={{ textAlign: "center", maxWidth: 420, padding: "0 24px" }}>
-          {/* Icon */}
-          <div style={{ width: 80, height: 80, borderRadius: 24, background: "#1a0808", border: "1px solid #7f1d1d", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 24px", fontSize: 36 }}>
-            🚫
-          </div>
-          {/* Code */}
-          <div style={{ display: "inline-block", background: "#1a0808", border: "1px solid #7f1d1d", borderRadius: 8, padding: "4px 14px", marginBottom: 16 }}>
-            <span style={{ fontFamily: "monospace", fontSize: 13, color: "#f87171", fontWeight: 700, letterSpacing: "0.05em" }}>403 FORBIDDEN</span>
-          </div>
-          {/* Title */}
-          <h1 style={{ fontSize: 24, fontWeight: 800, color: "#e6edf3", margin: "0 0 10px", letterSpacing: "-0.02em" }}>
-            Accès réservé à l'administrateur
-          </h1>
-          {/* Desc */}
-          <p style={{ color: "#7d8590", fontSize: 15, lineHeight: 1.6, margin: "0 0 8px" }}>
-            Cette zone est protégée. Votre compte n'est pas autorisé à y accéder.
-          </p>
-          <p style={{ color: "#484f58", fontSize: 13, margin: "0 0 32px", fontFamily: "monospace", background: "#0d1117", border: "1px solid #21262d", borderRadius: 8, padding: "8px 14px", display: "inline-block" }}>
-            {email}
-          </p>
-          {/* Action */}
-          <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
-            <a href={`${import.meta.env.BASE_URL || "/"}`.replace(/\/\/$/, "/")} style={{ textDecoration: "none" }}>
-              <button style={{ background: "#161b22", border: "1px solid #30363d", color: "#e6edf3", padding: "10px 24px", borderRadius: 12, fontWeight: 600, cursor: "pointer", fontSize: 14 }}>
-                ← Retour à l'accueil
-              </button>
-            </a>
-          </div>
-        </div>
-      </div>
+      <AdminAccessScreen
+        icon="🚫"
+        code="403 FORBIDDEN"
+        title="Accès administrateur uniquement"
+        message="Votre compte n'est pas autorisé à accéder à cette zone. Contactez l'administrateur si vous pensez que c'est une erreur."
+        detail={email}
+        actions={
+          <a href={base || "/"} style={{ textDecoration: "none" }}>
+            <button style={{ background: "#161b22", border: "1px solid #30363d", color: "#e6edf3", borderRadius: 11, padding: "10px 24px", fontWeight: 600, fontSize: 14, cursor: "pointer" }}>
+              ← Retour à l'accueil
+            </button>
+          </a>
+        }
+      />
     );
   }
 
