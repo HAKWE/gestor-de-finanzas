@@ -128,95 +128,67 @@ function ProtectedRoute({ component: Component }: { component: any }) {
   return <Component />;
 }
 
-// ── Admin emails allowed (client-side guard — real security is on the API) ────
-const ADMIN_EMAILS = ["sosthen@gmail.com"];
+// ── The ONE authorized admin email ────────────────────────────────────────────
+const ADMIN_EMAIL = "sosthen@gmail.com";
 
-// Shared screen shell for admin access errors
-function AdminAccessScreen({
-  icon, code, title, message, detail, actions,
-}: {
-  icon: string; code?: string; title: string; message: string; detail?: string;
-  actions: React.ReactNode;
-}) {
+// ── Shared top bar used by all admin screens ───────────────────────────────────
+function AdminTopBar() {
   return (
-    <div style={{ minHeight: "100dvh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", background: "#0d1117", fontFamily: "'Inter', system-ui, sans-serif", padding: 24 }}>
-      {/* Logo strip */}
-      <div style={{ position: "fixed", top: 0, left: 0, right: 0, height: 52, background: "#161b22", borderBottom: "1px solid #21262d", display: "flex", alignItems: "center", padding: "0 24px", gap: 10 }}>
-        <div style={{ width: 28, height: 28, borderRadius: 8, background: "linear-gradient(135deg, #fb923c, #ea580c)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 800, color: "#fff" }}>MM</div>
-        <span style={{ fontSize: 14, fontWeight: 600, color: "#e6edf3" }}>Admin Dashboard <span style={{ color: "#7d8590", fontWeight: 400 }}>— MobileMoney Manager</span></span>
-      </div>
-
-      <div style={{ textAlign: "center", maxWidth: 440 }}>
-        {/* Icon */}
-        <div style={{ width: 80, height: 80, borderRadius: 24, background: "#1a0808", border: "1px solid #7f1d1d", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px", fontSize: 38 }}>
-          {icon}
-        </div>
-        {/* Error code badge */}
-        {code && (
-          <div style={{ display: "inline-block", background: "#1a0808", border: "1px solid #7f1d1d", borderRadius: 8, padding: "3px 14px", marginBottom: 14 }}>
-            <span style={{ fontFamily: "monospace", fontSize: 12, color: "#f85149", fontWeight: 700, letterSpacing: "0.06em" }}>{code}</span>
-          </div>
-        )}
-        {/* Title */}
-        <h1 style={{ fontSize: 22, fontWeight: 800, color: "#e6edf3", margin: "0 0 10px", letterSpacing: "-0.02em" }}>{title}</h1>
-        {/* Message */}
-        <p style={{ color: "#7d8590", fontSize: 14, lineHeight: 1.65, margin: "0 0 6px" }}>{message}</p>
-        {/* Detail (e.g. email) */}
-        {detail && (
-          <p style={{ fontFamily: "monospace", fontSize: 12, color: "#484f58", background: "#161b22", border: "1px solid #21262d", borderRadius: 8, padding: "7px 14px", display: "inline-block", margin: "6px 0 24px" }}>
-            {detail}
-          </p>
-        )}
-        {!detail && <div style={{ height: 20 }} />}
-        {/* Actions */}
-        <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
-          {actions}
-        </div>
-      </div>
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+    <div style={{ position: "fixed", top: 0, left: 0, right: 0, height: 52, background: "#161b22", borderBottom: "1px solid #21262d", display: "flex", alignItems: "center", padding: "0 24px", gap: 10, zIndex: 100 }}>
+      <div style={{ width: 28, height: 28, borderRadius: 8, background: "linear-gradient(135deg, #fb923c, #ea580c)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 800, color: "#fff" }}>MM</div>
+      <span style={{ fontSize: 14, fontWeight: 600, color: "#e6edf3" }}>
+        Admin Dashboard <span style={{ color: "#7d8590", fontWeight: 400 }}>— MobileMoney Manager</span>
+      </span>
+      <span style={{ fontSize: 10, fontWeight: 700, color: "#f97316", background: "#1c0904", border: "1px solid #7c2d12", borderRadius: 20, padding: "2px 9px", letterSpacing: "0.06em" }}>
+        RESTREINT
+      </span>
+      <a href="https://mobilemoneymanager.africa" style={{ marginLeft: "auto", textDecoration: "none", fontSize: 12, color: "#7d8590", fontWeight: 500 }}>
+        ← Accueil
+      </a>
     </div>
   );
 }
 
+// ── AdminGuard: three possible outcomes ───────────────────────────────────────
+//   1. Not loaded     → spinner
+//   2. Not signed in  → embedded Clerk sign-in form (no sign-up, no redirect away)
+//   3. Signed in      → check email: admin → show dashboard | else → 403 + sign-out
 function AdminGuard() {
   const { isLoaded, isSignedIn } = useAuth();
-  const { user } = useUser();
-  const base = (import.meta.env.BASE_URL || "/").replace(/\/$/, "") || "/";
+  const { user }                 = useUser();
+  const { signOut }              = useClerk();
+  const [signingOut, setSigningOut] = useState(false);
 
-  // Clerk still loading
+  const S = {
+    page:    { minHeight: "100dvh", background: "#0d1117", fontFamily: "'Inter', system-ui, sans-serif" } as React.CSSProperties,
+    center:  { paddingTop: 52, display: "flex", flexDirection: "column" as const, alignItems: "center", justifyContent: "center", flex: 1, minHeight: "calc(100dvh - 52px)" },
+  };
+
+  // ── 1. Clerk still initialising ─────────────────────────────────────────────
   if (!isLoaded) {
     return (
-      <div style={{ minHeight: "100dvh", display: "flex", alignItems: "center", justifyContent: "center", background: "#0d1117" }}>
+      <div style={{ ...S.page, display: "flex", alignItems: "center", justifyContent: "center" }}>
         <div style={{ textAlign: "center" }}>
           <div style={{ width: 44, height: 44, border: "3px solid #21262d", borderTopColor: "#f97316", borderRadius: "50%", animation: "spin 0.8s linear infinite", margin: "0 auto 14px" }} />
-          <p style={{ color: "#7d8590", fontSize: 14, fontFamily: "system-ui" }}>Vérification de l'accès…</p>
+          <p style={{ color: "#7d8590", fontSize: 14 }}>Vérification de l'accès…</p>
         </div>
-        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+        <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
       </div>
     );
   }
 
-  // Not signed in — show embedded sign-in (no sign-up link)
+  // ── 2. Not signed in — login form only, no sign-up ──────────────────────────
   if (!isSignedIn) {
     return (
-      <div style={{ minHeight: "100dvh", background: "#0d1117", fontFamily: "'Inter', system-ui, sans-serif", display: "flex", flexDirection: "column" }}>
-        {/* Header */}
-        <div style={{ height: 52, background: "#161b22", borderBottom: "1px solid #21262d", display: "flex", alignItems: "center", padding: "0 24px", gap: 10, flexShrink: 0 }}>
-          <div style={{ width: 28, height: 28, borderRadius: 8, background: "linear-gradient(135deg, #fb923c, #ea580c)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 800, color: "#fff" }}>MM</div>
-          <span style={{ fontSize: 14, fontWeight: 600, color: "#e6edf3" }}>Admin Dashboard <span style={{ color: "#7d8590", fontWeight: 400 }}>— MobileMoney Manager</span></span>
-          <span style={{ fontSize: 10, fontWeight: 700, color: "#f97316", background: "#1c0904", border: "1px solid #7c2d12", borderRadius: 20, padding: "2px 9px", letterSpacing: "0.06em", marginLeft: 4 }}>RESTREINT</span>
-          <a href="https://mobilemoneymanager.africa" style={{ marginLeft: "auto", textDecoration: "none", display: "flex", alignItems: "center", gap: 5, fontSize: 12, color: "#7d8590", fontWeight: 500 }}>
-            ← Accueil
-          </a>
-        </div>
-
-        {/* Sign-in form centered */}
-        <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 24 }}>
-          <p style={{ color: "#7d8590", fontSize: 13, marginBottom: 20, textAlign: "center" }}>
-            Connexion requise pour accéder au tableau de bord administrateur.
+      <div style={S.page}>
+        <AdminTopBar />
+        <div style={S.center}>
+          <p style={{ color: "#7d8590", fontSize: 13, marginBottom: 22, textAlign: "center", maxWidth: 360 }}>
+            Accès réservé à l'administrateur. Connectez-vous avec le compte autorisé.
           </p>
           <SignIn
             routing="hash"
+            forceRedirectUrl={typeof window !== "undefined" ? window.location.href : "/admin"}
             appearance={{
               variables: {
                 colorPrimary: "#f97316",
@@ -228,45 +200,68 @@ function AdminGuard() {
               },
               elements: {
                 card: { boxShadow: "none", border: "1px solid #21262d", background: "#161b22" },
-                footerAction: { display: "none" },
                 footer: { display: "none" },
+                footerAction: { display: "none" },
                 headerTitle: { color: "#e6edf3" },
                 headerSubtitle: { color: "#7d8590" },
               },
             }}
           />
         </div>
-        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+        <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
       </div>
     );
   }
 
-  // Get primary email
-  const email =
+  // ── 3a. Signed in — resolve primary email ───────────────────────────────────
+  const email = (
     user?.emailAddresses.find(e => e.id === user.primaryEmailAddressId)?.emailAddress
     ?? user?.emailAddresses[0]?.emailAddress
-    ?? "";
+    ?? ""
+  ).trim().toLowerCase();
 
-  // Not admin
-  if (!ADMIN_EMAILS.includes(email.toLowerCase())) {
+  // ── 3b. Wrong account — 403 + sign-out button ───────────────────────────────
+  if (email !== ADMIN_EMAIL) {
     return (
-      <AdminAccessScreen
-        icon="🚫"
-        code="403 FORBIDDEN"
-        title="Accès administrateur uniquement"
-        message="Votre compte n'est pas autorisé à accéder à cette zone. Contactez l'administrateur si vous pensez que c'est une erreur."
-        detail={email}
-        actions={
-          <a href={base || "/"} style={{ textDecoration: "none" }}>
-            <button style={{ background: "#161b22", border: "1px solid #30363d", color: "#e6edf3", borderRadius: 11, padding: "10px 24px", fontWeight: 600, fontSize: 14, cursor: "pointer" }}>
-              ← Retour à l'accueil
-            </button>
-          </a>
-        }
-      />
+      <div style={S.page}>
+        <AdminTopBar />
+        <div style={S.center}>
+          <div style={{ textAlign: "center", maxWidth: 420, padding: "0 24px" }}>
+            <div style={{ width: 76, height: 76, borderRadius: 22, background: "#1a0808", border: "1px solid #7f1d1d", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px", fontSize: 36 }}>🚫</div>
+            <div style={{ display: "inline-block", background: "#1a0808", border: "1px solid #7f1d1d", borderRadius: 7, padding: "3px 13px", marginBottom: 14 }}>
+              <span style={{ fontFamily: "monospace", fontSize: 12, color: "#f85149", fontWeight: 700, letterSpacing: "0.06em" }}>403 — ACCÈS REFUSÉ</span>
+            </div>
+            <h1 style={{ fontSize: 21, fontWeight: 800, color: "#e6edf3", margin: "0 0 10px" }}>Accès administrateur uniquement</h1>
+            <p style={{ color: "#7d8590", fontSize: 14, lineHeight: 1.6, margin: "0 0 6px" }}>
+              Ce compte n'est pas autorisé à accéder au tableau de bord admin.
+            </p>
+            <p style={{ fontFamily: "monospace", fontSize: 12, color: "#484f58", background: "#161b22", border: "1px solid #21262d", borderRadius: 8, padding: "7px 14px", display: "inline-block", margin: "8px 0 24px" }}>
+              {email || "compte inconnu"}
+            </p>
+            <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
+              <button
+                disabled={signingOut}
+                onClick={() => {
+                  setSigningOut(true);
+                  signOut().catch(() => setSigningOut(false));
+                }}
+                style={{ background: "#f97316", color: "#fff", border: "none", borderRadius: 11, padding: "10px 22px", fontWeight: 700, fontSize: 14, cursor: signingOut ? "default" : "pointer", opacity: signingOut ? 0.6 : 1 }}
+              >
+                {signingOut ? "Déconnexion…" : "Se déconnecter"}
+              </button>
+              <a href="https://mobilemoneymanager.africa/dashboard" style={{ textDecoration: "none" }}>
+                <button style={{ background: "#161b22", border: "1px solid #30363d", color: "#e6edf3", borderRadius: 11, padding: "10px 22px", fontWeight: 600, fontSize: 14, cursor: "pointer" }}>
+                  Mon tableau de bord
+                </button>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
     );
   }
 
+  // ── 3c. Correct admin email — show dashboard ─────────────────────────────────
   return <AdminPage />;
 }
 
