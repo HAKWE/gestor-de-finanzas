@@ -140,20 +140,10 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks(id) {
-          // Clerk auth — large, changes rarely
-          if (id.includes("@clerk")) return "vendor-clerk";
-          // React core
-          if (id.includes("react-dom") || id.includes("react/")) return "vendor-react";
-          // Radix UI primitives
-          if (id.includes("@radix-ui")) return "vendor-radix";
-          // Recharts + D3 deps
-          if (id.includes("recharts") || id.includes("d3-") || id.includes("victory-")) return "vendor-charts";
-          // TanStack (react-query, table)
-          if (id.includes("@tanstack")) return "vendor-tanstack";
-          // PDF.js (heavy, only used in import)
+          // PDF.js is large and truly independent — safe to isolate
           if (id.includes("pdfjs-dist")) return "vendor-pdfjs";
-          // Everything else from node_modules
-          if (id.includes("node_modules")) return "vendor-misc";
+          // Clerk is large and only loads on auth pages
+          if (id.includes("node_modules/@clerk")) return "vendor-clerk";
         },
       },
     },
