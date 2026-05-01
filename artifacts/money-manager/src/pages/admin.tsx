@@ -1,9 +1,14 @@
 import { useEffect, useState, useMemo } from "react";
-import { Link } from "wouter";
 import {
   Users, Crown, Activity, RefreshCw,
   Search, Download, ArrowLeft, ChevronUp, ChevronDown, X, Filter,
 } from "lucide-react";
+
+const IS_ADMIN_SUBDOMAIN =
+  typeof window !== "undefined" &&
+  window.location.hostname === "admin.mobilemoneymanager.africa";
+
+const APP_HOME = IS_ADMIN_SUBDOMAIN ? "https://mobilemoneymanager.africa" : "/dashboard";
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
@@ -249,11 +254,11 @@ export default function AdminPage() {
             <button onClick={() => load()} style={{ background: T.orange, color: "#fff", border: "none", borderRadius: 10, padding: "10px 22px", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
               Réessayer
             </button>
-            <Link href="/dashboard">
+            <a href={APP_HOME} style={{ textDecoration: "none" }}>
               <button style={{ display: "flex", alignItems: "center", gap: 6, background: T.panel, color: T.text, border: `1px solid ${T.border2}`, borderRadius: 10, padding: "10px 22px", fontWeight: 600, fontSize: 13, cursor: "pointer" }}>
                 <ArrowLeft style={{ width: 14, height: 14 }} /> App
               </button>
-            </Link>
+            </a>
           </div>
         </div>
       </div>
@@ -288,11 +293,11 @@ export default function AdminPage() {
             <RefreshCw style={{ width: 12, height: 12, animation: refreshing ? "spin 1s linear infinite" : "none" }} />
             Actualiser
           </button>
-          <Link href="/dashboard">
+          <a href={APP_HOME} style={{ textDecoration: "none" }}>
             <button style={{ display: "flex", alignItems: "center", gap: 5, background: "transparent", border: `1px solid ${T.border2}`, borderRadius: 9, padding: "6px 13px", fontSize: 12, color: T.muted, cursor: "pointer", fontWeight: 500 }}>
               <ArrowLeft style={{ width: 12, height: 12 }} /> App
             </button>
-          </Link>
+          </a>
         </div>
       </header>
 

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { ClerkProvider, Show, useClerk, useAuth, useUser } from '@clerk/react';
+import { ClerkProvider, Show, useClerk, useAuth, useUser, SignInButton } from '@clerk/react';
 import { Switch, Route, useLocation, Router as WouterRouter, Redirect } from 'wouter';
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider, useQueryClient, useQuery } from "@tanstack/react-query";
@@ -205,12 +205,12 @@ function AdminGuard() {
         message="Cette page est réservée à l'administrateur. Veuillez vous connecter avec le compte autorisé pour continuer."
         actions={
           <>
-            <a href={`${base}/sign-in`} style={{ textDecoration: "none" }}>
+            <SignInButton mode="modal">
               <button style={{ background: "#f97316", color: "#fff", border: "none", borderRadius: 11, padding: "10px 24px", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>
                 Se connecter
               </button>
-            </a>
-            <a href={base || "/"} style={{ textDecoration: "none" }}>
+            </SignInButton>
+            <a href="https://mobilemoneymanager.africa" style={{ textDecoration: "none" }}>
               <button style={{ background: "#161b22", border: "1px solid #30363d", color: "#e6edf3", borderRadius: 11, padding: "10px 24px", fontWeight: 600, fontSize: 14, cursor: "pointer" }}>
                 ← Accueil
               </button>
@@ -272,6 +272,11 @@ function ClerkQueryClientCacheInvalidator() {
   return null;
 }
 
+// Detect admin subdomain (works in prod and dev)
+const IS_ADMIN_SUBDOMAIN =
+  typeof window !== "undefined" &&
+  window.location.hostname === "admin.mobilemoneymanager.africa";
+
 function ClerkProviderWithRoutes() {
   const [, setLocation] = useLocation();
 
@@ -299,28 +304,34 @@ function ClerkProviderWithRoutes() {
     >
       <QueryClientProvider client={queryClient}>
         <ClerkQueryClientCacheInvalidator />
-        <Switch>
-          <Route path="/" component={HomeRedirect} />
-          <Route path="/sign-in/*?" component={SignInPage} />
-          <Route path="/sign-up/*?" component={SignUpPage} />
-          <Route path="/onboarding" component={OnboardingPage} />
-          <Route path="/dashboard"><ProtectedRoute component={Dashboard} /></Route>
-          <Route path="/transactions"><ProtectedRoute component={Transactions} /></Route>
-          <Route path="/transactions/new"><ProtectedRoute component={NewTransaction} /></Route>
-          <Route path="/transactions/:id/edit"><ProtectedRoute component={EditTransaction} /></Route>
-          <Route path="/import"><ProtectedRoute component={Import} /></Route>
-          <Route path="/reports"><ProtectedRoute component={Reports} /></Route>
-          <Route path="/inventory"><ProtectedRoute component={Inventory} /></Route>
-          <Route path="/settings"><ProtectedRoute component={Settings} /></Route>
-          <Route path="/pricing" component={Pricing} />
-          <Route path="/success" component={Success} />
-          <Route path="/subscription"><ProtectedRoute component={Subscription} /></Route>
-          <Route path="/confidentialite" component={Privacy} />
-          <Route path="/conditions" component={Terms} />
-          <Route path="/mentions-legales" component={Legal} />
-          <Route path="/admin" component={AdminGuard} />
-          <Route component={NotFound} />
-        </Switch>
+
+        {/* admin.mobilemoneymanager.africa → always show admin guard */}
+        {IS_ADMIN_SUBDOMAIN ? (
+          <AdminGuard />
+        ) : (
+          <Switch>
+            <Route path="/" component={HomeRedirect} />
+            <Route path="/sign-in/*?" component={SignInPage} />
+            <Route path="/sign-up/*?" component={SignUpPage} />
+            <Route path="/onboarding" component={OnboardingPage} />
+            <Route path="/dashboard"><ProtectedRoute component={Dashboard} /></Route>
+            <Route path="/transactions"><ProtectedRoute component={Transactions} /></Route>
+            <Route path="/transactions/new"><ProtectedRoute component={NewTransaction} /></Route>
+            <Route path="/transactions/:id/edit"><ProtectedRoute component={EditTransaction} /></Route>
+            <Route path="/import"><ProtectedRoute component={Import} /></Route>
+            <Route path="/reports"><ProtectedRoute component={Reports} /></Route>
+            <Route path="/inventory"><ProtectedRoute component={Inventory} /></Route>
+            <Route path="/settings"><ProtectedRoute component={Settings} /></Route>
+            <Route path="/pricing" component={Pricing} />
+            <Route path="/success" component={Success} />
+            <Route path="/subscription"><ProtectedRoute component={Subscription} /></Route>
+            <Route path="/confidentialite" component={Privacy} />
+            <Route path="/conditions" component={Terms} />
+            <Route path="/mentions-legales" component={Legal} />
+            <Route path="/admin" component={AdminGuard} />
+            <Route component={NotFound} />
+          </Switch>
+        )}
       </QueryClientProvider>
     </ClerkProvider>
   );
