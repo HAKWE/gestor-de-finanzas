@@ -149,111 +149,157 @@ function AdminTopBar() {
   );
 }
 
-// ── Custom admin sign-in form (full style control, email+password only) ───────
+// ── Custom admin sign-in form (full style control, email+password + OTP step) ──
 function AdminSignInForm() {
   const { signIn, setActive, isLoaded } = useSignIn();
+
+  // step: "password" → user types email+password
+  //       "otp"      → Client Trust sent a code, user types it
+  const [step, setStep]           = useState<"password" | "otp">("password");
   const [email, setEmail]         = useState("");
   const [password, setPassword]   = useState("");
   const [showPwd, setShowPwd]     = useState(false);
+  const [otp, setOtp]             = useState("");
   const [loading, setLoading]     = useState(false);
   const [error, setError]         = useState("");
 
   const inputStyle: React.CSSProperties = {
     width: "100%", boxSizing: "border-box",
-    background: "#0d1117",
-    border: "1px solid #30363d",
-    borderRadius: 8,
-    padding: "11px 14px",
-    fontSize: 14,
-    color: "#e6edf3",
-    outline: "none",
-    fontFamily: "inherit",
+    background: "#0d1117", border: "1px solid #30363d", borderRadius: 8,
+    padding: "11px 14px", fontSize: 14, color: "#e6edf3",
+    outline: "none", fontFamily: "inherit",
   };
   const labelStyle: React.CSSProperties = {
-    display: "block", fontSize: 13, fontWeight: 600,
-    color: "#8b949e", marginBottom: 6,
+    display: "block", fontSize: 13, fontWeight: 600, color: "#8b949e", marginBottom: 6,
   };
 
-  async function handleSubmit(e: React.FormEvent) {
+  // ── Step 1: email + password ─────────────────────────────────────────────────
+  async function handlePassword(e: React.FormEvent) {
     e.preventDefault();
     if (!isLoaded || loading) return;
-    setError("");
-    setLoading(true);
+    setError(""); setLoading(true);
     try {
       const result = await signIn!.create({ identifier: email.trim(), password });
       if (result.status === "complete") {
         await setActive!({ session: result.createdSessionId });
+      } else if (result.status === "needs_second_factor") {
+        // Client Trust: a code has been sent to the email — show OTP input
+        setStep("otp");
+      } else if (result.status === "needs_first_factor") {
+        // Fallback: try preparing email_code factor
+        await signIn!.prepareFirstFactor({ strategy: "email_code", emailAddressId: signIn!.supportedFirstFactors?.find((f: any) => f.strategy === "email_code")?.emailAddressId ?? "" });
+        setStep("otp");
       } else {
-        setError("Authentification incomplète. Vérifiez vos identifiants.");
+        setError("Étape d'authentification inconnue. Contactez l'administrateur.");
       }
     } catch (err: any) {
-      const msg = err?.errors?.[0]?.longMessage
-               || err?.errors?.[0]?.message
-               || "Email ou mot de passe incorrect.";
+      const msg = err?.errors?.[0]?.longMessage || err?.errors?.[0]?.message || "Email ou mot de passe incorrect.";
       setError(msg);
-    } finally {
-      setLoading(false);
-    }
+    } finally { setLoading(false); }
   }
 
+  // ── Step 2: OTP code (Client Trust second factor) ────────────────────────────
+  async function handleOtp(e: React.FormEvent) {
+    e.preventDefault();
+    if (!isLoaded || loading) return;
+    setError(""); setLoading(true);
+    try {
+      // Try second factor first (Client Trust), then first factor email_code
+      let result: any;
+      try {
+        result = await signIn!.attemptSecondFactor({ strategy: "email_code", code: otp.trim() });
+      } catch {
+        result = await signIn!.attemptFirstFactor({ strategy: "email_code", code: otp.trim() });
+      }
+      if (result.status === "complete") {
+        await setActive!({ session: result.createdSessionId });
+      } else {
+        setError("Code incorrect ou expiré. Réessayez.");
+      }
+    } catch (err: any) {
+      const msg = err?.errors?.[0]?.longMessage || err?.errors?.[0]?.message || "Code incorrect ou expiré.";
+      setError(msg);
+    } finally { setLoading(false); }
+  }
+
+  const header = (
+    <div style={{ textAlign: "center", marginBottom: 28 }}>
+      <div style={{ width: 44, height: 44, borderRadius: 12, background: "linear-gradient(135deg,#fb923c,#ea580c)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, fontWeight: 800, color: "#fff", margin: "0 auto 14px" }}>MM</div>
+      <h2 style={{ fontSize: 18, fontWeight: 700, color: "#e6edf3", margin: "0 0 6px" }}>Connexion administrateur</h2>
+      <p style={{ fontSize: 13, color: "#7d8590", margin: 0 }}>
+        {step === "password" ? "Email + mot de passe uniquement" : `Code envoyé à ${email}`}
+      </p>
+    </div>
+  );
+
+  const errorBox = error ? (
+    <div style={{ background: "#1a0808", border: "1px solid #7f1d1d", borderRadius: 8, padding: "10px 14px", marginBottom: 16, fontSize: 13, color: "#f85149" }}>
+      {error}
+    </div>
+  ) : null;
+
+  const submitBtn = (label: string) => (
+    <button type="submit" disabled={loading || !isLoaded}
+      style={{ width: "100%", background: "#f97316", color: "#fff", border: "none", borderRadius: 9, padding: "12px 0", fontWeight: 700, fontSize: 15, cursor: loading ? "default" : "pointer", opacity: loading ? 0.7 : 1, fontFamily: "inherit" }}>
+      {loading ? "Connexion…" : label}
+    </button>
+  );
+
   return (
-    <form onSubmit={handleSubmit} style={{ width: "100%", maxWidth: 380, padding: "0 16px" }}>
+    <div style={{ width: "100%", maxWidth: 380, padding: "0 16px" }}>
       <div style={{ background: "#161b22", border: "1px solid #21262d", borderRadius: 12, padding: "32px 28px" }}>
-        {/* Header */}
-        <div style={{ textAlign: "center", marginBottom: 28 }}>
-          <div style={{ width: 44, height: 44, borderRadius: 12, background: "linear-gradient(135deg,#fb923c,#ea580c)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, fontWeight: 800, color: "#fff", margin: "0 auto 14px" }}>MM</div>
-          <h2 style={{ fontSize: 18, fontWeight: 700, color: "#e6edf3", margin: "0 0 6px" }}>Connexion administrateur</h2>
-          <p style={{ fontSize: 13, color: "#7d8590", margin: 0 }}>Email + mot de passe uniquement</p>
-        </div>
+        {header}
 
-        {/* Email */}
-        <div style={{ marginBottom: 16 }}>
-          <label style={labelStyle}>Adresse e-mail</label>
-          <input
-            type="email" required autoComplete="username"
-            value={email} onChange={e => setEmail(e.target.value)}
-            placeholder="sosthen@gmail.com"
-            style={inputStyle}
-          />
-        </div>
-
-        {/* Password */}
-        <div style={{ marginBottom: 20 }}>
-          <label style={labelStyle}>Mot de passe</label>
-          <div style={{ position: "relative" }}>
-            <input
-              type={showPwd ? "text" : "password"} required autoComplete="current-password"
-              value={password} onChange={e => setPassword(e.target.value)}
-              placeholder="••••••••"
-              style={{ ...inputStyle, paddingRight: 44 }}
-            />
-            <button
-              type="button"
-              onClick={() => setShowPwd(v => !v)}
-              style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", color: "#7d8590", cursor: "pointer", fontSize: 18, lineHeight: 1, padding: 0 }}
-              aria-label={showPwd ? "Masquer" : "Afficher"}
-            >
-              {showPwd ? "🙈" : "👁️"}
-            </button>
-          </div>
-        </div>
-
-        {/* Error */}
-        {error && (
-          <div style={{ background: "#1a0808", border: "1px solid #7f1d1d", borderRadius: 8, padding: "10px 14px", marginBottom: 16, fontSize: 13, color: "#f85149" }}>
-            {error}
-          </div>
+        {/* ── STEP 1: password ── */}
+        {step === "password" && (
+          <form onSubmit={handlePassword}>
+            <div style={{ marginBottom: 16 }}>
+              <label style={labelStyle}>Adresse e-mail</label>
+              <input type="email" required autoComplete="username"
+                value={email} onChange={e => setEmail(e.target.value)}
+                placeholder="sosthen@gmail.com" style={inputStyle} />
+            </div>
+            <div style={{ marginBottom: 20 }}>
+              <label style={labelStyle}>Mot de passe</label>
+              <div style={{ position: "relative" }}>
+                <input type={showPwd ? "text" : "password"} required autoComplete="current-password"
+                  value={password} onChange={e => setPassword(e.target.value)}
+                  placeholder="••••••••" style={{ ...inputStyle, paddingRight: 44 }} />
+                <button type="button" onClick={() => setShowPwd(v => !v)}
+                  style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", color: "#7d8590", cursor: "pointer", fontSize: 18, lineHeight: 1, padding: 0 }}
+                  aria-label={showPwd ? "Masquer" : "Afficher"}>
+                  {showPwd ? "🙈" : "👁️"}
+                </button>
+              </div>
+            </div>
+            {errorBox}
+            {submitBtn("Se connecter")}
+          </form>
         )}
 
-        {/* Submit */}
-        <button
-          type="submit" disabled={loading || !isLoaded}
-          style={{ width: "100%", background: "#f97316", color: "#fff", border: "none", borderRadius: 9, padding: "12px 0", fontWeight: 700, fontSize: 15, cursor: loading ? "default" : "pointer", opacity: loading ? 0.7 : 1, fontFamily: "inherit" }}
-        >
-          {loading ? "Connexion…" : "Se connecter"}
-        </button>
+        {/* ── STEP 2: OTP (Client Trust second factor) ── */}
+        {step === "otp" && (
+          <form onSubmit={handleOtp}>
+            <div style={{ background: "#0d2818", border: "1px solid #166534", borderRadius: 8, padding: "10px 14px", marginBottom: 20, fontSize: 13, color: "#86efac" }}>
+              Un code de vérification a été envoyé à <strong>{email}</strong>. Vérifiez votre boite mail.
+            </div>
+            <div style={{ marginBottom: 20 }}>
+              <label style={labelStyle}>Code de vérification</label>
+              <input type="text" required autoComplete="one-time-code" inputMode="numeric"
+                value={otp} onChange={e => setOtp(e.target.value.replace(/\D/g, "").slice(0, 8))}
+                placeholder="123456" maxLength={8}
+                style={{ ...inputStyle, letterSpacing: "0.2em", textAlign: "center", fontSize: 20 }} />
+            </div>
+            {errorBox}
+            {submitBtn("Vérifier le code")}
+            <button type="button" onClick={() => { setStep("password"); setOtp(""); setError(""); }}
+              style={{ width: "100%", background: "none", border: "none", color: "#7d8590", fontSize: 13, marginTop: 12, cursor: "pointer", fontFamily: "inherit" }}>
+              ← Retour
+            </button>
+          </form>
+        )}
       </div>
-    </form>
+    </div>
   );
 }
 
