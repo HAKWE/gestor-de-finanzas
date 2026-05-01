@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { ClerkProvider, Show, useClerk, useAuth, useUser, SignInButton } from '@clerk/react';
+import { ClerkProvider, Show, useClerk, useAuth, useUser, SignIn } from '@clerk/react';
 import { Switch, Route, useLocation, Router as WouterRouter, Redirect } from 'wouter';
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider, useQueryClient, useQuery } from "@tanstack/react-query";
@@ -196,28 +196,48 @@ function AdminGuard() {
     );
   }
 
-  // Not signed in
+  // Not signed in — show embedded sign-in (no sign-up link)
   if (!isSignedIn) {
     return (
-      <AdminAccessScreen
-        icon="🔒"
-        title="Accès administrateur uniquement"
-        message="Cette page est réservée à l'administrateur. Veuillez vous connecter avec le compte autorisé pour continuer."
-        actions={
-          <>
-            <SignInButton mode="modal">
-              <button style={{ background: "#f97316", color: "#fff", border: "none", borderRadius: 11, padding: "10px 24px", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>
-                Se connecter
-              </button>
-            </SignInButton>
-            <a href="https://mobilemoneymanager.africa" style={{ textDecoration: "none" }}>
-              <button style={{ background: "#161b22", border: "1px solid #30363d", color: "#e6edf3", borderRadius: 11, padding: "10px 24px", fontWeight: 600, fontSize: 14, cursor: "pointer" }}>
-                ← Accueil
-              </button>
-            </a>
-          </>
-        }
-      />
+      <div style={{ minHeight: "100dvh", background: "#0d1117", fontFamily: "'Inter', system-ui, sans-serif", display: "flex", flexDirection: "column" }}>
+        {/* Header */}
+        <div style={{ height: 52, background: "#161b22", borderBottom: "1px solid #21262d", display: "flex", alignItems: "center", padding: "0 24px", gap: 10, flexShrink: 0 }}>
+          <div style={{ width: 28, height: 28, borderRadius: 8, background: "linear-gradient(135deg, #fb923c, #ea580c)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 800, color: "#fff" }}>MM</div>
+          <span style={{ fontSize: 14, fontWeight: 600, color: "#e6edf3" }}>Admin Dashboard <span style={{ color: "#7d8590", fontWeight: 400 }}>— MobileMoney Manager</span></span>
+          <span style={{ fontSize: 10, fontWeight: 700, color: "#f97316", background: "#1c0904", border: "1px solid #7c2d12", borderRadius: 20, padding: "2px 9px", letterSpacing: "0.06em", marginLeft: 4 }}>RESTREINT</span>
+          <a href="https://mobilemoneymanager.africa" style={{ marginLeft: "auto", textDecoration: "none", display: "flex", alignItems: "center", gap: 5, fontSize: 12, color: "#7d8590", fontWeight: 500 }}>
+            ← Accueil
+          </a>
+        </div>
+
+        {/* Sign-in form centered */}
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 24 }}>
+          <p style={{ color: "#7d8590", fontSize: 13, marginBottom: 20, textAlign: "center" }}>
+            Connexion requise pour accéder au tableau de bord administrateur.
+          </p>
+          <SignIn
+            routing="hash"
+            appearance={{
+              variables: {
+                colorPrimary: "#f97316",
+                colorBackground: "#161b22",
+                colorText: "#e6edf3",
+                colorInputBackground: "#0d1117",
+                colorInputText: "#e6edf3",
+                borderRadius: "10px",
+              },
+              elements: {
+                card: { boxShadow: "none", border: "1px solid #21262d", background: "#161b22" },
+                footerAction: { display: "none" },
+                footer: { display: "none" },
+                headerTitle: { color: "#e6edf3" },
+                headerSubtitle: { color: "#7d8590" },
+              },
+            }}
+          />
+        </div>
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      </div>
     );
   }
 
