@@ -458,10 +458,17 @@ function ClerkQueryClientCacheInvalidator() {
   return null;
 }
 
-// Detect admin subdomain (works in prod and dev)
+// Detect admin subdomain
 const IS_ADMIN_SUBDOMAIN =
   typeof window !== "undefined" &&
   window.location.hostname === "admin.mobilemoneymanager.africa";
+
+// If on the admin subdomain, redirect immediately to the main domain's /admin path.
+// Clerk's useSignIn() only works on the authorised domain (mobilemoneymanager.africa);
+// the subdomain shares the same static build but Clerk cannot initialise signIn there.
+if (IS_ADMIN_SUBDOMAIN) {
+  window.location.replace("https://mobilemoneymanager.africa/admin");
+}
 
 function ClerkProviderWithRoutes() {
   const [, setLocation] = useLocation();
@@ -491,33 +498,29 @@ function ClerkProviderWithRoutes() {
       <QueryClientProvider client={queryClient}>
         <ClerkQueryClientCacheInvalidator />
 
-        {/* admin.mobilemoneymanager.africa → always show admin guard */}
-        {IS_ADMIN_SUBDOMAIN ? (
-          <AdminGuard />
-        ) : (
-          <Switch>
-            <Route path="/" component={HomeRedirect} />
-            <Route path="/sign-in/*?" component={SignInPage} />
-            <Route path="/sign-up/*?" component={SignUpPage} />
-            <Route path="/onboarding" component={OnboardingPage} />
-            <Route path="/dashboard"><ProtectedRoute component={Dashboard} /></Route>
-            <Route path="/transactions"><ProtectedRoute component={Transactions} /></Route>
-            <Route path="/transactions/new"><ProtectedRoute component={NewTransaction} /></Route>
-            <Route path="/transactions/:id/edit"><ProtectedRoute component={EditTransaction} /></Route>
-            <Route path="/import"><ProtectedRoute component={Import} /></Route>
-            <Route path="/reports"><ProtectedRoute component={Reports} /></Route>
-            <Route path="/inventory"><ProtectedRoute component={Inventory} /></Route>
-            <Route path="/settings"><ProtectedRoute component={Settings} /></Route>
-            <Route path="/pricing" component={Pricing} />
-            <Route path="/success" component={Success} />
-            <Route path="/subscription"><ProtectedRoute component={Subscription} /></Route>
-            <Route path="/confidentialite" component={Privacy} />
-            <Route path="/conditions" component={Terms} />
-            <Route path="/mentions-legales" component={Legal} />
-            <Route path="/admin" component={AdminGuard} />
-            <Route component={NotFound} />
-          </Switch>
-        )}
+        {/* The admin subdomain redirects to /admin at module level before rendering */}
+        <Switch>
+          <Route path="/" component={HomeRedirect} />
+          <Route path="/sign-in/*?" component={SignInPage} />
+          <Route path="/sign-up/*?" component={SignUpPage} />
+          <Route path="/onboarding" component={OnboardingPage} />
+          <Route path="/dashboard"><ProtectedRoute component={Dashboard} /></Route>
+          <Route path="/transactions"><ProtectedRoute component={Transactions} /></Route>
+          <Route path="/transactions/new"><ProtectedRoute component={NewTransaction} /></Route>
+          <Route path="/transactions/:id/edit"><ProtectedRoute component={EditTransaction} /></Route>
+          <Route path="/import"><ProtectedRoute component={Import} /></Route>
+          <Route path="/reports"><ProtectedRoute component={Reports} /></Route>
+          <Route path="/inventory"><ProtectedRoute component={Inventory} /></Route>
+          <Route path="/settings"><ProtectedRoute component={Settings} /></Route>
+          <Route path="/pricing" component={Pricing} />
+          <Route path="/success" component={Success} />
+          <Route path="/subscription"><ProtectedRoute component={Subscription} /></Route>
+          <Route path="/confidentialite" component={Privacy} />
+          <Route path="/conditions" component={Terms} />
+          <Route path="/mentions-legales" component={Legal} />
+          <Route path="/admin" component={AdminGuard} />
+          <Route component={NotFound} />
+        </Switch>
       </QueryClientProvider>
     </ClerkProvider>
   );
