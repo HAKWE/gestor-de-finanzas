@@ -48,4 +48,4 @@ channel = "stable-25_05"
 [userenv.shared]
 APP_DOMAIN = "mobilemoneymanager.africa"
 VITE_CLERK_PUBLISHABLE_KEY = "pk_test_bWFpbi1saW9uZXNzLTgyLmNsZXJrLmFjY291bnRzLmRldiQ"
-ADMIN_EMAIL = "rgs_ltd@yahoo.com,sosthen@gmail.com"
+ADMIN_EMAIL = "sosthen@gmail.com"

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { ClerkProvider, Show, useClerk, useAuth } from '@clerk/react';
+import { ClerkProvider, Show, useClerk, useAuth, useUser } from '@clerk/react';
 import { Switch, Route, useLocation, Router as WouterRouter, Redirect } from 'wouter';
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider, useQueryClient, useQuery } from "@tanstack/react-query";
@@ -128,6 +128,75 @@ function ProtectedRoute({ component: Component }: { component: any }) {
   return <Component />;
 }
 
+// ── Admin emails allowed (client-side guard — real security is on the API) ────
+const ADMIN_EMAILS = ["sosthen@gmail.com"];
+
+function AdminGuard() {
+  const { isLoaded, isSignedIn } = useAuth();
+  const { user } = useUser();
+
+  if (!isLoaded) {
+    return (
+      <div style={{ minHeight: "100dvh", display: "flex", alignItems: "center", justifyContent: "center", background: "#030712" }}>
+        <div style={{ textAlign: "center" }}>
+          <div style={{ width: 44, height: 44, border: "3px solid #21262d", borderTopColor: "#f97316", borderRadius: "50%", animation: "spin 0.8s linear infinite", margin: "0 auto 16px" }} />
+          <p style={{ color: "#7d8590", fontSize: 14, fontFamily: "system-ui, sans-serif" }}>Vérification en cours…</p>
+        </div>
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      </div>
+    );
+  }
+
+  if (!isSignedIn) {
+    return <Redirect to="/" />;
+  }
+
+  const email =
+    user?.emailAddresses.find(e => e.id === user.primaryEmailAddressId)?.emailAddress
+    ?? user?.emailAddresses[0]?.emailAddress
+    ?? "";
+
+  const isAdmin = ADMIN_EMAILS.includes(email.toLowerCase());
+
+  if (!isAdmin) {
+    return (
+      <div style={{ minHeight: "100dvh", display: "flex", alignItems: "center", justifyContent: "center", background: "#030712", fontFamily: "'Inter', system-ui, sans-serif" }}>
+        <div style={{ textAlign: "center", maxWidth: 420, padding: "0 24px" }}>
+          {/* Icon */}
+          <div style={{ width: 80, height: 80, borderRadius: 24, background: "#1a0808", border: "1px solid #7f1d1d", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 24px", fontSize: 36 }}>
+            🚫
+          </div>
+          {/* Code */}
+          <div style={{ display: "inline-block", background: "#1a0808", border: "1px solid #7f1d1d", borderRadius: 8, padding: "4px 14px", marginBottom: 16 }}>
+            <span style={{ fontFamily: "monospace", fontSize: 13, color: "#f87171", fontWeight: 700, letterSpacing: "0.05em" }}>403 FORBIDDEN</span>
+          </div>
+          {/* Title */}
+          <h1 style={{ fontSize: 24, fontWeight: 800, color: "#e6edf3", margin: "0 0 10px", letterSpacing: "-0.02em" }}>
+            Accès réservé à l'administrateur
+          </h1>
+          {/* Desc */}
+          <p style={{ color: "#7d8590", fontSize: 15, lineHeight: 1.6, margin: "0 0 8px" }}>
+            Cette zone est protégée. Votre compte n'est pas autorisé à y accéder.
+          </p>
+          <p style={{ color: "#484f58", fontSize: 13, margin: "0 0 32px", fontFamily: "monospace", background: "#0d1117", border: "1px solid #21262d", borderRadius: 8, padding: "8px 14px", display: "inline-block" }}>
+            {email}
+          </p>
+          {/* Action */}
+          <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
+            <a href={`${import.meta.env.BASE_URL || "/"}`.replace(/\/\/$/, "/")} style={{ textDecoration: "none" }}>
+              <button style={{ background: "#161b22", border: "1px solid #30363d", color: "#e6edf3", padding: "10px 24px", borderRadius: 12, fontWeight: 600, cursor: "pointer", fontSize: 14 }}>
+                ← Retour à l'accueil
+              </button>
+            </a>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return <AdminPage />;
+}
+
 function ClerkQueryClientCacheInvalidator() {
   const { addListener } = useClerk();
   const qc = useQueryClient();
@@ -196,7 +265,7 @@ function ClerkProviderWithRoutes() {
           <Route path="/confidentialite" component={Privacy} />
           <Route path="/conditions" component={Terms} />
           <Route path="/mentions-legales" component={Legal} />
-          <Route path="/admin" component={AdminPage} />
+          <Route path="/admin" component={AdminGuard} />
           <Route component={NotFound} />
         </Switch>
       </QueryClientProvider>
