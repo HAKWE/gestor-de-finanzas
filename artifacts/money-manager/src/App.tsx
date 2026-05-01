@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { ClerkProvider, Show, useClerk, useAuth, useUser, useSignIn } from '@clerk/react';
+import { ClerkProvider, Show, useClerk, useAuth, useUser } from '@clerk/react';
 import { Switch, Route, useLocation, Router as WouterRouter, Redirect } from 'wouter';
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider, useQueryClient, useQuery } from "@tanstack/react-query";
@@ -151,7 +151,9 @@ function AdminTopBar() {
 
 // ── Custom admin sign-in form (full style control, email+password + OTP step) ──
 function AdminSignInForm() {
-  const { signIn, setActive, isLoaded } = useSignIn();
+  // Use useClerk() instead of useSignIn() to avoid isLoaded blocking on admin path.
+  // clerk.client is available as soon as Clerk initialises; no extra async step needed.
+  const clerk = useClerk();
 
   // step: "password" → user types email+password
   //       "otp"      → Client Trust sent a code, user types it
@@ -176,18 +178,24 @@ function AdminSignInForm() {
   // ── Step 1: email + password ─────────────────────────────────────────────────
   async function handlePassword(e: React.FormEvent) {
     e.preventDefault();
-    if (!isLoaded || loading) return;
+    if (loading) return;
+    const signInResource = clerk.client?.signIn;
+    if (!signInResource) {
+      setError("Le service d'authentification n'est pas encore prêt. Rechargez la page.");
+      return;
+    }
     setError(""); setLoading(true);
     try {
-      const result = await signIn!.create({ identifier: email.trim(), password });
+      const result = await signInResource.create({ identifier: email.trim(), password });
       if (result.status === "complete") {
-        await setActive!({ session: result.createdSessionId });
+        await clerk.setActive({ session: result.createdSessionId });
       } else if (result.status === "needs_second_factor") {
         // Client Trust: a code has been sent to the email — show OTP input
         setStep("otp");
       } else if (result.status === "needs_first_factor") {
         // Fallback: try preparing email_code factor
-        await signIn!.prepareFirstFactor({ strategy: "email_code", emailAddressId: signIn!.supportedFirstFactors?.find((f: any) => f.strategy === "email_code")?.emailAddressId ?? "" });
+        const emailFactor = signInResource.supportedFirstFactors?.find((f: any) => f.strategy === "email_code");
+        await signInResource.prepareFirstFactor({ strategy: "email_code", emailAddressId: emailFactor?.emailAddressId ?? "" });
         setStep("otp");
       } else {
         setError("Étape d'authentification inconnue. Contactez l'administrateur.");
@@ -201,18 +209,23 @@ function AdminSignInForm() {
   // ── Step 2: OTP code (Client Trust second factor) ────────────────────────────
   async function handleOtp(e: React.FormEvent) {
     e.preventDefault();
-    if (!isLoaded || loading) return;
+    if (loading) return;
+    const signInResource = clerk.client?.signIn;
+    if (!signInResource) {
+      setError("Le service d'authentification n'est pas encore prêt. Rechargez la page.");
+      return;
+    }
     setError(""); setLoading(true);
     try {
       // Try second factor first (Client Trust), then first factor email_code
       let result: any;
       try {
-        result = await signIn!.attemptSecondFactor({ strategy: "email_code", code: otp.trim() });
+        result = await signInResource.attemptSecondFactor({ strategy: "email_code", code: otp.trim() });
       } catch {
-        result = await signIn!.attemptFirstFactor({ strategy: "email_code", code: otp.trim() });
+        result = await signInResource.attemptFirstFactor({ strategy: "email_code", code: otp.trim() });
       }
       if (result.status === "complete") {
-        await setActive!({ session: result.createdSessionId });
+        await clerk.setActive({ session: result.createdSessionId });
       } else {
         setError("Code incorrect ou expiré. Réessayez.");
       }
@@ -244,18 +257,6 @@ function AdminSignInForm() {
       {loading ? "Connexion…" : label}
     </button>
   );
-
-  // Show a small spinner while Clerk's signIn object is initialising
-  if (!isLoaded) {
-    return (
-      <div style={{ width: "100%", maxWidth: 380, padding: "0 16px" }}>
-        <div style={{ background: "#161b22", border: "1px solid #21262d", borderRadius: 12, padding: "60px 28px", textAlign: "center" }}>
-          <div style={{ width: 36, height: 36, border: "3px solid #21262d", borderTopColor: "#f97316", borderRadius: "50%", animation: "spin 0.8s linear infinite", margin: "0 auto 14px" }} />
-          <p style={{ color: "#7d8590", fontSize: 13, margin: 0 }}>Initialisation…</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div style={{ width: "100%", maxWidth: 380, padding: "0 16px" }}>

@@ -34,7 +34,7 @@ export default defineConfig({
     tailwindcss(),
     runtimeErrorOverlay(),
     VitePWA({
-      registerType: "autoUpdate",
+      registerType: "prompt",
       includeAssets: ["favicon.svg", "logo.svg", "icon-192.png", "icon-512.png", "icon-180.png"],
       manifest: {
         name: "MobileMoney Manager",
@@ -74,8 +74,8 @@ export default defineConfig({
         ],
       },
       workbox: {
-        skipWaiting: true,
-        clientsClaim: true,
+        skipWaiting: false,
+        clientsClaim: false,
         // Allow bundles up to 4 MB in the precache (main app chunk can reach ~2 MB)
         maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
         globPatterns: ["**/*.{js,css,html,svg,png,woff2}"],
