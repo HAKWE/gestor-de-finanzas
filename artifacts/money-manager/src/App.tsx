@@ -155,9 +155,10 @@ function AdminSignInForm() {
   // clerk.client is available as soon as Clerk initialises; no extra async step needed.
   const clerk = useClerk();
 
-  // step: "password" → user types email+password
-  //       "otp"      → Client Trust sent a code, user types it
-  const [step, setStep]           = useState<"password" | "otp">("password");
+  // step: "password"  → user types email+password
+  //       "otp"       → Client Trust 2nd factor code
+  //       "emailcode" → passwordless: code sent to email (no password needed)
+  const [step, setStep]           = useState<"password" | "otp" | "emailcode">("password");
   const [email, setEmail]         = useState("");
   const [password, setPassword]   = useState("");
   const [showPwd, setShowPwd]     = useState(false);
@@ -206,7 +207,7 @@ function AdminSignInForm() {
     } finally { setLoading(false); }
   }
 
-  // ── Step 2: OTP code (Client Trust second factor) ────────────────────────────
+  // ── Step 2: OTP code (Client Trust second factor after password) ─────────────
   async function handleOtp(e: React.FormEvent) {
     e.preventDefault();
     if (loading) return;
@@ -235,13 +236,63 @@ function AdminSignInForm() {
     } finally { setLoading(false); }
   }
 
+  // ── Passwordless: send email code (no password required) ─────────────────────
+  async function handleSendEmailCode(e: React.MouseEvent | React.FormEvent) {
+    e.preventDefault();
+    if (loading) return;
+    const signInResource = clerk.client?.signIn;
+    if (!signInResource) {
+      setError("Le service d'authentification n'est pas encore prêt. Rechargez la page.");
+      return;
+    }
+    if (!email.trim()) {
+      setError("Saisissez d'abord votre adresse e-mail.");
+      return;
+    }
+    setError(""); setLoading(true);
+    try {
+      await signInResource.create({ strategy: "email_code", identifier: email.trim() });
+      setStep("emailcode");
+    } catch (err: any) {
+      const msg = err?.errors?.[0]?.longMessage || err?.errors?.[0]?.message || "Impossible d'envoyer le code. Vérifiez l'adresse e-mail.";
+      setError(msg);
+    } finally { setLoading(false); }
+  }
+
+  // ── Verify email code (passwordless step) ─────────────────────────────────────
+  async function handleVerifyEmailCode(e: React.FormEvent) {
+    e.preventDefault();
+    if (loading) return;
+    const signInResource = clerk.client?.signIn;
+    if (!signInResource) {
+      setError("Le service d'authentification n'est pas encore prêt. Rechargez la page.");
+      return;
+    }
+    setError(""); setLoading(true);
+    try {
+      const result = await signInResource.attemptFirstFactor({ strategy: "email_code", code: otp.trim() });
+      if (result.status === "complete") {
+        await clerk.setActive({ session: result.createdSessionId });
+      } else {
+        setError("Code incorrect ou expiré. Réessayez.");
+      }
+    } catch (err: any) {
+      const msg = err?.errors?.[0]?.longMessage || err?.errors?.[0]?.message || "Code incorrect ou expiré.";
+      setError(msg);
+    } finally { setLoading(false); }
+  }
+
+  const stepSubtitle = step === "password"
+    ? "Email + mot de passe"
+    : step === "emailcode"
+    ? `Code envoyé à ${email}`
+    : `Vérification 2FA — ${email}`;
+
   const header = (
     <div style={{ textAlign: "center", marginBottom: 28 }}>
       <div style={{ width: 44, height: 44, borderRadius: 12, background: "linear-gradient(135deg,#fb923c,#ea580c)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, fontWeight: 800, color: "#fff", margin: "0 auto 14px" }}>MM</div>
       <h2 style={{ fontSize: 18, fontWeight: 700, color: "#e6edf3", margin: "0 0 6px" }}>Connexion administrateur</h2>
-      <p style={{ fontSize: 13, color: "#7d8590", margin: 0 }}>
-        {step === "password" ? "Email + mot de passe uniquement" : `Code envoyé à ${email}`}
-      </p>
+      <p style={{ fontSize: 13, color: "#7d8590", margin: 0 }}>{stepSubtitle}</p>
     </div>
   );
 
@@ -287,6 +338,15 @@ function AdminSignInForm() {
             </div>
             {errorBox}
             {submitBtn("Se connecter")}
+            <div style={{ margin: "16px 0 0", textAlign: "center" }}>
+              <span style={{ fontSize: 12, color: "#484f58" }}>Pas de mot de passe ?</span>
+              {" "}
+              <button type="button" disabled={loading}
+                onClick={handleSendEmailCode}
+                style={{ background: "none", border: "none", color: "#f97316", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", padding: 0 }}>
+                {loading ? "Envoi…" : "Se connecter par code e-mail"}
+              </button>
+            </div>
           </form>
         )}
 
@@ -301,6 +361,28 @@ function AdminSignInForm() {
               <input type="text" required autoComplete="one-time-code" inputMode="numeric"
                 value={otp} onChange={e => setOtp(e.target.value.replace(/\D/g, "").slice(0, 8))}
                 placeholder="123456" maxLength={8}
+                style={{ ...inputStyle, letterSpacing: "0.2em", textAlign: "center", fontSize: 20 }} />
+            </div>
+            {errorBox}
+            {submitBtn("Vérifier le code")}
+            <button type="button" onClick={() => { setStep("password"); setOtp(""); setError(""); }}
+              style={{ width: "100%", background: "none", border: "none", color: "#7d8590", fontSize: 13, marginTop: 12, cursor: "pointer", fontFamily: "inherit" }}>
+              ← Retour
+            </button>
+          </form>
+        )}
+
+        {/* ── STEP 3: Email code (passwordless) ── */}
+        {step === "emailcode" && (
+          <form onSubmit={handleVerifyEmailCode}>
+            <div style={{ background: "#0d2818", border: "1px solid #166534", borderRadius: 8, padding: "10px 14px", marginBottom: 20, fontSize: 13, color: "#86efac" }}>
+              Un code à 6 chiffres a été envoyé à <strong>{email}</strong>. Vérifiez votre boite mail.
+            </div>
+            <div style={{ marginBottom: 20 }}>
+              <label style={labelStyle}>Code e-mail</label>
+              <input type="text" required autoComplete="one-time-code" inputMode="numeric"
+                value={otp} onChange={e => setOtp(e.target.value.replace(/\D/g, "").slice(0, 8))}
+                placeholder="123456" maxLength={8} autoFocus
                 style={{ ...inputStyle, letterSpacing: "0.2em", textAlign: "center", fontSize: 20 }} />
             </div>
             {errorBox}
