@@ -123,7 +123,7 @@ export default function Home() {
   ];
 
   return (
-    <div style={{ minHeight: "100vh", background: "#fafaf9", display: "flex", flexDirection: "column" }}>
+    <div style={{ minHeight: "100vh", background: "#f9fafb", display: "flex", flexDirection: "column" }}>
 
       {/* ─── HEADER ─── */}
       <header style={{
@@ -156,7 +156,7 @@ export default function Home() {
       </header>
 
       {/* ─── HERO ─── */}
-      <section style={{ padding: "64px 24px 48px", maxWidth: 1100, margin: "0 auto", width: "100%" }}>
+      <section style={{ padding: "64px 24px 48px", maxWidth: 1100, margin: "0 auto", width: "100%", background: "linear-gradient(180deg, #ffffff 0%, #f9fafb 100%)" }}>
         <div style={{
           display: "grid",
           gridTemplateColumns: "minmax(0,1fr) minmax(0,420px)",
@@ -319,11 +319,11 @@ export default function Home() {
       </section>
 
       {/* ─── TRUST BAR ─── */}
-      <section style={{ background: "#111", padding: "20px 24px" }}>
+      <section style={{ background: "#1e293b", padding: "18px 24px" }}>
         <div style={{
           maxWidth: 900, margin: "0 auto",
           display: "flex", alignItems: "center", justifyContent: "center",
-          flexWrap: "wrap", gap: "12px 32px",
+          flexWrap: "wrap", gap: "10px 28px",
         }}>
           {[
             { icon: "🔒", text: fr ? "Données chiffrées et sécurisées" : "Encrypted & secure data" },
@@ -333,9 +333,9 @@ export default function Home() {
           ].map(({ icon, text }) => (
             <div key={text} style={{
               display: "flex", alignItems: "center", gap: 7,
-              fontSize: 13, fontWeight: 600, color: "#d1d5db",
+              fontSize: 12, fontWeight: 600, color: "#94a3b8",
             }}>
-              <span style={{ fontSize: 15 }}>{icon}</span>
+              <span style={{ fontSize: 14 }}>{icon}</span>
               {text}
             </div>
           ))}
@@ -448,15 +448,27 @@ export default function Home() {
       <section style={{ padding: "64px 24px" }}>
         <div style={{
           maxWidth: 720, margin: "0 auto",
-          background: "linear-gradient(135deg, #431407 0%, #9a3412 100%)",
+          background: "#ffffff",
+          border: "1.5px solid #e5e7eb",
           borderRadius: 24, padding: "48px 36px",
           textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: 20,
+          boxShadow: "0 4px 24px rgba(0,0,0,0.06)",
+          position: "relative", overflow: "hidden",
         }}>
-          <img src="/logo.svg" alt="MobileMoney" style={{ width: 52, height: 52 }} />
-          <h2 style={{ fontSize: "clamp(22px,4vw,34px)", fontWeight: 900, color: "#fff", margin: 0 }}>
+          {/* Accent bar top */}
+          <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 4, background: "linear-gradient(90deg, #f97316 0%, #fb923c 50%, #16a34a 100%)" }} />
+          <div style={{
+            width: 60, height: 60, borderRadius: 18,
+            background: "linear-gradient(135deg, #fff7ed, #ffedd5)",
+            border: "1.5px solid #fed7aa",
+            display: "flex", alignItems: "center", justifyContent: "center",
+          }}>
+            <img src="/logo.svg" alt="MobileMoney" style={{ width: 36, height: 36 }} />
+          </div>
+          <h2 style={{ fontSize: "clamp(22px,4vw,34px)", fontWeight: 900, color: "#111827", margin: 0 }}>
             {fr ? "Commencez dès aujourd'hui" : "Start today"}
           </h2>
-          <p style={{ fontSize: 16, color: "#fed7aa", margin: 0, maxWidth: 440 }}>
+          <p style={{ fontSize: 16, color: "#6b7280", margin: 0, maxWidth: 440, lineHeight: 1.7 }}>
             {fr
               ? "Rejoignez des centaines d'entrepreneurs qui maîtrisent déjà leurs finances. Gratuit pour commencer."
               : "Join hundreds of entrepreneurs who already master their finances. Free to start."
@@ -467,13 +479,13 @@ export default function Home() {
               background: ORANGE, color: "#fff", border: "none",
               borderRadius: 14, padding: "14px 32px", fontWeight: 800, fontSize: 16,
               cursor: "pointer", display: "flex", alignItems: "center", gap: 8,
-              boxShadow: "0 4px 20px rgba(249,115,22,0.40)",
+              boxShadow: "0 4px 16px rgba(249,115,22,0.30)",
             }}>
               {fr ? "Créer mon compte gratuit" : "Create my free account"}
               <ArrowRight style={{ width: 17, height: 17 }} />
             </button>
           </Link>
-          <p style={{ fontSize: 12, color: "#fdba74" }}>
+          <p style={{ fontSize: 12, color: "#9ca3af", margin: 0 }}>
             {fr ? "✓ Gratuit · ✓ Sans carte bancaire · ✓ Installation en 30 secondes" : "✓ Free · ✓ No credit card · ✓ Set up in 30 seconds"}
           </p>
         </div>

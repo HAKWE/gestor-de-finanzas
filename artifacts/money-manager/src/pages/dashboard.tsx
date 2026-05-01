@@ -219,34 +219,35 @@ function UpgradeBanner({ plan, onDismiss }: { plan: string; onDismiss: () => voi
   return (
     <div style={{
       borderRadius: 20, overflow: "hidden", position: "relative",
-      background: "linear-gradient(135deg, #431407 0%, #7c2d12 60%, #9a3412 100%)",
-      boxShadow: "0 6px 28px rgba(249,115,22,0.22)",
+      background: "#fff",
+      border: "1.5px solid #fed7aa",
+      boxShadow: "0 2px 12px rgba(249,115,22,0.10)",
     }}>
-      <div style={{ position: "absolute", top: -24, right: -24, width: 100, height: 100, borderRadius: "50%", background: "rgba(255,255,255,0.06)", pointerEvents: "none" }} />
-      <div style={{ padding: "18px 20px 16px", position: "relative" }}>
+      <div style={{ height: 3, background: "linear-gradient(90deg, #f97316 0%, #fb923c 100%)" }} />
+      <div style={{ padding: "16px 18px 16px", position: "relative" }}>
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 10 }}>
           <div>
-            <span style={{ display: "inline-flex", alignItems: "center", gap: 4, background: "rgba(255,255,255,0.12)", borderRadius: 999, padding: "3px 10px", fontSize: 11, fontWeight: 700, color: "#fed7aa", marginBottom: 6 }}>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 4, background: "#fff7ed", borderRadius: 999, padding: "3px 10px", fontSize: 11, fontWeight: 700, color: "#ea580c", marginBottom: 6, border: "1px solid #fed7aa" }}>
               {isStarter ? "⚡ Starter → 👑 Pro" : "🎁 Plan Gratuit → Pro"}
-              <strong style={{ color: "#fff", marginLeft: 4 }}>{isStarter ? "+6 €/mois" : "dès 5 €/mois"}</strong>
+              <strong style={{ color: "#c2410c", marginLeft: 4 }}>{isStarter ? "+6 €/mois" : "dès 5 €/mois"}</strong>
             </span>
-            <p style={{ fontSize: 15, fontWeight: 800, color: "#fff7ed", margin: 0 }}>
+            <p style={{ fontSize: 14, fontWeight: 800, color: "#111827", margin: 0 }}>
               {isStarter ? "Passez au Pro — un cran au-dessus" : "Gérez votre activité comme un pro"}
             </p>
           </div>
-          <button onClick={onDismiss} style={{ background: "rgba(255,255,255,0.10)", border: "none", cursor: "pointer", color: "#fdba74", padding: 5, borderRadius: 7, flexShrink: 0, display: "flex", alignItems: "center" }}>
+          <button onClick={onDismiss} style={{ background: "#f9fafb", border: "1px solid #e5e7eb", cursor: "pointer", color: "#9ca3af", padding: 5, borderRadius: 7, flexShrink: 0, display: "flex", alignItems: "center" }}>
             <X style={{ width: 13, height: 13 }} />
           </button>
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 5, marginBottom: 12 }}>
           {features.map(f => (
-            <div key={f} style={{ background: "rgba(255,255,255,0.07)", borderRadius: 9, padding: "7px 10px", fontSize: 11, color: "#fff7ed", fontWeight: 600, border: "1px solid rgba(255,255,255,0.06)" }}>
+            <div key={f} style={{ background: "#fafaf9", borderRadius: 9, padding: "7px 10px", fontSize: 11, color: "#374151", fontWeight: 600, border: "1px solid #f0ede9" }}>
               {f}
             </div>
           ))}
         </div>
         <Link href="/pricing">
-          <button style={{ width: "100%", background: ORANGE, color: "#fff", border: "none", borderRadius: 12, padding: "12px 20px", fontWeight: 800, fontSize: 13, cursor: "pointer", boxShadow: "0 3px 12px rgba(249,115,22,0.45)" }}>
+          <button style={{ width: "100%", background: ORANGE, color: "#fff", border: "none", borderRadius: 12, padding: "11px 20px", fontWeight: 800, fontSize: 13, cursor: "pointer", boxShadow: "0 3px 12px rgba(249,115,22,0.30)" }}>
             <Crown style={{ width: 14, height: 14, display: "inline", marginRight: 6, verticalAlign: "middle" }} />
             {isStarter ? "Passer au Pro maintenant →" : "Voir les offres →"}
           </button>
@@ -440,51 +441,58 @@ export default function Dashboard() {
         {/* ── Hero balance card ────────────────────────────────────────────── */}
         <div style={{
           borderRadius: 24, overflow: "hidden", position: "relative",
-          background: "linear-gradient(135deg, #fb923c 0%, #f97316 40%, #ea580c 100%)",
-          boxShadow: "0 8px 32px rgba(249,115,22,0.40)",
-          padding: "28px 24px 24px",
+          background: "#ffffff",
+          border: "1.5px solid #e5e7eb",
+          boxShadow: "0 4px 20px rgba(0,0,0,0.06)",
+          padding: "24px 24px 20px",
         }}>
-          {/* Decorative circles */}
-          <div style={{ position: "absolute", top: -30, right: -30, width: 130, height: 130, borderRadius: "50%", background: "rgba(255,255,255,0.07)", pointerEvents: "none" }} />
-          <div style={{ position: "absolute", bottom: -20, right: 60, width: 80, height: 80, borderRadius: "50%", background: "rgba(255,255,255,0.05)", pointerEvents: "none" }} />
+          {/* Subtle orange accent top bar */}
+          <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 4, background: "linear-gradient(90deg, #f97316 0%, #fb923c 100%)", borderRadius: "24px 24px 0 0" }} />
 
           <div style={{ position: "relative" }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
-              <span style={{ fontSize: 11, color: "rgba(255,255,255,0.80)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em" }}>
-                Solde d'aujourd'hui
-              </span>
-              <div style={{ background: "rgba(255,255,255,0.18)", borderRadius: 999, padding: "4px 12px", display: "flex", alignItems: "center", gap: 5 }}>
-                <Wallet style={{ width: 12, height: 12, color: "rgba(255,255,255,0.85)" }} />
-                <span style={{ fontSize: 11, color: "rgba(255,255,255,0.85)", fontWeight: 700 }}>
-                  {summary?.currency ?? "XOF"}
-                </span>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <div style={{ width: 34, height: 34, borderRadius: 10, background: "#fff7ed", border: "1.5px solid #fed7aa", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <Wallet style={{ width: 16, height: 16, color: "#f97316" }} />
+                </div>
+                <div>
+                  <span style={{ fontSize: 11, color: "#9ca3af", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", display: "block" }}>
+                    Solde d'aujourd'hui
+                  </span>
+                  <span style={{ fontSize: 11, color: "#d1d5db", fontWeight: 600 }}>
+                    {summary?.currency ?? "XOF"}
+                  </span>
+                </div>
+              </div>
+              <div style={{ background: "#f9fafb", borderRadius: 999, padding: "4px 12px", border: "1px solid #e5e7eb" }}>
+                <span style={{ fontSize: 11, color: "#6b7280", fontWeight: 600 }}>Aujourd'hui</span>
               </div>
             </div>
 
             {isLoadingSummary ? (
-              <div style={{ height: 52, background: "rgba(255,255,255,0.15)", borderRadius: 12, marginBottom: 12, animation: "pulse 1.5s ease-in-out infinite" }} />
+              <div style={{ height: 52, background: "#f3f4f6", borderRadius: 12, marginBottom: 14, animation: "pulse 1.5s ease-in-out infinite" }} />
             ) : (
-              <div style={{ fontSize: 40, fontWeight: 900, color: "#fff", lineHeight: 1, letterSpacing: "-0.02em", marginBottom: 12 }}>
+              <div style={{ fontSize: 38, fontWeight: 900, color: "#111827", lineHeight: 1, letterSpacing: "-0.03em", marginBottom: 16 }}>
                 {fmt(summary?.todayBalance ?? 0)}
               </div>
             )}
 
-            <div style={{ height: 1, background: "rgba(255,255,255,0.18)", marginBottom: 16 }} />
+            <div style={{ height: 1, background: "#f3f4f6", marginBottom: 16 }} />
 
             {/* Income vs Expenses mini summary */}
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-              <div>
-                <p style={{ margin: 0, fontSize: 11, color: "rgba(255,255,255,0.70)", fontWeight: 600, marginBottom: 3 }}>Revenus semaine</p>
+              <div style={{ background: "#f0fdf4", borderRadius: 14, padding: "12px 14px", border: "1px solid #bbf7d0" }}>
+                <p style={{ margin: 0, fontSize: 10, color: "#16a34a", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 }}>↑ Revenus sem.</p>
                 {isLoadingSummary
-                  ? <div style={{ height: 20, background: "rgba(255,255,255,0.15)", borderRadius: 6, animation: "pulse 1.5s ease-in-out infinite" }} />
-                  : <p style={{ margin: 0, fontSize: 17, fontWeight: 800, color: "#fff" }}>{fmt(summary?.weekIncome ?? 0)}</p>
+                  ? <div style={{ height: 20, background: "#bbf7d0", borderRadius: 6, animation: "pulse 1.5s ease-in-out infinite" }} />
+                  : <p style={{ margin: 0, fontSize: 16, fontWeight: 800, color: "#15803d" }}>{fmt(summary?.weekIncome ?? 0)}</p>
                 }
               </div>
-              <div>
-                <p style={{ margin: 0, fontSize: 11, color: "rgba(255,255,255,0.70)", fontWeight: 600, marginBottom: 3 }}>Dépenses semaine</p>
+              <div style={{ background: "#fef2f2", borderRadius: 14, padding: "12px 14px", border: "1px solid #fecaca" }}>
+                <p style={{ margin: 0, fontSize: 10, color: "#dc2626", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 }}>↓ Dépenses sem.</p>
                 {isLoadingSummary
-                  ? <div style={{ height: 20, background: "rgba(255,255,255,0.15)", borderRadius: 6, animation: "pulse 1.5s ease-in-out infinite" }} />
-                  : <p style={{ margin: 0, fontSize: 17, fontWeight: 800, color: "#fff" }}>{fmt(summary?.weekExpenses ?? 0)}</p>
+                  ? <div style={{ height: 20, background: "#fecaca", borderRadius: 6, animation: "pulse 1.5s ease-in-out infinite" }} />
+                  : <p style={{ margin: 0, fontSize: 16, fontWeight: 800, color: "#dc2626" }}>{fmt(summary?.weekExpenses ?? 0)}</p>
                 }
               </div>
             </div>

@@ -1,0 +1,107 @@
+Got it—here’s a **tailored Replit AI prompt specifically for React + Tailwind CSS** so you get cleaner, production-ready output:
+
+---
+
+**Prompt:**
+
+Refactor my React + Tailwind CSS fintech dashboard UI to improve color balance, hierarchy, and overall trust while keeping a modern African-friendly aesthetic.
+
+Context:
+
+* This is a mobile money / fintech dashboard for African users.
+* The current UI uses a very bright, saturated orange gradient that feels too aggressive and dominates the interface.
+* I want to keep orange as a brand color but use it more strategically.
+
+Objectives:
+
+1. Reduce color saturation and visual fatigue.
+2. Improve visual hierarchy so CTAs stand out clearly.
+3. Make the UI feel more trustworthy and professional (fintech-grade).
+4. Keep a vibrant but balanced design suitable for African markets.
+
+Design System Requirements:
+
+1. Color Palette (define in Tailwind config):
+
+* Primary (Orange, toned down): #F97316 or softer (#FB923C)
+* Primary-light (background tint): #FFF7ED
+* Secondary (Green for finance): #16A34A
+* Background: #F9FAFB or #F3F4F6
+* Surface (cards): #FFFFFF
+* Text-primary: #111827
+* Text-secondary: #6B7280
+* Border: #E5E7EB
+
+2. UI Rules:
+
+* Remove heavy gradients; use flat colors or very subtle gradients only.
+* Avoid large saturated orange backgrounds.
+* Use orange ONLY for:
+
+  * Buttons (primary CTA)
+  * Active states
+  * Small highlights
+* Use neutral backgrounds (white/light gray) for most sections.
+* Use green for positive financial values (profit, income).
+
+3. Component Refactor:
+
+Update these components:
+
+* **Main Balance Card**
+
+  * Replace bright gradient with:
+
+    * white card + subtle border OR
+    * very light orange tint (bg-orange-50)
+  * Use dark text for readability
+  * Keep balance as the visual focus using font size, not color
+
+* **Buttons**
+
+  * Primary: bg-orange-500 hover:bg-orange-600 text-white
+  * Secondary: bg-gray-100 hover:bg-gray-200 text-gray-700
+  * Add rounded-xl and subtle shadow
+
+* **Stats Cards (Revenue, Transactions, etc.)**
+
+  * Use white background
+  * Add soft shadow (shadow-sm)
+  * Use colored icons (orange/green) instead of colored backgrounds
+
+* **Layout**
+
+  * Add more spacing (padding and margins)
+  * Use consistent rounded corners (rounded-2xl)
+  * Use shadow-sm or shadow-md for depth
+
+4. Tailwind Improvements:
+
+* Use consistent spacing scale (p-4, p-6, gap-4, gap-6)
+* Improve typography hierarchy:
+
+  * Titles: text-xl font-semibold
+  * Labels: text-sm text-gray-500
+  * Values: text-2xl font-bold
+
+5. Accessibility:
+
+* Ensure good contrast ratios
+* Avoid light text on bright orange backgrounds
+
+Deliverables:
+
+* Updated Tailwind config (colors extended)
+* Refactored React components (JSX)
+* Clean, reusable components (Card, Button, StatCard)
+* Improved layout structure
+
+Avoid:
+
+* Bright orange gradients across large sections
+* Overuse of accent colors
+* Low contrast UI
+
+---
+
+If you want, I can go one step further and **rewrite your exact dashboard UI (based on your screenshot) into clean React + Tailwind code** so you can paste it directly into Replit.
