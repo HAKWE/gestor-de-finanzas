@@ -76,6 +76,8 @@ export default defineConfig({
       workbox: {
         skipWaiting: true,
         clientsClaim: true,
+        // Allow bundles up to 4 MB in the precache (main app chunk can reach ~2 MB)
+        maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
         globPatterns: ["**/*.{js,css,html,svg,png,woff2}"],
         runtimeCaching: [
           {
@@ -133,6 +135,28 @@ export default defineConfig({
   build: {
     outDir: path.resolve(import.meta.dirname, "dist/public"),
     emptyOutDir: true,
+    // Raise warning threshold — large chunks will still be split below
+    chunkSizeWarningLimit: 1000,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          // Clerk auth — large, changes rarely
+          if (id.includes("@clerk")) return "vendor-clerk";
+          // React core
+          if (id.includes("react-dom") || id.includes("react/")) return "vendor-react";
+          // Radix UI primitives
+          if (id.includes("@radix-ui")) return "vendor-radix";
+          // Recharts + D3 deps
+          if (id.includes("recharts") || id.includes("d3-") || id.includes("victory-")) return "vendor-charts";
+          // TanStack (react-query, table)
+          if (id.includes("@tanstack")) return "vendor-tanstack";
+          // PDF.js (heavy, only used in import)
+          if (id.includes("pdfjs-dist")) return "vendor-pdfjs";
+          // Everything else from node_modules
+          if (id.includes("node_modules")) return "vendor-misc";
+        },
+      },
+    },
   },
   server: {
     port,
