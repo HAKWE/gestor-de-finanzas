@@ -150,7 +150,7 @@ function AdminTopBar() {
 }
 
 // ── AdminGuard: three possible outcomes ───────────────────────────────────────
-//   1. Not loaded     → spinner
+//   1. Not loaded / forcing sign-out → spinner
 //   2. Not signed in  → embedded Clerk sign-in form (no sign-up, no redirect away)
 //   3. Signed in      → check email: admin → show dashboard | else → 403 + sign-out
 function AdminGuard() {
@@ -158,14 +158,42 @@ function AdminGuard() {
   const { user }                 = useUser();
   const { signOut }              = useClerk();
   const [signingOut, setSigningOut] = useState(false);
+  // Force re-authentication every time the admin page is opened.
+  // If a session exists, sign it out first so the user must always type their password.
+  // readyToShow stays false (spinner) until we know isSignedIn=false for certain.
+  const [readyToShow, setReadyToShow] = useState(false);
+  const didSignOut = useRef(false);     // have we issued the signOut call?
+  const didRelease = useRef(false);     // have we flipped readyToShow?
+
+  useEffect(() => {
+    if (!isLoaded) return;
+
+    if (!didSignOut.current) {
+      didSignOut.current = true;
+      if (isSignedIn) {
+        // Kick off sign-out; wait for Clerk to flip isSignedIn→false (next effect run)
+        signOut().catch(() => {});
+        return;
+      }
+    }
+
+    // We reach here either: (a) was already signed out, or (b) sign-out completed
+    // and Clerk re-ran this effect with isSignedIn=false.
+    if (!isSignedIn && !didRelease.current) {
+      didRelease.current = true;
+      setReadyToShow(true);
+    }
+    // Once the user re-authenticates through the form, isSignedIn flips back to true.
+    // didRelease is already true so we won't reset readyToShow → dashboard is shown.
+  }, [isLoaded, isSignedIn, signOut]);
 
   const S = {
     page:    { minHeight: "100dvh", background: "#0d1117", fontFamily: "'Inter', system-ui, sans-serif" } as React.CSSProperties,
     center:  { paddingTop: 52, display: "flex", flexDirection: "column" as const, alignItems: "center", justifyContent: "center", flex: 1, minHeight: "calc(100dvh - 52px)" },
   };
 
-  // ── 1. Clerk still initialising ─────────────────────────────────────────────
-  if (!isLoaded) {
+  // ── 1. Clerk still initialising, or silently signing out previous session ────
+  if (!isLoaded || !readyToShow) {
     return (
       <div style={{ ...S.page, display: "flex", alignItems: "center", justifyContent: "center" }}>
         <div style={{ textAlign: "center" }}>
