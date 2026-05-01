@@ -184,7 +184,7 @@ function AdminGuard() {
         <AdminTopBar />
         <div style={S.center}>
           <p style={{ color: "#7d8590", fontSize: 13, marginBottom: 22, textAlign: "center", maxWidth: 360 }}>
-            Accès réservé à l'administrateur. Connectez-vous avec le compte autorisé.
+            Accès administrateur — email + mot de passe uniquement.
           </p>
           <SignIn
             routing="hash"
@@ -204,6 +204,11 @@ function AdminGuard() {
                 footerAction: { display: "none" },
                 headerTitle: { color: "#e6edf3" },
                 headerSubtitle: { color: "#7d8590" },
+                // ── Disable all social/OAuth logins on admin page ──
+                socialButtonsRoot: { display: "none" },
+                socialButtonsBlockButton: { display: "none" },
+                dividerRow: { display: "none" },
+                dividerText: { display: "none" },
               },
             }}
           />
