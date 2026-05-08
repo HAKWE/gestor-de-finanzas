@@ -172,7 +172,7 @@ export default function Pricing() {
           <div className="text-center space-y-4">
             <div className="inline-flex items-center gap-2 bg-primary/10 text-primary text-sm font-medium px-4 py-1.5 rounded-full">
               <ShieldCheck className="w-4 h-4" />
-              Paiement 100 % sécurisé via Stripe
+              Paiement sécurisé via Stripe et PayPal
             </div>
             <h1 className="text-3xl md:text-5xl font-bold tracking-tight text-foreground">
               Choisissez votre offre
