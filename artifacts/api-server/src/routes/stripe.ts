@@ -27,6 +27,36 @@ async function upsertStripeCustomerId(userId: string, customerId: string): Promi
 const router: IRouter = Router();
 
 /**
+ * Module-level cache for the "no Link" Payment Method Configuration ID.
+ * Using a PMC is the authoritative Stripe API way to disable Link in Checkout,
+ * even when Link is enabled at the account level.
+ */
+let noLinkPmcId: string | null = null;
+
+async function getNoLinkPmcId(stripe: any): Promise<string | null> {
+  if (noLinkPmcId) return noLinkPmcId;
+  try {
+    const list = await stripe.paymentMethodConfigurations.list({ limit: 20 });
+    const found = (list.data as any[]).find((c: any) => c.name === "MobileMoney-NoLink");
+    if (found) {
+      noLinkPmcId = found.id;
+      console.log(`[pmc] Reusing existing PMC: ${noLinkPmcId}`);
+      return noLinkPmcId;
+    }
+    const created = await stripe.paymentMethodConfigurations.create({
+      name: "MobileMoney-NoLink",
+      link: { display_preference: { preference: "off" } },
+    });
+    noLinkPmcId = (created as any).id;
+    console.log(`[pmc] Created new PMC: ${noLinkPmcId}`);
+    return noLinkPmcId;
+  } catch (err: any) {
+    console.error("[pmc] Could not get/create PMC, falling back to explicit types:", err.message);
+    return null;
+  }
+}
+
+/**
  * Resolve the correct domain for Stripe success/cancel URLs.
  * Priority: Origin header (reflects actual browsing domain) → APP_DOMAIN env →
  * first entry in REPLIT_DOMAINS → Host header.
@@ -224,19 +254,22 @@ router.post("/stripe/checkout-by-plan", requireAuth, async (req: any, res): Prom
     const domain = resolveCheckoutDomain(req);
     console.log(`[checkout-by-plan] Using domain: ${domain}`);
 
-    const pmTypes: ("card" | "paypal")[] = resolvedPaymentMethod === "paypal"
-      ? ["paypal"]
-      : ["card"];
-
-    const session = await stripe.checkout.sessions.create({
+    const pmcId = await getNoLinkPmcId(stripe);
+    const sessionParams: any = {
       customer: customerId,
       client_reference_id: userId,
-      payment_method_types: pmTypes,
       line_items: [{ price: price.id, quantity: 1 }],
       mode: "subscription",
       success_url: `https://${domain}/dashboard?success=true`,
       cancel_url: `https://${domain}/pricing`,
-    });
+    };
+    if (pmcId) {
+      sessionParams.payment_method_configuration = pmcId;
+    } else {
+      sessionParams.payment_method_types = ["card", "paypal"];
+    }
+
+    const session = await stripe.checkout.sessions.create(sessionParams);
 
     console.log(`[checkout-by-plan] Session created: ${session.id}`);
     res.json({ url: session.url });
@@ -281,19 +314,22 @@ router.post("/stripe/checkout", requireAuth, async (req: any, res): Promise<void
 
     const domain = resolveCheckoutDomain(req);
 
-    const pmTypes: ("card" | "paypal")[] = resolvedPaymentMethod === "paypal"
-      ? ["paypal"]
-      : ["card"];
-
-    const session = await stripe.checkout.sessions.create({
+    const pmcId = await getNoLinkPmcId(stripe);
+    const sessionParams: any = {
       customer: customerId,
       client_reference_id: userId,
-      payment_method_types: pmTypes,
       line_items: [{ price: priceId, quantity: 1 }],
       mode: "subscription",
       success_url: `https://${domain}/dashboard?success=true`,
       cancel_url: `https://${domain}/pricing`,
-    });
+    };
+    if (pmcId) {
+      sessionParams.payment_method_configuration = pmcId;
+    } else {
+      sessionParams.payment_method_types = ["card", "paypal"];
+    }
+
+    const session = await stripe.checkout.sessions.create(sessionParams);
 
     res.json({ url: session.url });
   } catch (err: any) {
