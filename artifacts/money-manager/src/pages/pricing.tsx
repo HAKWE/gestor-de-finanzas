@@ -3,7 +3,7 @@ import { Link, useLocation } from "wouter";
 import { useAuth } from "@clerk/react";
 import { Button } from "@/components/ui/button";
 import {
-  Check, Loader2, ArrowLeft, Zap, Star, Gift, ShieldCheck, Lock, Crown,
+  Check, Loader2, ArrowLeft, Zap, Star, Gift, ShieldCheck, Lock, Crown, X, CreditCard,
 } from "lucide-react";
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
@@ -85,24 +85,204 @@ function formatPrice(cents: number, currency: string) {
   }).format(cents / 100);
 }
 
-async function startCheckout(planKey: string): Promise<string> {
+async function startCheckout(planKey: string, paymentMethod: "card" | "paypal"): Promise<string> {
   const res = await fetch(`${basePath}/api/stripe/checkout-by-plan`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
-    body: JSON.stringify({ planName: planKey }),
+    body: JSON.stringify({ planName: planKey, paymentMethod }),
   });
   const data = await res.json();
   if (!res.ok) throw new Error(data.error || "Erreur de paiement");
   return data.url;
 }
 
+// ── PayPal logo SVG ────────────────────────────────────────────────────────────
+function PayPalLogo({ size = 20 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M7.144 19.532l1.049-6.871.066-.428H16.1c3.409 0 5.744-1.644 6.332-4.526.045-.218.076-.431.097-.64C21.752 9.8 20.086 11 17.434 11H9.25L7.144 19.532z" fill="#009CDE"/>
+      <path d="M18.33 7.524c-.092.595-.283 1.145-.565 1.63C16.95 11.055 14.89 12 12.34 12H8.498l-1.355 8.532L6.1 23h4.22l1.05-6.871H15.6c3.41 0 5.745-1.644 6.332-4.526.442-2.144-.435-3.89-3.602-4.079z" fill="#003087"/>
+      <path d="M4.178 1h7.8c1.94 0 3.57.497 4.721 1.355.947.697 1.543 1.682 1.723 2.838.025.16.043.323.055.49-.584-2.897-3.048-4.683-7.033-4.683H3.165L1 13.532h3.178L6.1 3.532 7.144 1H4.178z" fill="#001C64"/>
+      <path d="M18.477 5.683C17.327 4.826 15.695 4.33 13.756 4.33H5.955l-1.776 11.2H7.357l1.355-8.532h3.845c2.55 0 4.61-.945 5.425-2.846.282-.485.473-1.035.565-1.63a5.3 5.3 0 00-.07-.839z" fill="#009CDE"/>
+    </svg>
+  );
+}
+
+// ── Payment method picker modal ────────────────────────────────────────────────
+function PaymentPickerModal({
+  plan,
+  onClose,
+  onSelect,
+  isLoading,
+}: {
+  plan: typeof PLANS[number];
+  onClose: () => void;
+  onSelect: (method: "card" | "paypal") => void;
+  isLoading: "card" | "paypal" | null;
+}) {
+  return (
+    <div
+      style={{
+        position: "fixed", inset: 0, zIndex: 1000,
+        background: "rgba(0,0,0,0.45)", backdropFilter: "blur(4px)",
+        display: "flex", alignItems: "flex-end", justifyContent: "center",
+      }}
+      onClick={onClose}
+    >
+      <div
+        style={{
+          background: "#fff", borderRadius: "24px 24px 0 0",
+          width: "100%", maxWidth: 480, padding: "28px 24px 40px",
+          boxShadow: "0 -8px 40px rgba(0,0,0,0.18)",
+          position: "relative",
+        }}
+        onClick={e => e.stopPropagation()}
+      >
+        {/* Drag handle */}
+        <div style={{ width: 40, height: 4, background: "#e5e7eb", borderRadius: 99, margin: "0 auto 20px" }} />
+
+        {/* Close */}
+        <button
+          onClick={onClose}
+          style={{
+            position: "absolute", top: 16, right: 16,
+            background: "#f3f4f6", border: "none", borderRadius: 99,
+            width: 32, height: 32, cursor: "pointer",
+            display: "flex", alignItems: "center", justifyContent: "center",
+          }}
+        >
+          <X style={{ width: 15, height: 15, color: "#6b7280" }} />
+        </button>
+
+        {/* Header */}
+        <div style={{ marginBottom: 24 }}>
+          <p style={{ margin: "0 0 4px", fontSize: 13, color: "#9ca3af", fontWeight: 600 }}>
+            Finaliser votre abonnement
+          </p>
+          <h2 style={{ margin: 0, fontSize: 20, fontWeight: 800, color: "#111827" }}>
+            Plan {plan.name} — {formatPrice(plan.price, plan.currency)}/mois
+          </h2>
+          <p style={{ margin: "6px 0 0", fontSize: 13, color: "#6b7280" }}>
+            ≈ {formatXOF(plan.price)} FCFA/mois · Annulable à tout moment
+          </p>
+        </div>
+
+        {/* Divider with label */}
+        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
+          <div style={{ flex: 1, height: 1, background: "#f3f4f6" }} />
+          <span style={{ fontSize: 12, color: "#9ca3af", fontWeight: 600, whiteSpace: "nowrap" }}>
+            Choisissez votre moyen de paiement
+          </span>
+          <div style={{ flex: 1, height: 1, background: "#f3f4f6" }} />
+        </div>
+
+        {/* Payment options */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+
+          {/* Card option */}
+          <button
+            disabled={isLoading !== null}
+            onClick={() => onSelect("card")}
+            style={{
+              width: "100%", padding: "16px 20px",
+              background: isLoading === "card" ? "#f9fafb" : "#fff",
+              border: "2px solid #111827",
+              borderRadius: 16, cursor: isLoading ? "default" : "pointer",
+              display: "flex", alignItems: "center", gap: 14,
+              transition: "all 0.15s", opacity: isLoading === "paypal" ? 0.5 : 1,
+            }}
+          >
+            <div style={{
+              width: 44, height: 44, borderRadius: 12,
+              background: "#111827", display: "flex", alignItems: "center", justifyContent: "center",
+              flexShrink: 0,
+            }}>
+              {isLoading === "card"
+                ? <Loader2 style={{ width: 20, height: 20, color: "#fff", animation: "spin 1s linear infinite" }} />
+                : <CreditCard style={{ width: 20, height: 20, color: "#fff" }} />
+              }
+            </div>
+            <div style={{ textAlign: "left" }}>
+              <p style={{ margin: 0, fontSize: 15, fontWeight: 800, color: "#111827" }}>
+                Payer par carte bancaire
+              </p>
+              <p style={{ margin: "2px 0 0", fontSize: 12, color: "#6b7280" }}>
+                Visa, Mastercard, American Express
+              </p>
+            </div>
+            <div style={{ marginLeft: "auto", flexShrink: 0 }}>
+              <div style={{ display: "flex", gap: 4 }}>
+                {["#1434CB", "#EB001B", "#F79E1B"].map((c, i) => (
+                  <div key={i} style={{ width: 28, height: 18, borderRadius: 4, background: c, opacity: 0.85 }} />
+                ))}
+              </div>
+            </div>
+          </button>
+
+          {/* PayPal option */}
+          <button
+            disabled={isLoading !== null}
+            onClick={() => onSelect("paypal")}
+            style={{
+              width: "100%", padding: "16px 20px",
+              background: isLoading === "paypal" ? "#fafbff" : "#fff",
+              border: "2px solid #003087",
+              borderRadius: 16, cursor: isLoading ? "default" : "pointer",
+              display: "flex", alignItems: "center", gap: 14,
+              transition: "all 0.15s", opacity: isLoading === "card" ? 0.5 : 1,
+            }}
+          >
+            <div style={{
+              width: 44, height: 44, borderRadius: 12,
+              background: "linear-gradient(135deg, #003087 0%, #009CDE 100%)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              flexShrink: 0,
+            }}>
+              {isLoading === "paypal"
+                ? <Loader2 style={{ width: 20, height: 20, color: "#fff", animation: "spin 1s linear infinite" }} />
+                : <PayPalLogo size={22} />
+              }
+            </div>
+            <div style={{ textAlign: "left" }}>
+              <p style={{ margin: 0, fontSize: 15, fontWeight: 800, color: "#003087" }}>
+                Payer avec PayPal
+              </p>
+              <p style={{ margin: "2px 0 0", fontSize: 12, color: "#6b7280" }}>
+                Compte PayPal ou carte via PayPal
+              </p>
+            </div>
+            <div style={{ marginLeft: "auto", flexShrink: 0 }}>
+              <div style={{
+                background: "#FFC439", borderRadius: 6, padding: "3px 10px",
+                fontSize: 13, fontWeight: 800, color: "#003087", letterSpacing: "-0.01em",
+              }}>
+                Pay<span style={{ color: "#009CDE" }}>Pal</span>
+              </div>
+            </div>
+          </button>
+        </div>
+
+        {/* Security note */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, marginTop: 20 }}>
+          <ShieldCheck style={{ width: 14, height: 14, color: "#9ca3af" }} />
+          <span style={{ fontSize: 12, color: "#9ca3af" }}>
+            Paiement sécurisé · Chiffré par Stripe · Annulable à tout moment
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function Pricing() {
   const { isSignedIn, isLoaded } = useAuth();
   const [, setLocation] = useLocation();
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
+  const [loadingMethod, setLoadingMethod] = useState<"card" | "paypal" | null>(null);
   const [currentPlan, setCurrentPlan] = useState<string | null>(null);
   const [currentLabel, setCurrentLabel] = useState<string>("");
+  const [pendingPlan, setPendingPlan] = useState<typeof PLANS[number] | null>(null);
 
   useEffect(() => {
     if (!isSignedIn) return;
@@ -117,7 +297,7 @@ export default function Pricing() {
       .catch(() => {});
   }, [isSignedIn]);
 
-  const handlePlanClick = async (planKey: string) => {
+  const handlePlanClick = (planKey: string) => {
     if (planKey === "free") {
       setLocation("/sign-up");
       return;
@@ -126,13 +306,22 @@ export default function Pricing() {
       setLocation("/sign-in");
       return;
     }
-    setLoadingPlan(planKey);
+    const plan = PLANS.find(p => p.key === planKey);
+    if (plan) setPendingPlan(plan);
+  };
+
+  const handlePaymentMethodSelect = async (method: "card" | "paypal") => {
+    if (!pendingPlan) return;
+    setLoadingMethod(method);
+    setLoadingPlan(pendingPlan.key);
     try {
-      const url = await startCheckout(planKey);
+      const url = await startCheckout(pendingPlan.key, method);
       window.location.href = url;
     } catch (err: any) {
       alert(err.message);
+      setLoadingMethod(null);
       setLoadingPlan(null);
+      setPendingPlan(null);
     }
   };
 
@@ -179,6 +368,22 @@ export default function Pricing() {
             <p className="text-muted-foreground text-lg max-w-xl mx-auto">
               Commencez gratuitement. Passez à une offre payante quand votre activité grandit.
             </p>
+
+            {/* Payment methods accepted */}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, flexWrap: "wrap" }}>
+              <span style={{ fontSize: 12, color: "#9ca3af", fontWeight: 500 }}>Méthodes de paiement acceptées :</span>
+              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 4, background: "#f9fafb", border: "1px solid #e5e7eb", borderRadius: 8, padding: "4px 10px" }}>
+                  <CreditCard style={{ width: 14, height: 14, color: "#374151" }} />
+                  <span style={{ fontSize: 12, fontWeight: 600, color: "#374151" }}>Carte bancaire</span>
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: 5, background: "#f0f5ff", border: "1px solid #bfdbfe", borderRadius: 8, padding: "4px 10px" }}>
+                  <PayPalLogo size={14} />
+                  <span style={{ fontSize: 12, fontWeight: 700, color: "#003087" }}>Pay<span style={{ color: "#009CDE" }}>Pal</span></span>
+                </div>
+              </div>
+            </div>
+
             {/* Active plan notice for signed-in paid users */}
             {currentPlan && currentPlan !== "free" && (
               <div style={{
@@ -290,9 +495,23 @@ export default function Pricing() {
                       ))}
                     </ul>
 
+                    {/* Payment method icons for paid plans */}
+                    {!isFree && !isCurrentPlan && !isDowngrade && (
+                      <div style={{ display: "flex", alignItems: "center", gap: 6, paddingTop: 2 }}>
+                        <span style={{ fontSize: 11, color: "#9ca3af" }}>Accepté :</span>
+                        <div style={{ display: "flex", gap: 4 }}>
+                          <div style={{ background: "#f3f4f6", borderRadius: 5, padding: "2px 7px", fontSize: 10, fontWeight: 600, color: "#374151", display: "flex", alignItems: "center", gap: 3 }}>
+                            <CreditCard style={{ width: 10, height: 10 }} /> Carte
+                          </div>
+                          <div style={{ background: "#eff6ff", borderRadius: 5, padding: "2px 7px", fontSize: 10, fontWeight: 700, color: "#003087", display: "flex", alignItems: "center", gap: 3 }}>
+                            <PayPalLogo size={10} /> PayPal
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
                     {/* CTA */}
                     {isCurrentPlan ? (
-                      /* Current plan — show active state, no action */
                       <div style={{
                         width: "100%", height: 48, borderRadius: 12,
                         background: "linear-gradient(135deg,#fff7ed,#ffedd5)",
@@ -304,7 +523,6 @@ export default function Pricing() {
                         Plan actif
                       </div>
                     ) : isDowngrade ? (
-                      /* Lower than current — greyed out */
                       <div style={{
                         width: "100%", height: 48, borderRadius: 12,
                         background: "#f3f4f6", border: "1.5px solid #e5e7eb",
@@ -409,6 +627,16 @@ export default function Pricing() {
       <footer className="border-t border-border/50 text-center py-6 px-4 text-xs text-muted-foreground">
         © {new Date().getFullYear()} MobileMoney Manager — Tous droits réservés.
       </footer>
+
+      {/* Payment method picker modal */}
+      {pendingPlan && (
+        <PaymentPickerModal
+          plan={pendingPlan}
+          onClose={() => { if (!loadingMethod) setPendingPlan(null); }}
+          onSelect={handlePaymentMethodSelect}
+          isLoading={loadingMethod}
+        />
+      )}
     </div>
   );
 }

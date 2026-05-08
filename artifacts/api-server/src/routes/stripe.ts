@@ -121,17 +121,19 @@ router.get("/stripe/products", async (_req, res): Promise<void> => {
 
 router.post("/stripe/checkout-by-plan", requireAuth, async (req: any, res): Promise<void> => {
   const userId = req.userId;
-  const { planName } = req.body as { planName: string };
+  const { planName, paymentMethod } = req.body as { planName: string; paymentMethod?: string };
 
   if (!planName) {
     res.status(400).json({ error: "planName requis (starter | pro)" });
     return;
   }
 
+  const resolvedPaymentMethod = paymentMethod === "paypal" ? "paypal" : "card";
+
   try {
     const stripe = await getUncachableStripeClient();
 
-    console.log(`[checkout-by-plan] Fetching products for plan: ${planName}`);
+    console.log(`[checkout-by-plan] Fetching products for plan: ${planName}, paymentMethod: ${resolvedPaymentMethod}`);
     const products = await stripe.products.list({ active: true, limit: 20 });
     console.log(`[checkout-by-plan] Found ${products.data.length} products: ${products.data.map(p => p.name).join(', ')}`);
 
@@ -194,7 +196,7 @@ router.post("/stripe/checkout-by-plan", requireAuth, async (req: any, res): Prom
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       client_reference_id: userId,
-      payment_method_types: ["card"],
+      payment_method_types: [resolvedPaymentMethod as "card" | "paypal"],
       line_items: [{ price: price.id, quantity: 1 }],
       mode: "subscription",
       success_url: `https://${domain}/dashboard?success=true`,
@@ -211,12 +213,14 @@ router.post("/stripe/checkout-by-plan", requireAuth, async (req: any, res): Prom
 
 router.post("/stripe/checkout", requireAuth, async (req: any, res): Promise<void> => {
   const userId = req.userId;
-  const { priceId } = req.body;
+  const { priceId, paymentMethod } = req.body;
 
   if (!priceId) {
     res.status(400).json({ error: "priceId requis" });
     return;
   }
+
+  const resolvedPaymentMethod = paymentMethod === "paypal" ? "paypal" : "card";
 
   try {
     const profiles = await db
@@ -245,7 +249,7 @@ router.post("/stripe/checkout", requireAuth, async (req: any, res): Promise<void
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       client_reference_id: userId,
-      payment_method_types: ["card"],
+      payment_method_types: [resolvedPaymentMethod as "card" | "paypal"],
       line_items: [{ price: priceId, quantity: 1 }],
       mode: "subscription",
       success_url: `https://${domain}/dashboard?success=true`,
