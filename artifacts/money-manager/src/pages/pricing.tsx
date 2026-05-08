@@ -369,21 +369,6 @@ export default function Pricing() {
               Commencez gratuitement. Passez à une offre payante quand votre activité grandit.
             </p>
 
-            {/* Payment methods accepted */}
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, flexWrap: "wrap" }}>
-              <span style={{ fontSize: 12, color: "#9ca3af", fontWeight: 500 }}>Méthodes de paiement acceptées :</span>
-              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 4, background: "#f9fafb", border: "1px solid #e5e7eb", borderRadius: 8, padding: "4px 10px" }}>
-                  <CreditCard style={{ width: 14, height: 14, color: "#374151" }} />
-                  <span style={{ fontSize: 12, fontWeight: 600, color: "#374151" }}>Carte bancaire</span>
-                </div>
-                <div style={{ display: "flex", alignItems: "center", gap: 5, background: "#f0f5ff", border: "1px solid #bfdbfe", borderRadius: 8, padding: "4px 10px" }}>
-                  <PayPalLogo size={14} />
-                  <span style={{ fontSize: 12, fontWeight: 700, color: "#003087" }}>Pay<span style={{ color: "#009CDE" }}>Pal</span></span>
-                </div>
-              </div>
-            </div>
-
             {/* Active plan notice for signed-in paid users */}
             {currentPlan && currentPlan !== "free" && (
               <div style={{

@@ -26,6 +26,37 @@ async function upsertStripeCustomerId(userId: string, customerId: string): Promi
 
 const router: IRouter = Router();
 
+/**
+ * Resolve the correct domain for Stripe success/cancel URLs.
+ * Priority: Origin header (reflects actual browsing domain) → APP_DOMAIN env →
+ * first entry in REPLIT_DOMAINS → Host header.
+ * This ensures custom domains (mobilemoneymanager.africa, admin subdomain)
+ * are handled correctly regardless of server-side env variables.
+ */
+function resolveCheckoutDomain(req: any): string {
+  const origin = req.get("origin") as string | undefined;
+  if (origin) {
+    try {
+      return new URL(origin).hostname;
+    } catch {}
+  }
+  const referer = req.get("referer") as string | undefined;
+  if (referer) {
+    try {
+      const h = new URL(referer).hostname;
+      // Prefer the root domain over any admin subdomain for success/cancel URLs
+      // since dashboard and pricing pages live on the main domain.
+      return h.replace(/^admin\./, "");
+    } catch {}
+  }
+  return (
+    process.env.APP_DOMAIN ||
+    process.env.REPLIT_DOMAINS?.split(",")[0] ||
+    (req.get("host") as string | undefined) ||
+    ""
+  );
+}
+
 function requireAuth(req: any, res: any, next: any) {
   const auth = getAuth(req);
   const userId = auth?.userId;
@@ -190,13 +221,17 @@ router.post("/stripe/checkout-by-plan", requireAuth, async (req: any, res): Prom
       await upsertStripeCustomerId(userId, customerId);
     }
 
-    const domain = process.env.APP_DOMAIN || process.env.REPLIT_DOMAINS?.split(",")[0] || req.get("host");
+    const domain = resolveCheckoutDomain(req);
     console.log(`[checkout-by-plan] Using domain: ${domain}`);
+
+    const pmTypes: ("card" | "paypal")[] = resolvedPaymentMethod === "paypal"
+      ? ["paypal"]
+      : ["card"];
 
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       client_reference_id: userId,
-      payment_method_types: [resolvedPaymentMethod as "card" | "paypal"],
+      payment_method_types: pmTypes,
       line_items: [{ price: price.id, quantity: 1 }],
       mode: "subscription",
       success_url: `https://${domain}/dashboard?success=true`,
@@ -244,12 +279,16 @@ router.post("/stripe/checkout", requireAuth, async (req: any, res): Promise<void
       await upsertStripeCustomerId(userId, customerId);
     }
 
-    const domain = process.env.APP_DOMAIN || process.env.REPLIT_DOMAINS?.split(",")[0] || req.get("host");
+    const domain = resolveCheckoutDomain(req);
+
+    const pmTypes: ("card" | "paypal")[] = resolvedPaymentMethod === "paypal"
+      ? ["paypal"]
+      : ["card"];
 
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       client_reference_id: userId,
-      payment_method_types: [resolvedPaymentMethod as "card" | "paypal"],
+      payment_method_types: pmTypes,
       line_items: [{ price: priceId, quantity: 1 }],
       mode: "subscription",
       success_url: `https://${domain}/dashboard?success=true`,
@@ -422,7 +461,7 @@ router.post("/stripe/portal", requireAuth, async (req: any, res): Promise<void> 
     }
 
     const stripe = await getUncachableStripeClient();
-    const domain = process.env.APP_DOMAIN || process.env.REPLIT_DOMAINS?.split(",")[0] || req.get("host");
+    const domain = resolveCheckoutDomain(req);
 
     const session = await stripe.billingPortal.sessions.create({
       customer: profile.stripeCustomerId,
