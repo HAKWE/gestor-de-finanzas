@@ -227,7 +227,7 @@ router.post("/stripe/checkout-by-plan", requireAuth, async (req: any, res): Prom
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       client_reference_id: userId,
-      payment_method_types: ["card"],
+      payment_method_types: ["card", "paypal"],
       line_items: [{ price: price.id, quantity: 1 }],
       mode: "subscription",
       success_url: `https://${domain}/dashboard?success=true`,
@@ -280,7 +280,7 @@ router.post("/stripe/checkout", requireAuth, async (req: any, res): Promise<void
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       client_reference_id: userId,
-      payment_method_types: ["card"],
+      payment_method_types: ["card", "paypal"],
       line_items: [{ price: priceId, quantity: 1 }],
       mode: "subscription",
       success_url: `https://${domain}/dashboard?success=true`,
