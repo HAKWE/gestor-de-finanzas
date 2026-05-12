@@ -85,7 +85,7 @@ export default function Subscription() {
   };
 
   const isPro = sub?.plan === "pro";
-  const isPaid = sub && sub.plan !== "free";
+  const isPaid = sub && sub.plan !== "free" && sub.plan !== "limited_free" && sub?.effectivePlan !== "trial";
   const isCancelled = sub?.cancelAtPeriodEnd === true;
 
   return (

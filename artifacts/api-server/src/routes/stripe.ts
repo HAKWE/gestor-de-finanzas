@@ -28,15 +28,15 @@ const router: IRouter = Router();
 
 function computeTrialInfo(profile: { trialEndsAt: Date | null } | undefined | null) {
   if (!profile?.trialEndsAt) {
-    return { effectivePlan: "limited_free" as const, trialEndsAt: null as null, trialDaysLeft: 0 };
+    return { plan: "limited_free" as const, planLabel: "Gratuit limité", effectivePlan: "limited_free" as const, trialEndsAt: null as null, trialDaysLeft: 0 };
   }
   const now = new Date();
   const trialEnd = new Date(profile.trialEndsAt);
   const daysLeft = Math.ceil((trialEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
   if (daysLeft > 0) {
-    return { effectivePlan: "trial" as const, trialEndsAt: trialEnd.toISOString(), trialDaysLeft: daysLeft };
+    return { plan: "pro" as const, planLabel: "Essai Pro", effectivePlan: "trial" as const, trialEndsAt: trialEnd.toISOString(), trialDaysLeft: daysLeft };
   }
-  return { effectivePlan: "limited_free" as const, trialEndsAt: trialEnd.toISOString(), trialDaysLeft: 0 };
+  return { plan: "limited_free" as const, planLabel: "Gratuit limité", effectivePlan: "limited_free" as const, trialEndsAt: trialEnd.toISOString(), trialDaysLeft: 0 };
 }
 
 /**
@@ -337,7 +337,7 @@ router.get("/stripe/subscription-status", requireAuth, async (req: any, res): Pr
 
     if (!customerId) {
       const trialInfo = computeTrialInfo(profiles[0]);
-      res.json({ plan: "free", planLabel: "Gratuit", ...trialInfo });
+      res.json(trialInfo);
       return;
     }
 
@@ -353,7 +353,7 @@ router.get("/stripe/subscription-status", requireAuth, async (req: any, res): Pr
 
     if (!active) {
       const trialInfo = computeTrialInfo(profiles[0]);
-      res.json({ plan: "free", planLabel: "Gratuit", ...trialInfo });
+      res.json(trialInfo);
       return;
     }
 

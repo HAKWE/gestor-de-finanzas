@@ -813,7 +813,7 @@ export default function Dashboard() {
         </div>
 
         {/* ── Pro active banner ─────────────────────────────────────────────── */}
-        {isPaid && (
+        {isPaid && !isInTrial && (
           <div style={{
             borderRadius: 18, padding: "16px 18px",
             background: "linear-gradient(135deg, #431407, #7c2d12)",
