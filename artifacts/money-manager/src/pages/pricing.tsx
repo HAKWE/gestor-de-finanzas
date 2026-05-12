@@ -157,13 +157,22 @@ export default function Pricing() {
               45 jours d'essai gratuit inclus. Choisissez votre plan quand vous êtes prêt.
             </p>
 
-            {/* Trial reminder badge */}
-            <div style={{
-              display: "inline-flex", alignItems: "center", gap: 8,
-              background: "#eff6ff", border: "1.5px solid #bfdbfe",
-              borderRadius: 999, padding: "8px 18px", fontSize: 13, fontWeight: 600, color: "#1d4ed8",
-            }}>
-              🎁 Essai 45 jours gratuit — aucune carte requise
+            {/* Trial reminder badge — clickable, routes to sign-up or dashboard */}
+            <div>
+              <Link
+                href={isSignedIn ? "/dashboard" : "/sign-up"}
+                style={{
+                  display: "inline-flex", alignItems: "center", gap: 8,
+                  background: "linear-gradient(135deg, #eff6ff, #dbeafe)",
+                  border: "1.5px solid #93c5fd",
+                  borderRadius: 999, padding: "10px 22px", fontSize: 14, fontWeight: 700, color: "#1d4ed8",
+                  textDecoration: "none", cursor: "pointer",
+                  boxShadow: "0 2px 8px rgba(59,130,246,0.18)",
+                  transition: "box-shadow 0.15s, background 0.15s",
+                }}
+              >
+                🎁 Essai 45 jours gratuit — aucune carte requise →
+              </Link>
             </div>
 
             {/* Active plan notice for signed-in paid users */}
