@@ -18,6 +18,9 @@ interface SubStatus {
   cancelAtPeriodEnd?: boolean;
   subscriptionId?: string;
   currentPeriodEnd?: string | null;
+  effectivePlan?: "trial" | "limited_free" | "starter" | "pro" | "paid";
+  trialEndsAt?: string | null;
+  trialDaysLeft?: number;
 }
 
 function formatDate(iso: string) {
@@ -451,8 +454,137 @@ export default function Subscription() {
               </div>
             )}
           </>
+        ) : sub?.effectivePlan === "trial" ? (
+          /* Trial active */
+          <>
+            <div style={{ borderRadius: 20, overflow: "hidden", border: "1.5px solid #bfdbfe", background: "#eff6ff", boxShadow: "0 4px 20px rgba(37,99,235,0.10)" }}>
+              <div style={{ height: 4, background: "linear-gradient(90deg,#2563eb,#3b82f6)" }} />
+              <div style={{ padding: "24px 24px 20px" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 18 }}>
+                  <div style={{ width: 52, height: 52, borderRadius: 16, background: "rgba(37,99,235,0.12)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <span style={{ fontSize: 26 }}>🎁</span>
+                  </div>
+                  <div>
+                    <p style={{ color: "#1d4ed8", fontSize: 12, fontWeight: 700, margin: 0, textTransform: "uppercase", letterSpacing: "0.08em" }}>Essai gratuit en cours</p>
+                    <p style={{ color: "#1e3a8a", fontSize: 20, fontWeight: 800, margin: "2px 0 0" }}>
+                      {(sub.trialDaysLeft ?? 0) > 0
+                        ? `${sub.trialDaysLeft} jour${(sub.trialDaysLeft ?? 0) > 1 ? "s" : ""} restant${(sub.trialDaysLeft ?? 0) > 1 ? "s" : ""}`
+                        : "Accès complet"}
+                    </p>
+                  </div>
+                  <span style={{ marginLeft: "auto", background: "rgba(37,99,235,0.15)", border: "1.5px solid rgba(37,99,235,0.30)", borderRadius: 999, padding: "4px 12px", fontSize: 12, fontWeight: 700, color: "#1d4ed8" }}>
+                    ✓ Actif
+                  </span>
+                </div>
+                {sub.trialEndsAt && (
+                  <div style={{ background: "rgba(37,99,235,0.10)", borderRadius: 12, padding: "12px 16px", display: "flex", alignItems: "center", gap: 10 }}>
+                    <CalendarDays style={{ width: 16, height: 16, color: "#2563eb", flexShrink: 0 }} />
+                    <p style={{ color: "#1e3a8a", fontSize: 13, margin: 0, lineHeight: 1.5 }}>
+                      Essai se termine le <strong style={{ color: "#1d4ed8" }}>{formatDate(sub.trialEndsAt)}</strong>
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div style={{ border: "1.5px solid #e5e7eb", borderRadius: 14, padding: "16px 18px", background: "#fafafa" }}>
+              <p style={{ fontSize: 13, fontWeight: 700, color: "#374151", margin: "0 0 10px" }}>Accès complet pendant votre essai :</p>
+              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                {["Transactions illimitées", "Rapports & graphiques avancés", "Export PDF", "Import SMS & relevés"].map(f => (
+                  <div key={f} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <Check style={{ width: 13, height: 13, color: "#2563eb", flexShrink: 0 }} />
+                    <span style={{ fontSize: 13, color: "#374151" }}>{f}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div style={{ borderRadius: 20, overflow: "hidden", border: "1.5px solid #fed7aa", boxShadow: "0 4px 20px rgba(249,115,22,0.10)" }}>
+              <div style={{ background: "linear-gradient(135deg, #431407 0%, #9a3412 100%)", padding: "18px 22px", display: "flex", alignItems: "center", gap: 12 }}>
+                <div style={{ width: 40, height: 40, borderRadius: 12, background: "rgba(255,255,255,0.15)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <Crown style={{ width: 20, height: 20, color: "#fed7aa" }} />
+                </div>
+                <div>
+                  <p style={{ fontWeight: 800, fontSize: 15, color: "#fff7ed", margin: 0 }}>Continuez après votre essai</p>
+                  <p style={{ fontSize: 12, color: "#fdba74", margin: "2px 0 0" }}>À partir de 5 €/mois · Annulable à tout moment</p>
+                </div>
+              </div>
+              <div style={{ background: "#fff", padding: "16px 22px" }}>
+                <Link href="/pricing">
+                  <button style={{ width: "100%", background: ORANGE, color: "#fff", border: "none", borderRadius: 12, padding: "13px 24px", fontWeight: 800, fontSize: 14, cursor: "pointer", boxShadow: "0 2px 12px rgba(249,115,22,0.30)", display: "flex", alignItems: "center", justifyContent: "center", gap: 7 }}>
+                    <Zap style={{ width: 16, height: 16 }} />
+                    Choisir mon plan →
+                  </button>
+                </Link>
+              </div>
+            </div>
+          </>
+        ) : sub?.effectivePlan === "limited_free" ? (
+          /* Trial expired — Limited Free */
+          <>
+            <div style={{ borderRadius: 20, overflow: "hidden", border: "1.5px solid #fca5a5", background: "#fef2f2", boxShadow: "0 4px 20px rgba(220,38,38,0.10)" }}>
+              <div style={{ height: 4, background: "linear-gradient(90deg,#dc2626,#ef4444)" }} />
+              <div style={{ padding: "24px 24px 20px" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 16 }}>
+                  <div style={{ width: 52, height: 52, borderRadius: 16, background: "rgba(220,38,38,0.10)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <span style={{ fontSize: 26 }}>🔒</span>
+                  </div>
+                  <div>
+                    <p style={{ color: "#b91c1c", fontSize: 12, fontWeight: 700, margin: 0, textTransform: "uppercase", letterSpacing: "0.08em" }}>Essai terminé</p>
+                    <p style={{ color: "#991b1b", fontSize: 20, fontWeight: 800, margin: "2px 0 0" }}>Plan Limité</p>
+                  </div>
+                  <span style={{ marginLeft: "auto", background: "rgba(220,38,38,0.12)", border: "1.5px solid rgba(220,38,38,0.25)", borderRadius: 999, padding: "4px 12px", fontSize: 12, fontWeight: 700, color: "#dc2626" }}>
+                    Limité
+                  </span>
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  {[
+                    { icon: "📅", text: "Accès aux 14 derniers jours de transactions uniquement" },
+                    { icon: "🔢", text: "Maximum 10 transactions par mois" },
+                    { icon: "🚫", text: "Export PDF désactivé" },
+                    { icon: "🚫", text: "Rapports avancés désactivés" },
+                  ].map(({ icon, text }) => (
+                    <div key={text} style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
+                      <span style={{ fontSize: 14, flexShrink: 0 }}>{icon}</span>
+                      <span style={{ fontSize: 13, color: "#6b7280" }}>{text}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div style={{ borderRadius: 20, overflow: "hidden", border: "1.5px solid #f97316", boxShadow: "0 4px 20px rgba(249,115,22,0.12)" }}>
+              <div style={{ background: "linear-gradient(135deg, #431407 0%, #9a3412 100%)", padding: "18px 22px", display: "flex", alignItems: "center", gap: 12 }}>
+                <div style={{ width: 40, height: 40, borderRadius: 12, background: "rgba(255,255,255,0.15)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <Crown style={{ width: 20, height: 20, color: "#fed7aa" }} />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <p style={{ fontWeight: 800, fontSize: 15, color: "#fff7ed", margin: 0 }}>Débloquez l'accès complet</p>
+                  <p style={{ fontSize: 12, color: "#fdba74", margin: "2px 0 0" }}>Récupérez toutes vos données · Dès 5 €/mois</p>
+                </div>
+              </div>
+              <div style={{ background: "#fff", padding: "16px 22px", display: "flex", flexDirection: "column", gap: 8 }}>
+                {[
+                  { icon: "📊", label: "Historique complet de transactions" },
+                  { icon: "📄", label: "Export PDF & rapports avancés" },
+                  { icon: "♾️", label: "Transactions illimitées" },
+                ].map(({ icon, label }) => (
+                  <div key={label} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <Check style={{ width: 13, height: 13, color: ORANGE, flexShrink: 0 }} />
+                    <span style={{ fontSize: 13, color: "#374151" }}>{label}</span>
+                  </div>
+                ))}
+                <Link href="/pricing">
+                  <button style={{ width: "100%", background: ORANGE, color: "#fff", border: "none", borderRadius: 12, padding: "13px 24px", fontWeight: 800, fontSize: 14, cursor: "pointer", boxShadow: "0 2px 12px rgba(249,115,22,0.30)", marginTop: 8, display: "flex", alignItems: "center", justifyContent: "center", gap: 7 }}>
+                    <Zap style={{ width: 16, height: 16 }} />
+                    S'abonner maintenant →
+                  </button>
+                </Link>
+              </div>
+            </div>
+          </>
         ) : (
-          /* Free plan */
+          /* Free plan (legacy / no trial data) */
           <div style={{ border: "1.5px solid hsl(var(--border))", borderRadius: 20, padding: "40px 28px", background: "hsl(var(--card))", textAlign: "center" }}>
             <div style={{ width: 64, height: 64, borderRadius: 20, margin: "0 auto 16px", background: "hsl(var(--primary)/0.1)", display: "flex", alignItems: "center", justifyContent: "center" }}>
               <Star style={{ width: 30, height: 30, color: "hsl(var(--primary))" }} />

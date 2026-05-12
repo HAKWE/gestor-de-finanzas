@@ -71,14 +71,14 @@ function TrendBadge({ current, prev, positiveIsGood = true }: {
 }
 
 function useSubscription() {
-  const [plan, setPlan] = useState<string | null>(null);
+  const [sub, setSub] = useState<{ plan: string; effectivePlan?: string } | null>(null);
   useEffect(() => {
     fetch(`${basePath}/api/stripe/subscription-status`, { credentials: "include" })
       .then(r => r.ok ? r.json() : null)
-      .then(d => setPlan(d?.plan ?? "free"))
-      .catch(() => setPlan("free"));
+      .then(d => setSub({ plan: d?.plan ?? "free", effectivePlan: d?.effectivePlan }))
+      .catch(() => setSub({ plan: "free" }));
   }, []);
-  return plan;
+  return sub;
 }
 
 interface DayData { date: string; income: number; expenses: number }
@@ -341,9 +341,11 @@ function drawPdfLogo(doc: any, x: number, y: number, size: number) {
 }
 
 export default function Reports() {
-  const plan = useSubscription();
+  const sub = useSubscription();
+  const plan = sub?.plan ?? null;
   const isPro = plan === "pro";
   const isPayingNotPro = plan === "starter" || plan === "paid";
+  const isLimitedFree = sub?.effectivePlan === "limited_free";
 
   const now = new Date();
   const [year, setYear] = useState(now.getFullYear());
@@ -612,9 +614,28 @@ export default function Reports() {
           </div>
         </div>
 
-        {loading || plan === null ? (
+        {loading || sub === null ? (
           <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 220 }}>
             <Loader2 style={{ width: 38, height: 38, color: ORANGE, animation: "spin 0.8s linear infinite" }} />
+          </div>
+        ) : isLimitedFree ? (
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "48px 24px", textAlign: "center", gap: 20, background: "#fff", borderRadius: 20, border: "1.5px solid #fca5a5" }}>
+            <div style={{ width: 80, height: 80, borderRadius: 24, background: "#fef2f2", border: "2px solid #fca5a5", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <span style={{ fontSize: 38 }}>🔒</span>
+            </div>
+            <div>
+              <h3 style={{ fontSize: 18, fontWeight: 800, color: "#991b1b", margin: "0 0 8px" }}>Rapports désactivés</h3>
+              <p style={{ fontSize: 14, color: "#6b7280", margin: "0 0 6px", lineHeight: 1.6, maxWidth: 320 }}>
+                Votre période d'essai est terminée. Les rapports et analyses avancés sont réservés aux abonnés.
+              </p>
+            </div>
+            <Link href="/pricing">
+              <button style={{ background: "#f97316", color: "#fff", border: "none", borderRadius: 13, padding: "12px 24px", fontWeight: 800, fontSize: 14, cursor: "pointer", boxShadow: "0 4px 16px rgba(249,115,22,0.30)" }}>
+                <Crown style={{ width: 15, height: 15, display: "inline", marginRight: 6, verticalAlign: "middle" }} />
+                S'abonner — dès 5 €/mois →
+              </button>
+            </Link>
+            <p style={{ fontSize: 12, color: "#9ca3af", margin: 0 }}>Accès immédiat après paiement · Annulable à tout moment</p>
           </div>
         ) : (
           <>

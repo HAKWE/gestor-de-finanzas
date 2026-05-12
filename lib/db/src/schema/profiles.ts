@@ -14,6 +14,9 @@ export const userProfilesTable = pgTable("user_profiles", {
   stripePriceId: text("stripe_price_id"),
   subscriptionPlan: text("subscription_plan"),
   subscriptionPeriodEnd: timestamp("subscription_period_end", { withTimezone: true }),
+  trialEndsAt: timestamp("trial_ends_at", { withTimezone: true }),
+  trialReminder30dSent: boolean("trial_reminder_30d_sent").notNull().default(false),
+  trialReminder7dSent: boolean("trial_reminder_7d_sent").notNull().default(false),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
 });

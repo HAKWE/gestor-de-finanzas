@@ -2,6 +2,7 @@ import app from "./app";
 import { logger } from "./lib/logger";
 import { runMigrations } from "stripe-replit-sync";
 import { getStripeSync } from "./stripeClient";
+import { backfillTrialDates, startTrialCron } from "./trial-cron";
 
 async function initStripe() {
   const databaseUrl = process.env.DATABASE_URL;
@@ -47,6 +48,8 @@ if (Number.isNaN(port) || port <= 0) {
 }
 
 await initStripe();
+await backfillTrialDates();
+startTrialCron();
 
 app.listen(port, (err) => {
   if (err) {

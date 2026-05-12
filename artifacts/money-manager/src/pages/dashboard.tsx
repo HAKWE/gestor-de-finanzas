@@ -156,6 +156,11 @@ interface SubscriptionStatus {
   plan: "free" | "starter" | "pro" | "paid";
   planLabel: string;
   status?: string;
+  cancelAtPeriodEnd?: boolean;
+  currentPeriodEnd?: string | null;
+  effectivePlan?: "trial" | "limited_free" | "starter" | "pro" | "paid";
+  trialEndsAt?: string | null;
+  trialDaysLeft?: number;
 }
 
 // ── Skeleton ──────────────────────────────────────────────────────────────────
@@ -257,6 +262,75 @@ function UpgradeBanner({ plan, onDismiss }: { plan: string; onDismiss: () => voi
   );
 }
 
+// ── Trial countdown banner ────────────────────────────────────────────────────
+function TrialCountdownBanner({ daysLeft, onDismiss }: { daysLeft: number; onDismiss: () => void }) {
+  const isUrgent = daysLeft <= 7;
+  const isMedium = daysLeft <= 14;
+  const bg = isUrgent ? "#fef2f2" : isMedium ? "#fff7ed" : "#eff6ff";
+  const border = isUrgent ? "#fca5a5" : isMedium ? "#fed7aa" : "#bfdbfe";
+  const accent = isUrgent ? "#dc2626" : isMedium ? "#f97316" : "#2563eb";
+  const topBar = isUrgent
+    ? "linear-gradient(90deg,#dc2626,#ef4444)"
+    : isMedium
+    ? "linear-gradient(90deg,#f97316,#fb923c)"
+    : "linear-gradient(90deg,#2563eb,#3b82f6)";
+  return (
+    <div style={{ borderRadius: 18, overflow: "hidden", background: bg, border: `1.5px solid ${border}`, boxShadow: "0 2px 10px rgba(0,0,0,0.06)" }}>
+      <div style={{ height: 3, background: topBar }} />
+      <div style={{ padding: "13px 16px", display: "flex", alignItems: "flex-start", gap: 10 }}>
+        <span style={{ fontSize: 22, flexShrink: 0 }}>{isUrgent ? "⏰" : isMedium ? "📅" : "🎁"}</span>
+        <div style={{ flex: 1 }}>
+          <p style={{ fontSize: 13, fontWeight: 800, color: accent, margin: "0 0 2px" }}>
+            {isUrgent
+              ? `Plus que ${daysLeft} jour${daysLeft > 1 ? "s" : ""} d'essai gratuit !`
+              : `Essai gratuit — ${daysLeft} jours restants`}
+          </p>
+          <p style={{ fontSize: 11, color: "#6b7280", margin: 0, lineHeight: 1.4 }}>
+            {isUrgent ? "Abonnez-vous pour continuer sans interruption." : "Accès complet à toutes les fonctionnalités premium."}
+          </p>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
+          <Link href="/pricing">
+            <button style={{ background: accent, color: "#fff", border: "none", borderRadius: 9, padding: "6px 11px", fontWeight: 700, fontSize: 11, cursor: "pointer", whiteSpace: "nowrap" }}>
+              Voir les offres
+            </button>
+          </Link>
+          <button onClick={onDismiss} style={{ background: "none", border: "none", cursor: "pointer", color: "#9ca3af", padding: 3, borderRadius: 6, display: "flex" }}>
+            <X style={{ width: 13, height: 13 }} />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Limited Free permanent banner ─────────────────────────────────────────────
+function LimitedFreeBanner() {
+  return (
+    <div style={{ borderRadius: 18, overflow: "hidden", background: "#fef2f2", border: "1.5px solid #fca5a5", boxShadow: "0 2px 12px rgba(220,38,38,0.08)" }}>
+      <div style={{ height: 3, background: "linear-gradient(90deg,#dc2626,#ef4444)" }} />
+      <div style={{ padding: "13px 16px" }}>
+        <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
+          <span style={{ fontSize: 20, flexShrink: 0 }}>🔒</span>
+          <div style={{ flex: 1 }}>
+            <p style={{ fontSize: 13, fontWeight: 800, color: "#dc2626", margin: "0 0 3px" }}>
+              Essai terminé — Accès limité
+            </p>
+            <p style={{ fontSize: 11, color: "#6b7280", margin: "0 0 10px", lineHeight: 1.4 }}>
+              14 derniers jours · 10 transactions/mois · Pas d'export PDF
+            </p>
+            <Link href="/pricing">
+              <button style={{ background: "#dc2626", color: "#fff", border: "none", borderRadius: 10, padding: "8px 14px", fontWeight: 800, fontSize: 12, cursor: "pointer", boxShadow: "0 2px 8px rgba(220,38,38,0.25)" }}>
+                Passer à Starter — dès 5 €/mois →
+              </button>
+            </Link>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Welcome tour ──────────────────────────────────────────────────────────────
 function WelcomeTour({ onClose }: { onClose: () => void }) {
   const steps = [
@@ -326,6 +400,9 @@ export default function Dashboard() {
   const [showUpgradeBanner, setShowUpgradeBanner] = useState(() => !localStorage.getItem("upgrade-banner-v1"));
   const dismissUpgradeBanner = () => { localStorage.setItem("upgrade-banner-v1", "1"); setShowUpgradeBanner(false); };
 
+  const [showTrialBanner, setShowTrialBanner] = useState(() => !sessionStorage.getItem("trial-banner-dismissed"));
+  const dismissTrialBanner = () => { sessionStorage.setItem("trial-banner-dismissed", "1"); setShowTrialBanner(false); };
+
   const [subStatus, setSubStatus] = useState<SubscriptionStatus | null>(null);
   const [showSuccessBanner, setShowSuccessBanner] = useState(false);
   const [bannerProgress, setBannerProgress] = useState(100);
@@ -373,6 +450,15 @@ export default function Dashboard() {
 
   const isPaid = subStatus && subStatus.plan !== "free";
   const isPro  = subStatus?.plan === "pro";
+  const isInTrial = subStatus?.effectivePlan === "trial";
+  const isLimitedFree = subStatus?.effectivePlan === "limited_free";
+
+  const cutoffDate14d = isLimitedFree
+    ? new Date(Date.now() - 14 * 24 * 60 * 60 * 1000)
+    : null;
+  const visibleTxs = cutoffDate14d
+    ? (recentTxs ?? []).filter((tx: any) => new Date(tx.date + "T00:00:00") >= cutoffDate14d)
+    : (recentTxs ?? []);
 
   const chartData = (weekly ?? []).map(d => ({
     ...d,
@@ -568,8 +654,12 @@ export default function Dashboard() {
           ))}
         </div>
 
-        {/* ── Upgrade banner ────────────────────────────────────────────────── */}
-        {showUpgradeBanner && subStatus && subStatus.plan !== "pro" && (
+        {/* ── Trial / Limited Free / Upgrade banners ────────────────────────── */}
+        {subStatus && isLimitedFree && <LimitedFreeBanner />}
+        {subStatus && isInTrial && showTrialBanner && (
+          <TrialCountdownBanner daysLeft={subStatus.trialDaysLeft ?? 45} onDismiss={dismissTrialBanner} />
+        )}
+        {!isInTrial && !isLimitedFree && showUpgradeBanner && subStatus && subStatus.plan !== "pro" && (
           <UpgradeBanner plan={subStatus.plan} onDismiss={dismissUpgradeBanner} />
         )}
 
@@ -645,11 +735,17 @@ export default function Dashboard() {
             </Link>
           </div>
 
+          {isLimitedFree && (
+            <div style={{ padding: "8px 16px", background: "#fef9f0", borderBottom: "1px solid #fed7aa", display: "flex", alignItems: "center", gap: 6 }}>
+              <span style={{ fontSize: 12 }}>⚠️</span>
+              <span style={{ fontSize: 11, color: "#92400e", fontWeight: 600 }}>Affichage limité aux 14 derniers jours</span>
+            </div>
+          )}
           {isLoadingTxs ? (
             <div style={{ padding: "12px 16px", display: "flex", flexDirection: "column", gap: 8 }}>
               {[0, 1, 2].map(i => <Skeleton key={i} h={52} radius={12} />)}
             </div>
-          ) : !recentTxs || recentTxs.length === 0 ? (
+          ) : visibleTxs.length === 0 ? (
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "40px 24px", gap: 14, textAlign: "center" }}>
               <div style={{ width: 72, height: 72, borderRadius: 22, background: "#fff7ed", border: "2px solid #fed7aa", display: "flex", alignItems: "center", justifyContent: "center" }}>
                 <Receipt style={{ width: 34, height: 34, color: ORANGE }} />
@@ -669,7 +765,7 @@ export default function Dashboard() {
           ) : (
             <>
               <ul style={{ margin: 0, padding: "4px 0", listStyle: "none" }}>
-                {recentTxs.slice(0, 5).map((tx: any, i: number) => {
+                {visibleTxs.slice(0, 5).map((tx: any, i: number) => {
                   const isIncome = tx.type === "income";
                   const amount = typeof tx.amount === "string" ? parseFloat(tx.amount) : tx.amount;
                   const emoji = getCategoryIcon(tx.category);
@@ -703,11 +799,11 @@ export default function Dashboard() {
                   );
                 })}
               </ul>
-              {recentTxs.length > 5 && (
+              {visibleTxs.length > 5 && (
                 <div style={{ padding: "12px 20px", borderTop: "1px solid #f5f3f0", textAlign: "center" }}>
                   <Link href="/transactions">
                     <span style={{ fontSize: 13, color: ORANGE, fontWeight: 600, cursor: "pointer" }}>
-                      + {recentTxs.length - 5} transaction{recentTxs.length - 5 > 1 ? "s" : ""} →
+                      + {visibleTxs.length - 5} transaction{visibleTxs.length - 5 > 1 ? "s" : ""} →
                     </span>
                   </Link>
                 </div>

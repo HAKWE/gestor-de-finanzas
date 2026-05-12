@@ -63,6 +63,7 @@ router.post("/profile", requireAuth, async (req: any, res): Promise<void> => {
         currency: currency ?? "XOF",
         mobileMoneyProvider: mobileMoneyProvider ?? null,
         onboardingCompleted: onboardingCompleted ?? false,
+        trialEndsAt: new Date(Date.now() + 45 * 24 * 60 * 60 * 1000),
       })
       .returning();
     res.json(inserted[0]);

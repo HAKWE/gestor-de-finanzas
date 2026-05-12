@@ -26,6 +26,19 @@ async function upsertStripeCustomerId(userId: string, customerId: string): Promi
 
 const router: IRouter = Router();
 
+function computeTrialInfo(profile: { trialEndsAt: Date | null } | undefined | null) {
+  if (!profile?.trialEndsAt) {
+    return { effectivePlan: "limited_free" as const, trialEndsAt: null as null, trialDaysLeft: 0 };
+  }
+  const now = new Date();
+  const trialEnd = new Date(profile.trialEndsAt);
+  const daysLeft = Math.ceil((trialEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+  if (daysLeft > 0) {
+    return { effectivePlan: "trial" as const, trialEndsAt: trialEnd.toISOString(), trialDaysLeft: daysLeft };
+  }
+  return { effectivePlan: "limited_free" as const, trialEndsAt: trialEnd.toISOString(), trialDaysLeft: 0 };
+}
+
 /**
  * Resolve the correct domain for Stripe success/cancel URLs.
  * Priority: Origin header (reflects actual browsing domain) → APP_DOMAIN env →
@@ -323,7 +336,8 @@ router.get("/stripe/subscription-status", requireAuth, async (req: any, res): Pr
     }
 
     if (!customerId) {
-      res.json({ plan: "free", planLabel: "Gratuit" });
+      const trialInfo = computeTrialInfo(profiles[0]);
+      res.json({ plan: "free", planLabel: "Gratuit", ...trialInfo });
       return;
     }
 
@@ -338,7 +352,8 @@ router.get("/stripe/subscription-status", requireAuth, async (req: any, res): Pr
     const active = subscriptions.data.find(s => s.status === "active" || s.status === "trialing");
 
     if (!active) {
-      res.json({ plan: "free", planLabel: "Gratuit" });
+      const trialInfo = computeTrialInfo(profiles[0]);
+      res.json({ plan: "free", planLabel: "Gratuit", ...trialInfo });
       return;
     }
 
@@ -377,6 +392,9 @@ router.get("/stripe/subscription-status", requireAuth, async (req: any, res): Pr
       cancelAtPeriodEnd: active.cancel_at_period_end === true,
       subscriptionId: active.id,
       currentPeriodEnd,
+      effectivePlan: plan,
+      trialEndsAt: profiles[0]?.trialEndsAt ? profiles[0].trialEndsAt.toISOString() : null,
+      trialDaysLeft: 0,
     });
   } catch (err: any) {
     console.error("Subscription status error:", err.message);
