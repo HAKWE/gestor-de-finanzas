@@ -3,7 +3,7 @@ import { Link, useLocation } from "wouter";
 import { useAuth } from "@clerk/react";
 import { Button } from "@/components/ui/button";
 import {
-  Check, Loader2, ArrowLeft, Zap, Star, Gift, ShieldCheck, Lock, Crown,
+  Check, Loader2, ArrowLeft, Zap, Star, ShieldCheck, Crown,
 } from "lucide-react";
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
@@ -18,25 +18,6 @@ function formatXOF(cents: number): string {
 }
 
 const PLANS = [
-  {
-    key: "free",
-    name: "Gratuit",
-    price: 0,
-    currency: "eur",
-    icon: Gift,
-    recommended: false,
-    cta: "Commencer gratuitement",
-    features: [
-      "Jusqu'à 50 transactions/mois",
-      "1 wallet (Orange Money ou Wave)",
-      "Tableau de bord basique",
-      "Accès mobile (PWA)",
-    ],
-    limitations: [
-      "Pas d'export PDF",
-      "Pas de rapports avancés",
-    ],
-  },
   {
     key: "starter",
     name: "Starter",
@@ -77,7 +58,6 @@ const PLANS = [
 const PLAN_RANK: Record<string, number> = { free: 0, starter: 1, pro: 2, paid: 1 };
 
 function formatPrice(cents: number, currency: string) {
-  if (cents === 0) return "0 €";
   return new Intl.NumberFormat("fr-FR", {
     style: "currency",
     currency: currency.toUpperCase(),
@@ -119,10 +99,6 @@ export default function Pricing() {
   }, [isSignedIn]);
 
   const handlePlanClick = async (planKey: string) => {
-    if (planKey === "free") {
-      setLocation("/sign-up");
-      return;
-    }
     if (!isSignedIn) {
       setLocation("/sign-in");
       return;
@@ -166,7 +142,7 @@ export default function Pricing() {
       </header>
 
       <main className="px-4 py-12 md:py-20">
-        <div className="max-w-5xl mx-auto space-y-12">
+        <div className="max-w-3xl mx-auto space-y-12">
 
           {/* Hero */}
           <div className="text-center space-y-4">
@@ -178,8 +154,17 @@ export default function Pricing() {
               Choisissez votre offre
             </h1>
             <p className="text-muted-foreground text-lg max-w-xl mx-auto">
-              Commencez gratuitement. Passez à une offre payante quand votre activité grandit.
+              45 jours d'essai gratuit inclus. Choisissez votre plan quand vous êtes prêt.
             </p>
+
+            {/* Trial reminder badge */}
+            <div style={{
+              display: "inline-flex", alignItems: "center", gap: 8,
+              background: "#eff6ff", border: "1.5px solid #bfdbfe",
+              borderRadius: 999, padding: "8px 18px", fontSize: 13, fontWeight: 600, color: "#1d4ed8",
+            }}>
+              🎁 Essai 45 jours gratuit — aucune carte requise
+            </div>
 
             {/* Active plan notice for signed-in paid users */}
             {currentPlan && currentPlan !== "free" && (
@@ -195,12 +180,11 @@ export default function Pricing() {
             )}
           </div>
 
-          {/* Plans grid */}
-          <div className="grid md:grid-cols-3 gap-6 items-stretch">
+          {/* Plans grid — 2 columns */}
+          <div className="grid md:grid-cols-2 gap-6 items-stretch">
             {PLANS.map((plan) => {
               const PlanIcon = plan.icon;
               const isLoading = loadingPlan === plan.key;
-              const isFree = plan.key === "free";
               const isCurrentPlan = currentPlan === plan.key;
               const planRank = PLAN_RANK[plan.key] ?? 0;
               const isDowngrade = userRank > planRank;
@@ -257,22 +241,19 @@ export default function Pricing() {
                           <span className="text-4xl font-extrabold text-foreground">
                             {formatPrice(plan.price, plan.currency)}
                           </span>
-                          {!isFree && <span className="text-muted-foreground text-sm font-medium">/mois</span>}
-                          {isFree && <span className="text-muted-foreground text-sm font-medium">pour toujours</span>}
+                          <span className="text-muted-foreground text-sm font-medium">/mois</span>
                         </div>
-                        {!isFree && (
-                          <div style={{
-                            marginTop: 4,
-                            display: "inline-flex", alignItems: "center", gap: 5,
-                            background: "#fff7ed", border: "1px solid #fed7aa",
-                            borderRadius: 8, padding: "3px 9px",
-                          }}>
-                            <span style={{ fontSize: 13, fontWeight: 700, color: "#c2410c" }}>
-                              ≈&nbsp;{formatXOF(plan.price)}&nbsp;FCFA
-                            </span>
-                            <span style={{ fontSize: 10, color: "#9ca3af", fontWeight: 500 }}>/mois</span>
-                          </div>
-                        )}
+                        <div style={{
+                          marginTop: 4,
+                          display: "inline-flex", alignItems: "center", gap: 5,
+                          background: "#fff7ed", border: "1px solid #fed7aa",
+                          borderRadius: 8, padding: "3px 9px",
+                        }}>
+                          <span style={{ fontSize: 13, fontWeight: 700, color: "#c2410c" }}>
+                            ≈&nbsp;{formatXOF(plan.price)}&nbsp;FCFA
+                          </span>
+                          <span style={{ fontSize: 10, color: "#9ca3af", fontWeight: 500 }}>/mois</span>
+                        </div>
                       </div>
                     </div>
 
@@ -282,12 +263,6 @@ export default function Pricing() {
                         <li key={feat} className="flex items-start gap-2.5 text-sm">
                           <Check className="w-4 h-4 text-primary shrink-0 mt-0.5" />
                           <span className="text-foreground">{feat}</span>
-                        </li>
-                      ))}
-                      {plan.limitations.map((lim) => (
-                        <li key={lim} className="flex items-start gap-2.5 text-sm opacity-50">
-                          <Lock className="w-4 h-4 shrink-0 mt-0.5" />
-                          <span>{lim}</span>
                         </li>
                       ))}
                     </ul>
@@ -317,13 +292,7 @@ export default function Pricing() {
                     ) : (
                       <Button
                         size="lg"
-                        className={`w-full h-12 text-base font-semibold rounded-xl ${
-                          plan.recommended
-                            ? ""
-                            : isFree
-                            ? "border-2 border-border bg-background text-foreground hover:bg-muted"
-                            : ""
-                        }`}
+                        className="w-full h-12 text-base font-semibold rounded-xl"
                         variant={plan.recommended ? "default" : "outline"}
                         disabled={!!loadingPlan || !isLoaded}
                         onClick={() => handlePlanClick(plan.key)}
@@ -367,26 +336,24 @@ export default function Pricing() {
                 <thead>
                   <tr className="border-b border-border bg-muted/40">
                     <th className="text-left px-6 py-3 font-medium text-muted-foreground w-1/2">Fonctionnalité</th>
-                    <th className="text-center px-4 py-3 font-medium text-muted-foreground">Gratuit</th>
                     <th className="text-center px-4 py-3 font-medium text-muted-foreground">Starter</th>
                     <th className="text-center px-4 py-3 font-semibold text-primary">Pro</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
                   {[
-                    { label: "Transactions/mois", free: "50", starter: "500", pro: "Illimité" },
-                    { label: "Wallets", free: "1", starter: "3", pro: "Illimité" },
-                    { label: "Accès mobile (PWA)", free: "✓", starter: "✓", pro: "✓" },
-                    { label: "Tableau de bord", free: "Basique", starter: "Complet", pro: "Avancé" },
-                    { label: "Rapports mensuels", free: "—", starter: "✓", pro: "✓" },
-                    { label: "Export PDF", free: "—", starter: "—", pro: "✓" },
-                    { label: "Import SMS / relevés", free: "—", starter: "—", pro: "✓" },
-                    { label: "Gestion des stocks", free: "—", starter: "—", pro: "✓" },
-                    { label: "Support", free: "—", starter: "E-mail", pro: "Prioritaire" },
+                    { label: "Transactions/mois", starter: "500", pro: "Illimité" },
+                    { label: "Wallets", starter: "3", pro: "Illimité" },
+                    { label: "Accès mobile (PWA)", starter: "✓", pro: "✓" },
+                    { label: "Tableau de bord", starter: "Complet", pro: "Avancé" },
+                    { label: "Rapports mensuels", starter: "✓", pro: "✓" },
+                    { label: "Export PDF", starter: "—", pro: "✓" },
+                    { label: "Import SMS / relevés", starter: "—", pro: "✓" },
+                    { label: "Gestion des stocks", starter: "—", pro: "✓" },
+                    { label: "Support", starter: "E-mail", pro: "Prioritaire" },
                   ].map((row) => (
                     <tr key={row.label} className="hover:bg-muted/30 transition-colors">
                       <td className="px-6 py-3 text-foreground font-medium">{row.label}</td>
-                      <td className="px-4 py-3 text-center text-muted-foreground">{row.free}</td>
                       <td className="px-4 py-3 text-center text-muted-foreground">{row.starter}</td>
                       <td className="px-4 py-3 text-center font-semibold text-primary">{row.pro}</td>
                     </tr>
@@ -400,7 +367,7 @@ export default function Pricing() {
           <div className="flex flex-wrap justify-center gap-6 text-sm text-muted-foreground">
             <div className="flex items-center gap-2"><ShieldCheck className="w-4 h-4 text-primary" />Paiement sécurisé via Stripe</div>
             <div className="flex items-center gap-2"><Check className="w-4 h-4 text-primary" />Annulez à tout moment</div>
-            <div className="flex items-center gap-2"><Check className="w-4 h-4 text-primary" />Aucune carte requise pour le plan gratuit</div>
+            <div className="flex items-center gap-2"><Check className="w-4 h-4 text-primary" />45 jours d'essai gratuit</div>
           </div>
 
         </div>
