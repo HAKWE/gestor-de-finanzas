@@ -134,10 +134,7 @@ export default function Pricing() {
   }, []);
 
   const handlePlanClick = async (planKey: string, paymentMethod: "card" | "paypal" = "card") => {
-    if (!isSignedIn) {
-      setLocation("/sign-up");
-      return;
-    }
+    if (!isSignedIn) return;
     const key = `${planKey}-${paymentMethod}`;
     setLoadingPlan(key);
     try {
@@ -481,11 +478,29 @@ export default function Pricing() {
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 46, borderRadius: 12, background: "#f3f4f6", border: "1.5px solid #e5e7eb", fontWeight: 600, fontSize: 13, color: "#9ca3af", cursor: "not-allowed" }}>
                       Plan inférieur
                     </div>
+                  ) : !isLoaded ? (
+                    <div style={{ height: 48, borderRadius: 13, background: "#f3f4f6", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <Loader2 style={{ width: 18, height: 18, color: "#9ca3af", animation: "spin 0.8s linear infinite" }} />
+                    </div>
+                  ) : !isSignedIn ? (
+                    <Link href="/sign-up" style={{ textDecoration: "none" }}>
+                      <div style={{
+                        width: "100%", height: 48, borderRadius: 13, border: "none",
+                        background: plan.recommended
+                          ? "linear-gradient(135deg,#f97316,#ea580c)"
+                          : "linear-gradient(135deg,#111827,#1f2937)",
+                        color: "#fff", fontWeight: 800, fontSize: 14,
+                        display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+                        boxShadow: plan.recommended ? "0 4px 16px rgba(249,115,22,0.35)" : "0 4px 14px rgba(0,0,0,0.18)",
+                      }}>
+                        🎁 Commencer l'essai gratuit
+                      </div>
+                    </Link>
                   ) : (
                     <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
                       {/* Card button */}
                       <button
-                        disabled={!!loadingPlan || !isLoaded}
+                        disabled={!!loadingPlan}
                         onClick={() => handlePlanClick(plan.key, "card")}
                         style={{
                           width: "100%", height: 48, borderRadius: 13, border: "none",
@@ -508,7 +523,7 @@ export default function Pricing() {
 
                       {/* PayPal button */}
                       <button
-                        disabled={!!loadingPlan || !isLoaded}
+                        disabled={!!loadingPlan}
                         onClick={() => handlePlanClick(plan.key, "paypal")}
                         style={{
                           width: "100%", height: 48, borderRadius: 13,
