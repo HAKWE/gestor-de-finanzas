@@ -237,10 +237,14 @@ router.post("/stripe/checkout-by-plan", requireAuth, async (req: any, res): Prom
     const domain = resolveCheckoutDomain(req);
     console.log(`[checkout-by-plan] Using domain: ${domain}`);
 
+    const paymentMethods = resolvedPaymentMethod === "paypal"
+      ? ["paypal" as const]
+      : ["card" as const, "paypal" as const];
+
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       client_reference_id: userId,
-      payment_method_types: ["card", "paypal"],
+      payment_method_types: paymentMethods,
       line_items: [{ price: price.id, quantity: 1 }],
       mode: "subscription",
       success_url: `https://${domain}/dashboard?success=true`,

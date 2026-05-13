@@ -1,31 +1,39 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@clerk/react";
-import { Button } from "@/components/ui/button";
 import {
   Check, Loader2, ArrowLeft, Zap, Star, ShieldCheck, Crown,
+  Clock, CreditCard, Sparkles, X,
 } from "lucide-react";
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
-
 const EUR_TO_XOF = 655.957;
 
-function formatXOF(cents: number): string {
-  if (cents === 0) return "0";
+function xof(cents: number) {
   const eur = cents / 100;
-  const xof = Math.ceil((eur * EUR_TO_XOF) / 100) * 100;
-  return new Intl.NumberFormat("fr-FR").format(xof);
+  const val = Math.ceil((eur * EUR_TO_XOF) / 100) * 100;
+  return new Intl.NumberFormat("fr-FR").format(val);
+}
+
+function eur(cents: number, decimals = 0) {
+  return new Intl.NumberFormat("fr-FR", {
+    style: "currency", currency: "EUR",
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals,
+  }).format(cents / 100);
 }
 
 const PLANS = [
   {
     key: "starter",
     name: "Starter",
-    price: 500,
-    currency: "eur",
     icon: Zap,
     recommended: false,
-    cta: "Choisir Starter",
+    monthlyPrice: 500,
+    annualPrice: 3300,
+    annualMonthlyEq: 275,
+    launchPrice: 399,
+    launchMonths: 3,
     features: [
       "Jusqu'à 500 transactions/mois",
       "3 wallets (Orange Money, Wave, espèces)",
@@ -33,16 +41,18 @@ const PLANS = [
       "Accès mobile (PWA)",
       "Support par e-mail",
     ],
-    limitations: [],
+    cta: "Choisir Starter",
   },
   {
     key: "pro",
     name: "Pro",
-    price: 1100,
-    currency: "eur",
     icon: Star,
     recommended: true,
-    cta: "Choisir Pro",
+    monthlyPrice: 1100,
+    annualPrice: 7300,
+    annualMonthlyEq: 608,
+    launchPrice: null,
+    launchMonths: 0,
     features: [
       "Transactions illimitées",
       "Wallets illimités",
@@ -51,61 +61,79 @@ const PLANS = [
       "Gestion des stocks",
       "Support prioritaire",
     ],
-    limitations: [],
+    cta: "Choisir Pro",
   },
 ] as const;
 
-const PLAN_RANK: Record<string, number> = { free: 0, starter: 1, pro: 2, paid: 1 };
+const COMPARISON = [
+  { label: "Transactions/mois",      free: "50",       starter: "500",      pro: "Illimité" },
+  { label: "Wallets",                free: "1",        starter: "3",        pro: "Illimité" },
+  { label: "Tableau de bord",        free: "Basique",  starter: "Complet",  pro: "Avancé" },
+  { label: "Rapports mensuels",      free: "Basique",  starter: "✓",        pro: "Avancé" },
+  { label: "Export PDF",             free: "—",        starter: "—",        pro: "✓" },
+  { label: "Import SMS / relevés",   free: "—",        starter: "—",        pro: "✓" },
+  { label: "Gestion des stocks",     free: "—",        starter: "—",        pro: "✓" },
+  { label: "Accès mobile (PWA)",     free: "✓",        starter: "✓",        pro: "✓" },
+  { label: "Support",                free: "—",        starter: "E-mail",   pro: "Prioritaire" },
+];
 
-function formatPrice(cents: number, currency: string) {
-  return new Intl.NumberFormat("fr-FR", {
-    style: "currency",
-    currency: currency.toUpperCase(),
-    minimumFractionDigits: 0,
-  }).format(cents / 100);
-}
+const PLAN_RANK: Record<string, number> = { free: 0, limited_free: 0, trial: 1, starter: 1, pro: 2, paid: 1 };
 
-async function startCheckout(planKey: string): Promise<string> {
+async function startCheckout(planKey: string, paymentMethod: "card" | "paypal" = "card"): Promise<string> {
   const res = await fetch(`${basePath}/api/stripe/checkout-by-plan`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
-    body: JSON.stringify({ planName: planKey }),
+    body: JSON.stringify({ planName: planKey, paymentMethod }),
   });
   const data = await res.json();
   if (!res.ok) throw new Error(data.error || "Erreur de paiement");
   return data.url;
 }
 
+function PaypalLogo() {
+  return (
+    <svg width="52" height="14" viewBox="0 0 52 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <text x="0" y="11" fontFamily="Arial, sans-serif" fontWeight="bold" fontSize="12" fill="#253B80">Pay</text>
+      <text x="18" y="11" fontFamily="Arial, sans-serif" fontWeight="bold" fontSize="12" fill="#179BD7">Pal</text>
+    </svg>
+  );
+}
 
 export default function Pricing() {
   const { isSignedIn, isLoaded } = useAuth();
   const [, setLocation] = useLocation();
+  const [billing, setBilling] = useState<"monthly" | "annual">("monthly");
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
   const [currentPlan, setCurrentPlan] = useState<string | null>(null);
   const [currentLabel, setCurrentLabel] = useState<string>("");
+  const [trialDaysLeft, setTrialDaysLeft] = useState<number | null>(null);
+  const [effectivePlan, setEffectivePlan] = useState<string | null>(null);
+  const [showLaunchBanner, setShowLaunchBanner] = useState(true);
 
   useEffect(() => {
     if (!isSignedIn) return;
     fetch(`${basePath}/api/stripe/subscription-status`, { credentials: "include" })
       .then(r => r.ok ? r.json() : null)
       .then(d => {
-        if (d) {
-          setCurrentPlan(d.plan || "free");
-          setCurrentLabel(d.planLabel || "");
-        }
+        if (!d) return;
+        setCurrentPlan(d.plan || "free");
+        setCurrentLabel(d.planLabel || "");
+        setTrialDaysLeft(typeof d.trialDaysLeft === "number" ? d.trialDaysLeft : null);
+        setEffectivePlan(d.effectivePlan ?? null);
       })
       .catch(() => {});
   }, [isSignedIn]);
 
-  const handlePlanClick = async (planKey: string) => {
+  const handlePlanClick = async (planKey: string, paymentMethod: "card" | "paypal" = "card") => {
     if (!isSignedIn) {
-      setLocation("/sign-in");
+      setLocation("/sign-up");
       return;
     }
-    setLoadingPlan(planKey);
+    const key = `${planKey}-${paymentMethod}`;
+    setLoadingPlan(key);
     try {
-      const url = await startCheckout(planKey);
+      const url = await startCheckout(planKey, paymentMethod);
       window.location.href = url;
     } catch (err: any) {
       alert(err.message);
@@ -114,278 +142,496 @@ export default function Pricing() {
   };
 
   const userRank = currentPlan ? (PLAN_RANK[currentPlan] ?? 0) : 0;
+  const isInTrial = effectivePlan === "trial";
+
+  const trialUrgency = trialDaysLeft === null ? null
+    : trialDaysLeft <= 7 ? "critical"
+    : trialDaysLeft <= 14 ? "high"
+    : "normal";
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b border-border/50 px-4 py-4">
-        <div className="max-w-5xl mx-auto flex items-center justify-between">
-          <Link href="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
-            <ArrowLeft className="w-4 h-4" />
+    <div style={{ minHeight: "100vh", background: "#faf8f5", fontFamily: "Inter, sans-serif" }}>
+
+      {/* ── Header ─────────────────────────────────────────────────────────── */}
+      <header style={{ borderBottom: "1px solid #ede9e3", padding: "14px 20px", background: "#fff", position: "sticky", top: 0, zIndex: 50 }}>
+        <div style={{ maxWidth: 860, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <Link href="/" style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, color: "#6b7280", textDecoration: "none" }}>
+            <ArrowLeft style={{ width: 15, height: 15 }} />
             Retour à l'accueil
           </Link>
-          <div className="flex items-center gap-2">
-            <img src="/logo.svg" alt="MobileMoney" className="w-6 h-6" />
-            <span className="font-semibold text-sm text-foreground hidden sm:inline">MobileMoney Manager</span>
+          <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+            <img src="/logo.svg" alt="MobileMoney" style={{ width: 24, height: 24 }} />
+            <span style={{ fontWeight: 700, fontSize: 14, color: "#111" }}>MobileMoney Manager</span>
           </div>
           {isLoaded && !isSignedIn && (
-            <Link href="/sign-in" className="text-sm text-primary font-medium hover:underline">
+            <Link href="/sign-in" style={{ fontSize: 13, color: "#f97316", fontWeight: 600, textDecoration: "none" }}>
               Se connecter
             </Link>
           )}
           {isLoaded && isSignedIn && (
-            <Link href="/dashboard" className="text-sm text-primary font-medium hover:underline">
+            <Link href="/dashboard" style={{ fontSize: 13, color: "#f97316", fontWeight: 600, textDecoration: "none" }}>
               Mon tableau de bord
             </Link>
           )}
         </div>
       </header>
 
-      <main className="px-4 py-12 md:py-20">
-        <div className="max-w-3xl mx-auto space-y-12">
+      <main style={{ padding: "32px 16px 64px", maxWidth: 860, margin: "0 auto" }}>
 
-          {/* Hero */}
-          <div className="text-center space-y-4">
-            <div className="inline-flex items-center gap-2 bg-primary/10 text-primary text-sm font-medium px-4 py-1.5 rounded-full">
-              <ShieldCheck className="w-4 h-4" />
-              Paiement sécurisé via Stripe et PayPal
+        {/* ── Launch promo banner ─────────────────────────────────────────── */}
+        {showLaunchBanner && (
+          <div style={{
+            background: "linear-gradient(135deg, #7c3aed, #5b21b6)",
+            borderRadius: 14, padding: "12px 18px", marginBottom: 24,
+            display: "flex", alignItems: "center", gap: 12,
+            boxShadow: "0 4px 20px rgba(124,58,237,0.30)",
+          }}>
+            <span style={{ fontSize: 22, flexShrink: 0 }}>🚀</span>
+            <div style={{ flex: 1 }}>
+              <p style={{ margin: 0, fontWeight: 800, fontSize: 13, color: "#fff" }}>
+                Offre de lancement — Prix spécial limité dans le temps
+              </p>
+              <p style={{ margin: "2px 0 0", fontSize: 12, color: "#ddd6fe" }}>
+                Starter à <strong style={{ color: "#fbbf24" }}>3,99 €/mois</strong> au lieu de 5 € pour les 3 premiers mois — Rejoignez les premiers entrepreneurs !
+              </p>
             </div>
-            <h1 className="text-3xl md:text-5xl font-bold tracking-tight text-foreground">
-              Choisissez votre offre
-            </h1>
-            <p className="text-muted-foreground text-lg max-w-xl mx-auto">
-              45 jours d'essai gratuit inclus. Choisissez votre plan quand vous êtes prêt.
-            </p>
+            <button onClick={() => setShowLaunchBanner(false)} style={{ background: "rgba(255,255,255,0.15)", border: "none", borderRadius: 8, padding: 6, cursor: "pointer", color: "#ddd6fe", display: "flex", flexShrink: 0 }}>
+              <X style={{ width: 14, height: 14 }} />
+            </button>
+          </div>
+        )}
 
-            {/* Trial reminder badge — clickable, routes to sign-up or dashboard */}
-            <div>
-              <Link
-                href={isSignedIn ? "/dashboard" : "/sign-up"}
+        {/* ── Trial countdown box (signed-in trial users) ─────────────────── */}
+        {isInTrial && trialDaysLeft !== null && (
+          <div style={{
+            borderRadius: 18, overflow: "hidden", marginBottom: 28,
+            background: trialUrgency === "critical" ? "#fef2f2" : trialUrgency === "high" ? "#fff7ed" : "#eff6ff",
+            border: `2px solid ${trialUrgency === "critical" ? "#fca5a5" : trialUrgency === "high" ? "#fdba74" : "#93c5fd"}`,
+            boxShadow: trialUrgency === "critical" ? "0 4px 20px rgba(220,38,38,0.15)" : "0 4px 16px rgba(59,130,246,0.12)",
+          }}>
+            <div style={{
+              height: 4,
+              background: trialUrgency === "critical"
+                ? "linear-gradient(90deg,#dc2626,#ef4444)"
+                : trialUrgency === "high"
+                ? "linear-gradient(90deg,#f97316,#fb923c)"
+                : "linear-gradient(90deg,#2563eb,#3b82f6)",
+            }} />
+            <div style={{ padding: "18px 20px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+                <Clock style={{ width: 20, height: 20, color: trialUrgency === "critical" ? "#dc2626" : trialUrgency === "high" ? "#f97316" : "#2563eb", flexShrink: 0 }} />
+                <p style={{ margin: 0, fontWeight: 800, fontSize: 15, color: trialUrgency === "critical" ? "#dc2626" : trialUrgency === "high" ? "#c2410c" : "#1d4ed8" }}>
+                  {trialUrgency === "critical"
+                    ? `⏰ Plus que ${trialDaysLeft} jour${trialDaysLeft > 1 ? "s" : ""} d'essai gratuit !`
+                    : `Votre essai gratuit se termine dans ${trialDaysLeft} jours`}
+                </p>
+              </div>
+              <div style={{ background: "rgba(0,0,0,0.06)", borderRadius: 99, height: 7, overflow: "hidden", marginBottom: 12 }}>
+                <div style={{
+                  height: "100%",
+                  width: `${Math.max(5, Math.round(((45 - trialDaysLeft) / 45) * 100))}%`,
+                  borderRadius: 99,
+                  background: trialUrgency === "critical"
+                    ? "linear-gradient(90deg,#dc2626,#ef4444)"
+                    : trialUrgency === "high"
+                    ? "linear-gradient(90deg,#f97316,#fb923c)"
+                    : "linear-gradient(90deg,#2563eb,#3b82f6)",
+                  transition: "width 0.6s ease",
+                }} />
+              </div>
+              <p style={{ margin: "0 0 4px", fontSize: 12, color: "#6b7280" }}>
+                {trialUrgency === "critical"
+                  ? "Abonnez-vous maintenant pour ne pas perdre vos données et continuer sans interruption."
+                  : "Profitez de toutes les fonctionnalités premium pendant votre essai. Choisissez votre plan ci-dessous."}
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* ── Hero ───────────────────────────────────────────────────────────── */}
+        <div style={{ textAlign: "center", marginBottom: 32 }}>
+          <div style={{
+            display: "inline-flex", alignItems: "center", gap: 6,
+            background: "#fff7ed", border: "1px solid #fed7aa",
+            borderRadius: 99, padding: "6px 14px", fontSize: 12, fontWeight: 600, color: "#c2410c",
+            marginBottom: 14,
+          }}>
+            <ShieldCheck style={{ width: 13, height: 13 }} />
+            Paiement sécurisé via Stripe et PayPal
+          </div>
+          <h1 style={{ fontSize: 36, fontWeight: 900, color: "#111", margin: "0 0 10px", lineHeight: 1.15 }}>
+            Choisissez votre offre
+          </h1>
+          <p style={{ fontSize: 16, color: "#6b7280", margin: "0 0 20px", lineHeight: 1.6 }}>
+            45 jours d'essai gratuit inclus. Aucune carte bancaire requise.
+          </p>
+
+          {/* Trial CTA (not signed in) */}
+          {!isSignedIn && isLoaded && (
+            <Link
+              href="/sign-up"
+              style={{
+                display: "inline-flex", alignItems: "center", gap: 8,
+                background: "linear-gradient(135deg,#2563eb,#3b82f6)",
+                borderRadius: 99, padding: "11px 24px",
+                fontSize: 14, fontWeight: 700, color: "#fff",
+                textDecoration: "none",
+                boxShadow: "0 4px 14px rgba(37,99,235,0.30)",
+                marginBottom: 8,
+              }}
+            >
+              🎁 Démarrer l'essai gratuit 45 jours →
+            </Link>
+          )}
+
+          {/* Current plan badge */}
+          {currentPlan && currentPlan !== "free" && currentPlan !== "limited_free" && !isInTrial && (
+            <div style={{
+              display: "inline-flex", alignItems: "center", gap: 7,
+              background: "linear-gradient(135deg,#fff7ed,#ffedd5)",
+              border: "1.5px solid #f97316", borderRadius: 99,
+              padding: "7px 16px", fontSize: 13, fontWeight: 700, color: "#9a3412",
+            }}>
+              <Crown style={{ width: 13, height: 13, color: "#f97316" }} />
+              Plan actuel&nbsp;: <span style={{ color: "#f97316" }}>{currentLabel}</span>
+            </div>
+          )}
+        </div>
+
+        {/* ── Billing toggle ─────────────────────────────────────────────────── */}
+        <div style={{ display: "flex", justifyContent: "center", marginBottom: 28 }}>
+          <div style={{ display: "inline-flex", background: "#fff", border: "1.5px solid #e5e7eb", borderRadius: 14, padding: 4, gap: 4, boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
+            <button
+              onClick={() => setBilling("monthly")}
+              style={{
+                padding: "8px 20px", borderRadius: 10, border: "none", cursor: "pointer",
+                fontWeight: 700, fontSize: 13,
+                background: billing === "monthly" ? "#f97316" : "transparent",
+                color: billing === "monthly" ? "#fff" : "#6b7280",
+                transition: "all 0.15s",
+              }}
+            >
+              Mensuel
+            </button>
+            <button
+              onClick={() => setBilling("annual")}
+              style={{
+                padding: "8px 20px", borderRadius: 10, border: "none", cursor: "pointer",
+                fontWeight: 700, fontSize: 13, display: "flex", alignItems: "center", gap: 7,
+                background: billing === "annual" ? "#f97316" : "transparent",
+                color: billing === "annual" ? "#fff" : "#6b7280",
+                transition: "all 0.15s",
+              }}
+            >
+              Annuel
+              <span style={{
+                background: billing === "annual" ? "rgba(255,255,255,0.25)" : "#dcfce7",
+                color: billing === "annual" ? "#fff" : "#16a34a",
+                fontSize: 10, fontWeight: 800, padding: "2px 7px", borderRadius: 99,
+              }}>
+                2 mois offerts
+              </span>
+            </button>
+          </div>
+        </div>
+
+        {/* ── Plans grid ─────────────────────────────────────────────────────── */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(290px, 1fr))", gap: 20, marginBottom: 36 }}>
+          {PLANS.map((plan) => {
+            const PlanIcon = plan.icon;
+            const isLoading = (key: string) => loadingPlan === key;
+            const isCurrentPlan = currentPlan === plan.key;
+            const planRank = PLAN_RANK[plan.key] ?? 0;
+            const isDowngrade = userRank > planRank;
+
+            const displayPrice = billing === "annual" ? plan.annualMonthlyEq : plan.monthlyPrice;
+            const originalMonthly = plan.monthlyPrice;
+            const annualTotal = plan.annualPrice;
+            const showLaunch = billing === "monthly" && plan.launchPrice !== null;
+
+            return (
+              <div
+                key={plan.key}
                 style={{
-                  display: "inline-flex", alignItems: "center", gap: 8,
-                  background: "linear-gradient(135deg, #eff6ff, #dbeafe)",
-                  border: "1.5px solid #93c5fd",
-                  borderRadius: 999, padding: "10px 22px", fontSize: 14, fontWeight: 700, color: "#1d4ed8",
-                  textDecoration: "none", cursor: "pointer",
-                  boxShadow: "0 2px 8px rgba(59,130,246,0.18)",
-                  transition: "box-shadow 0.15s, background 0.15s",
+                  borderRadius: 22, overflow: "hidden", position: "relative",
+                  border: plan.recommended
+                    ? "2.5px solid #f97316"
+                    : isCurrentPlan
+                    ? "2px solid #f97316"
+                    : "1.5px solid #e5e7eb",
+                  background: "#fff",
+                  boxShadow: plan.recommended
+                    ? "0 8px 32px rgba(249,115,22,0.18)"
+                    : "0 2px 12px rgba(0,0,0,0.05)",
+                  display: "flex", flexDirection: "column",
                 }}
               >
-                🎁 Essai 45 jours gratuit — aucune carte requise →
-              </Link>
-            </div>
+                {/* Top color band */}
+                <div style={{
+                  height: 5,
+                  background: plan.recommended
+                    ? "linear-gradient(90deg,#f97316,#fb923c)"
+                    : "linear-gradient(90deg,#e5e7eb,#d1d5db)",
+                }} />
 
-            {/* Active plan notice for signed-in paid users */}
-            {currentPlan && currentPlan !== "free" && (
-              <div style={{
-                display: "inline-flex", alignItems: "center", gap: 8,
-                background: "linear-gradient(135deg,#fff7ed,#ffedd5)",
-                border: "1.5px solid #f97316", borderRadius: 999,
-                padding: "8px 18px", fontSize: 14, fontWeight: 600, color: "#9a3412",
-              }}>
-                <Crown style={{ width: 15, height: 15, color: "#f97316" }} />
-                Votre plan actuel&nbsp;: <span style={{ color: "#f97316" }}>{currentLabel}</span>
-              </div>
-            )}
-          </div>
+                {/* Recommended / Current badges */}
+                {plan.recommended && !isCurrentPlan && (
+                  <div style={{ position: "absolute", top: 16, right: 16 }}>
+                    <span style={{
+                      background: "linear-gradient(135deg,#f97316,#ea580c)",
+                      color: "#fff", fontSize: 10, fontWeight: 800,
+                      padding: "4px 10px", borderRadius: 99,
+                      display: "inline-flex", alignItems: "center", gap: 4,
+                    }}>
+                      <Star style={{ width: 9, height: 9, fill: "white" }} />
+                      Recommandé
+                    </span>
+                  </div>
+                )}
+                {isCurrentPlan && (
+                  <div style={{ position: "absolute", top: 16, right: 16 }}>
+                    <span style={{ background: "#f97316", color: "#fff", fontSize: 10, fontWeight: 800, padding: "4px 10px", borderRadius: 99, display: "inline-flex", alignItems: "center", gap: 4 }}>
+                      <Check style={{ width: 9, height: 9 }} />
+                      Plan actif
+                    </span>
+                  </div>
+                )}
 
-          {/* Plans grid — 2 columns */}
-          <div className="grid md:grid-cols-2 gap-6 items-stretch">
-            {PLANS.map((plan) => {
-              const PlanIcon = plan.icon;
-              const isLoading = loadingPlan === plan.key;
-              const isCurrentPlan = currentPlan === plan.key;
-              const planRank = PLAN_RANK[plan.key] ?? 0;
-              const isDowngrade = userRank > planRank;
-              const isDisabled = isCurrentPlan || isDowngrade;
-
-              return (
-                <div
-                  key={plan.key}
-                  className={`relative rounded-2xl border flex flex-col transition-shadow ${
-                    plan.recommended
-                      ? "border-primary bg-primary/5 shadow-xl ring-2 ring-primary/20"
-                      : "border-border bg-card shadow-sm hover:shadow-md"
-                  }`}
-                  style={isCurrentPlan ? { borderColor: "#f97316", boxShadow: "0 0 0 3px rgba(249,115,22,0.15)" } : {}}
-                >
-                  {/* Recommended badge */}
-                  {plan.recommended && !isCurrentPlan && (
-                    <div className="absolute -top-4 inset-x-0 flex justify-center">
-                      <span className="bg-primary text-white text-xs font-bold px-4 py-1.5 rounded-full flex items-center gap-1.5 shadow-md">
-                        <Star className="w-3 h-3 fill-white" />
-                        Recommandé
-                      </span>
+                <div style={{ padding: "20px 22px", display: "flex", flexDirection: "column", flex: 1, gap: 16 }}>
+                  {/* Plan name */}
+                  <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
+                    <div style={{
+                      width: 38, height: 38, borderRadius: 12,
+                      background: plan.recommended ? "#fff7ed" : "#f3f4f6",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                    }}>
+                      <PlanIcon style={{ width: 19, height: 19, color: plan.recommended ? "#f97316" : "#6b7280" }} />
                     </div>
-                  )}
+                    <h2 style={{ fontSize: 20, fontWeight: 800, color: "#111", margin: 0 }}>{plan.name}</h2>
+                  </div>
 
-                  {/* "Plan actuel" badge */}
-                  {isCurrentPlan && (
-                    <div className="absolute -top-4 inset-x-0 flex justify-center">
-                      <span style={{
-                        background: "#f97316", color: "white",
-                        fontSize: 11, fontWeight: 700, padding: "5px 14px",
-                        borderRadius: 999, display: "inline-flex", alignItems: "center", gap: 5,
-                        boxShadow: "0 2px 8px rgba(249,115,22,0.40)",
-                      }}>
-                        <Check style={{ width: 11, height: 11 }} />
-                        Votre plan actuel
-                      </span>
-                    </div>
-                  )}
-
-                  <div className="p-7 space-y-6 flex flex-col flex-1">
-                    {/* Plan header */}
-                    <div className="space-y-3">
-                      <div className="flex items-center gap-2">
-                        <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${
-                          plan.recommended ? "bg-primary text-white" : "bg-primary/10 text-primary"
-                        }`}>
-                          <PlanIcon className="w-5 h-5" />
-                        </div>
-                        <h2 className="text-xl font-bold text-foreground">{plan.name}</h2>
-                      </div>
-                      <div>
-                        <div className="flex items-baseline gap-1">
-                          <span className="text-4xl font-extrabold text-foreground">
-                            {formatPrice(plan.price, plan.currency)}
-                          </span>
-                          <span className="text-muted-foreground text-sm font-medium">/mois</span>
-                        </div>
-                        <div style={{
-                          marginTop: 4,
-                          display: "inline-flex", alignItems: "center", gap: 5,
-                          background: "#fff7ed", border: "1px solid #fed7aa",
-                          borderRadius: 8, padding: "3px 9px",
-                        }}>
-                          <span style={{ fontSize: 13, fontWeight: 700, color: "#c2410c" }}>
-                            ≈&nbsp;{formatXOF(plan.price)}&nbsp;FCFA
-                          </span>
-                          <span style={{ fontSize: 10, color: "#9ca3af", fontWeight: 500 }}>/mois</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Features */}
-                    <ul className="space-y-2.5 flex-1">
-                      {plan.features.map((feat) => (
-                        <li key={feat} className="flex items-start gap-2.5 text-sm">
-                          <Check className="w-4 h-4 text-primary shrink-0 mt-0.5" />
-                          <span className="text-foreground">{feat}</span>
-                        </li>
-                      ))}
-                    </ul>
-
-                    {/* CTA */}
-                    {isCurrentPlan ? (
+                  {/* Price */}
+                  <div>
+                    {billing === "monthly" && showLaunch && (
                       <div style={{
-                        width: "100%", height: 48, borderRadius: 12,
-                        background: "linear-gradient(135deg,#fff7ed,#ffedd5)",
-                        border: "2px solid #f97316",
-                        display: "flex", alignItems: "center", justifyContent: "center",
-                        gap: 8, fontWeight: 700, fontSize: 14, color: "#c2410c",
+                        display: "inline-flex", alignItems: "center", gap: 6,
+                        background: "linear-gradient(135deg,#7c3aed,#5b21b6)",
+                        borderRadius: 8, padding: "4px 10px", marginBottom: 8,
                       }}>
-                        <Check style={{ width: 16, height: 16 }} />
-                        Plan actif
+                        <Sparkles style={{ width: 11, height: 11, color: "#fbbf24" }} />
+                        <span style={{ fontSize: 11, fontWeight: 800, color: "#e9d5ff" }}>
+                          Prix de lancement — {plan.launchMonths} premiers mois à {eur(plan.launchPrice!, 2)} !
+                        </span>
                       </div>
-                    ) : isDowngrade ? (
-                      <div style={{
-                        width: "100%", height: 48, borderRadius: 12,
-                        background: "#f3f4f6", border: "1.5px solid #e5e7eb",
-                        display: "flex", alignItems: "center", justifyContent: "center",
-                        gap: 8, fontWeight: 600, fontSize: 13, color: "#9ca3af",
-                        cursor: "not-allowed",
-                      }}>
-                        Plan inférieur
+                    )}
+                    <div style={{ display: "flex", alignItems: "baseline", gap: 4 }}>
+                      <span style={{ fontSize: 40, fontWeight: 900, color: "#111" }}>
+                        {eur(displayPrice, displayPrice % 100 === 0 ? 0 : 2)}
+                      </span>
+                      <span style={{ fontSize: 14, color: "#9ca3af", fontWeight: 500 }}>/mois</span>
+                      {billing === "annual" && (
+                        <span style={{ fontSize: 12, color: "#9ca3af", textDecoration: "line-through", marginLeft: 4 }}>
+                          {eur(originalMonthly)}
+                        </span>
+                      )}
+                    </div>
+                    {billing === "annual" ? (
+                      <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 4 }}>
+                        <span style={{ fontSize: 13, fontWeight: 700, color: "#16a34a" }}>
+                          {eur(annualTotal)} facturé annuellement
+                        </span>
+                        <span style={{ background: "#dcfce7", color: "#15803d", fontSize: 10, fontWeight: 800, padding: "2px 7px", borderRadius: 99 }}>
+                          2 mois offerts
+                        </span>
                       </div>
                     ) : (
-                      <Button
-                        size="lg"
-                        className="w-full h-12 text-base font-semibold rounded-xl"
-                        variant={plan.recommended ? "default" : "outline"}
-                        disabled={!!loadingPlan || !isLoaded}
-                        onClick={() => handlePlanClick(plan.key)}
-                      >
-                        {isLoading
-                          ? <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                          : <PlanIcon className="w-4 h-4 mr-2" />
-                        }
-                        {plan.cta}
-                      </Button>
+                      <div style={{ marginTop: 4, display: "inline-flex", alignItems: "center", gap: 5, background: "#fff7ed", border: "1px solid #fed7aa", borderRadius: 7, padding: "3px 8px" }}>
+                        <span style={{ fontSize: 12, fontWeight: 700, color: "#c2410c" }}>≈ {xof(displayPrice)} FCFA/mois</span>
+                      </div>
                     )}
                   </div>
+
+                  {/* Features */}
+                  <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: 9, flex: 1 }}>
+                    {plan.features.map((f) => (
+                      <li key={f} style={{ display: "flex", alignItems: "flex-start", gap: 8, fontSize: 13, color: "#374151" }}>
+                        <Check style={{ width: 15, height: 15, color: "#f97316", flexShrink: 0, marginTop: 1 }} />
+                        {f}
+                      </li>
+                    ))}
+                  </ul>
+
+                  {/* CTA buttons */}
+                  {isCurrentPlan ? (
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 46, borderRadius: 12, background: "#fff7ed", border: "2px solid #f97316", gap: 7, fontWeight: 700, fontSize: 13, color: "#c2410c" }}>
+                      <Check style={{ width: 15, height: 15 }} />
+                      Plan actif
+                    </div>
+                  ) : isDowngrade ? (
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 46, borderRadius: 12, background: "#f3f4f6", border: "1.5px solid #e5e7eb", fontWeight: 600, fontSize: 13, color: "#9ca3af", cursor: "not-allowed" }}>
+                      Plan inférieur
+                    </div>
+                  ) : (
+                    <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
+                      {/* Card button */}
+                      <button
+                        disabled={!!loadingPlan || !isLoaded}
+                        onClick={() => handlePlanClick(plan.key, "card")}
+                        style={{
+                          width: "100%", height: 48, borderRadius: 13, border: "none",
+                          background: plan.recommended
+                            ? "linear-gradient(135deg,#f97316,#ea580c)"
+                            : "linear-gradient(135deg,#111827,#1f2937)",
+                          color: "#fff", fontWeight: 800, fontSize: 14, cursor: !!loadingPlan ? "wait" : "pointer",
+                          display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+                          boxShadow: plan.recommended ? "0 4px 16px rgba(249,115,22,0.35)" : "0 4px 14px rgba(0,0,0,0.18)",
+                          opacity: !!loadingPlan && loadingPlan !== `${plan.key}-card` ? 0.6 : 1,
+                          transition: "opacity 0.15s",
+                        }}
+                      >
+                        {isLoading(`${plan.key}-card`)
+                          ? <Loader2 style={{ width: 16, height: 16, animation: "spin 0.8s linear infinite" }} />
+                          : <CreditCard style={{ width: 15, height: 15 }} />
+                        }
+                        Payer par carte
+                      </button>
+
+                      {/* PayPal button */}
+                      <button
+                        disabled={!!loadingPlan || !isLoaded}
+                        onClick={() => handlePlanClick(plan.key, "paypal")}
+                        style={{
+                          width: "100%", height: 46, borderRadius: 13,
+                          background: isLoading(`${plan.key}-paypal`)
+                            ? "#f0c430"
+                            : "linear-gradient(135deg,#ffd140,#ffca2c)",
+                          border: "none",
+                          cursor: !!loadingPlan ? "wait" : "pointer",
+                          display: "flex", alignItems: "center", justifyContent: "center", gap: 9,
+                          boxShadow: "0 3px 10px rgba(255,196,44,0.40)",
+                          opacity: !!loadingPlan && loadingPlan !== `${plan.key}-paypal` ? 0.6 : 1,
+                          transition: "opacity 0.15s",
+                        }}
+                      >
+                        {isLoading(`${plan.key}-paypal`) ? (
+                          <Loader2 style={{ width: 15, height: 15, color: "#253B80", animation: "spin 0.8s linear infinite" }} />
+                        ) : (
+                          <>
+                            <span style={{ fontSize: 13, fontWeight: 900, color: "#253B80", letterSpacing: "-0.3px" }}>Pay</span>
+                            <span style={{ fontSize: 13, fontWeight: 900, color: "#179BD7", letterSpacing: "-0.3px" }}>Pal</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  )}
                 </div>
-              );
-            })}
-          </div>
-
-          {/* Currency note */}
-          <div style={{
-            textAlign: "center", marginTop: -8,
-            display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-            flexWrap: "wrap",
-          }}>
-            <span style={{
-              display: "inline-flex", alignItems: "center", gap: 6,
-              fontSize: 12, color: "#6b7280", fontWeight: 500,
-              background: "#f9fafb", border: "1px solid #e5e7eb",
-              borderRadius: 8, padding: "5px 12px",
-            }}>
-              💱 Prix en EUR&nbsp;•&nbsp;Converti approximativement en FCFA (1 € ≈ 656 FCFA)
-            </span>
-          </div>
-
-          {/* Comparison table */}
-          <div className="bg-card border border-border rounded-2xl overflow-hidden">
-            <div className="px-6 py-5 border-b border-border">
-              <h3 className="font-semibold text-lg text-foreground">Comparaison détaillée</h3>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-border bg-muted/40">
-                    <th className="text-left px-6 py-3 font-medium text-muted-foreground w-1/2">Fonctionnalité</th>
-                    <th className="text-center px-4 py-3 font-medium text-muted-foreground">Starter</th>
-                    <th className="text-center px-4 py-3 font-semibold text-primary">Pro</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                  {[
-                    { label: "Transactions/mois", starter: "500", pro: "Illimité" },
-                    { label: "Wallets", starter: "3", pro: "Illimité" },
-                    { label: "Accès mobile (PWA)", starter: "✓", pro: "✓" },
-                    { label: "Tableau de bord", starter: "Complet", pro: "Avancé" },
-                    { label: "Rapports mensuels", starter: "✓", pro: "✓" },
-                    { label: "Export PDF", starter: "—", pro: "✓" },
-                    { label: "Import SMS / relevés", starter: "—", pro: "✓" },
-                    { label: "Gestion des stocks", starter: "—", pro: "✓" },
-                    { label: "Support", starter: "E-mail", pro: "Prioritaire" },
-                  ].map((row) => (
-                    <tr key={row.label} className="hover:bg-muted/30 transition-colors">
-                      <td className="px-6 py-3 text-foreground font-medium">{row.label}</td>
-                      <td className="px-4 py-3 text-center text-muted-foreground">{row.starter}</td>
-                      <td className="px-4 py-3 text-center font-semibold text-primary">{row.pro}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          {/* Trust badges */}
-          <div className="flex flex-wrap justify-center gap-6 text-sm text-muted-foreground">
-            <div className="flex items-center gap-2"><ShieldCheck className="w-4 h-4 text-primary" />Paiement sécurisé via Stripe</div>
-            <div className="flex items-center gap-2"><Check className="w-4 h-4 text-primary" />Annulez à tout moment</div>
-            <div className="flex items-center gap-2"><Check className="w-4 h-4 text-primary" />45 jours d'essai gratuit</div>
-          </div>
-
+              </div>
+            );
+          })}
         </div>
+
+        {/* ── Annual savings callout ───────────────────────────────────────── */}
+        {billing === "annual" && (
+          <div style={{
+            borderRadius: 16, padding: "16px 20px", marginBottom: 32,
+            background: "linear-gradient(135deg,#f0fdf4,#dcfce7)",
+            border: "1.5px solid #86efac",
+            display: "flex", alignItems: "center", gap: 14,
+          }}>
+            <span style={{ fontSize: 28, flexShrink: 0 }}>🎉</span>
+            <div>
+              <p style={{ margin: 0, fontWeight: 800, fontSize: 14, color: "#15803d" }}>
+                Économisez l'équivalent de 2 mois avec le plan annuel
+              </p>
+              <p style={{ margin: "3px 0 0", fontSize: 12, color: "#4b7c59" }}>
+                Starter : <strong>33 €/an</strong> au lieu de 60 € · Pro : <strong>73 €/an</strong> au lieu de 132 € — Facturé en une fois, annulable avant renouvellement
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* ── Trust signals ───────────────────────────────────────────────── */}
+        <div style={{
+          display: "flex", flexWrap: "wrap", gap: 10, justifyContent: "center",
+          marginBottom: 40,
+        }}>
+          {[
+            { icon: "🔒", text: "Paiements sécurisés via Stripe" },
+            { icon: "🚫", text: "Aucune carte pour l'essai" },
+            { icon: "✂️", text: "Annulable à tout moment" },
+            { icon: "🔒", text: "Données chiffrées" },
+            { icon: "🌍", text: "Conçu pour l'Afrique" },
+          ].map(({ icon, text }) => (
+            <div key={text} style={{
+              display: "inline-flex", alignItems: "center", gap: 6,
+              background: "#fff", border: "1px solid #e5e7eb", borderRadius: 99,
+              padding: "7px 14px", fontSize: 12, fontWeight: 600, color: "#374151",
+              boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
+            }}>
+              <span>{icon}</span>
+              {text}
+            </div>
+          ))}
+        </div>
+
+        {/* ── Comparison table ─────────────────────────────────────────────── */}
+        <div style={{ background: "#fff", borderRadius: 20, border: "1.5px solid #e5e7eb", overflow: "hidden", marginBottom: 32 }}>
+          <div style={{ padding: "18px 22px", borderBottom: "1px solid #f3f4f6", background: "linear-gradient(135deg,#fff7ed,#fff)" }}>
+            <h3 style={{ fontSize: 17, fontWeight: 800, color: "#111", margin: 0 }}>Comparaison détaillée</h3>
+            <p style={{ margin: "3px 0 0", fontSize: 12, color: "#9ca3af" }}>Essai gratuit → Starter → Pro</p>
+          </div>
+          <div style={{ overflowX: "auto" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+              <thead>
+                <tr style={{ borderBottom: "1px solid #f3f4f6", background: "#fafafa" }}>
+                  <th style={{ textAlign: "left", padding: "12px 20px", color: "#9ca3af", fontWeight: 600, width: "40%" }}>Fonctionnalité</th>
+                  <th style={{ textAlign: "center", padding: "12px 12px", color: "#9ca3af", fontWeight: 600 }}>Essai / Gratuit</th>
+                  <th style={{ textAlign: "center", padding: "12px 12px", color: "#6b7280", fontWeight: 700 }}>Starter</th>
+                  <th style={{ textAlign: "center", padding: "12px 12px", color: "#f97316", fontWeight: 800 }}>Pro ⭐</th>
+                </tr>
+              </thead>
+              <tbody>
+                {COMPARISON.map((row, i) => (
+                  <tr key={row.label} style={{ borderBottom: i < COMPARISON.length - 1 ? "1px solid #f9fafb" : "none", background: i % 2 === 0 ? "#fff" : "#fafafa" }}>
+                    <td style={{ padding: "11px 20px", color: "#374151", fontWeight: 600 }}>{row.label}</td>
+                    <td style={{ padding: "11px 12px", textAlign: "center", color: row.free === "—" ? "#d1d5db" : "#9ca3af" }}>{row.free}</td>
+                    <td style={{ padding: "11px 12px", textAlign: "center", color: row.starter === "—" ? "#d1d5db" : "#374151", fontWeight: 500 }}>{row.starter}</td>
+                    <td style={{ padding: "11px 12px", textAlign: "center", color: row.pro === "—" ? "#d1d5db" : "#f97316", fontWeight: 700 }}>{row.pro}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* ── Final CTA ───────────────────────────────────────────────────── */}
+        {!isSignedIn && isLoaded && (
+          <div style={{ textAlign: "center", padding: "24px 0" }}>
+            <Link
+              href="/sign-up"
+              style={{
+                display: "inline-flex", alignItems: "center", gap: 10,
+                background: "linear-gradient(135deg,#f97316,#ea580c)",
+                color: "#fff", fontWeight: 800, fontSize: 16, padding: "16px 36px",
+                borderRadius: 16, textDecoration: "none",
+                boxShadow: "0 6px 24px rgba(249,115,22,0.40)",
+              }}
+            >
+              🎁 Démarrer 45 jours gratuits — sans carte bancaire
+            </Link>
+            <p style={{ margin: "10px 0 0", fontSize: 12, color: "#9ca3af" }}>
+              Aucun engagement · Annulable à tout moment · Accès immédiat
+            </p>
+          </div>
+        )}
+
       </main>
 
-      <footer className="border-t border-border/50 text-center py-6 px-4 text-xs text-muted-foreground">
-        © {new Date().getFullYear()} MobileMoney Manager — Tous droits réservés.
+      <footer style={{ borderTop: "1px solid #ede9e3", padding: "18px 20px", textAlign: "center", fontSize: 12, color: "#9ca3af" }}>
+        © {new Date().getFullYear()} MobileMoney Manager — Tous droits réservés.{" "}
+        <a href="/confidentialite" style={{ color: "#9ca3af" }}>Confidentialité</a>{" · "}
+        <a href="/conditions" style={{ color: "#9ca3af" }}>Conditions</a>
       </footer>
-
     </div>
   );
 }
