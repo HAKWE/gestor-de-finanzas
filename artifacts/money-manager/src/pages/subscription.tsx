@@ -48,6 +48,17 @@ export default function Subscription() {
 
   useEffect(() => { loadStatus(); }, []);
 
+  useEffect(() => {
+    const onPageShow = (e: PageTransitionEvent) => {
+      if (e.persisted) {
+        setPortalLoading(false);
+        loadStatus();
+      }
+    };
+    window.addEventListener("pageshow", onPageShow);
+    return () => window.removeEventListener("pageshow", onPageShow);
+  }, []);
+
   const handlePortal = async () => {
     setPortalLoading(true);
     setPortalError(null);
@@ -56,6 +67,7 @@ export default function Subscription() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Erreur");
       window.location.href = data.url;
+      setTimeout(() => setPortalLoading(false), 10_000);
     } catch (err: any) {
       setPortalError(err.message);
       setPortalLoading(false);

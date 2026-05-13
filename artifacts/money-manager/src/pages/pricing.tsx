@@ -125,6 +125,14 @@ export default function Pricing() {
       .catch(() => {});
   }, [isSignedIn]);
 
+  useEffect(() => {
+    const onPageShow = (e: PageTransitionEvent) => {
+      if (e.persisted) setLoadingPlan(null);
+    };
+    window.addEventListener("pageshow", onPageShow);
+    return () => window.removeEventListener("pageshow", onPageShow);
+  }, []);
+
   const handlePlanClick = async (planKey: string, paymentMethod: "card" | "paypal" = "card") => {
     if (!isSignedIn) {
       setLocation("/sign-up");
@@ -135,6 +143,8 @@ export default function Pricing() {
     try {
       const url = await startCheckout(planKey, paymentMethod);
       window.location.href = url;
+      // Reset after 10 s — guards against slow navigation or browser back
+      setTimeout(() => setLoadingPlan(null), 10_000);
     } catch (err: any) {
       alert(err.message);
       setLoadingPlan(null);
