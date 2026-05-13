@@ -30,8 +30,8 @@ const PLANS = [
     icon: Zap,
     recommended: false,
     monthlyPrice: 500,
-    annualPrice: 3300,
-    annualMonthlyEq: 275,
+    annualPrice: 3900,
+    annualMonthlyEq: 325,
     launchPrice: 399,
     launchMonths: 3,
     features: [
@@ -179,74 +179,74 @@ export default function Pricing() {
       <main style={{ padding: "32px 16px 64px", maxWidth: 860, margin: "0 auto" }}>
 
         {/* ── Launch promo banner ─────────────────────────────────────────── */}
-        {showLaunchBanner && (
-          <div style={{
-            background: "linear-gradient(135deg, #7c3aed, #5b21b6)",
-            borderRadius: 14, padding: "12px 18px", marginBottom: 24,
-            display: "flex", alignItems: "center", gap: 12,
-            boxShadow: "0 4px 20px rgba(124,58,237,0.30)",
-          }}>
-            <span style={{ fontSize: 22, flexShrink: 0 }}>🚀</span>
+        <div style={{
+          background: "linear-gradient(135deg, #7c3aed, #5b21b6)",
+          borderRadius: 16, marginBottom: 24, overflow: "hidden",
+          boxShadow: "0 6px 28px rgba(124,58,237,0.35)",
+        }}>
+          <div style={{ background: "rgba(251,191,36,0.15)", padding: "5px 18px", display: "flex", alignItems: "center", gap: 8, justifyContent: "center" }}>
+            <span style={{ fontSize: 11, fontWeight: 800, color: "#fde68a", letterSpacing: "0.5px", textTransform: "uppercase" }}>
+              ⏰ Offre limitée — se termine le 31 mai 2026
+            </span>
+          </div>
+          <div style={{ padding: "12px 18px 16px", display: "flex", alignItems: "center", gap: 12 }}>
+            <span style={{ fontSize: 26, flexShrink: 0 }}>🚀</span>
             <div style={{ flex: 1 }}>
-              <p style={{ margin: 0, fontWeight: 800, fontSize: 13, color: "#fff" }}>
-                Offre de lancement — Prix spécial limité dans le temps
+              <p style={{ margin: 0, fontWeight: 900, fontSize: 15, color: "#fff", lineHeight: 1.3 }}>
+                Offre de lancement — 3,99 €/mois au lieu de 5 €
               </p>
-              <p style={{ margin: "2px 0 0", fontSize: 12, color: "#ddd6fe" }}>
-                Starter à <strong style={{ color: "#fbbf24" }}>3,99 €/mois</strong> au lieu de 5 € pour les 3 premiers mois — Rejoignez les premiers entrepreneurs !
+              <p style={{ margin: "4px 0 0", fontSize: 12.5, color: "#ddd6fe", lineHeight: 1.4 }}>
+                Prix spécial pour les 3 premiers mois sur le plan Starter.{" "}
+                <strong style={{ color: "#fbbf24" }}>Profitez-en avant le 31 mai !</strong>
               </p>
             </div>
-            <button onClick={() => setShowLaunchBanner(false)} style={{ background: "rgba(255,255,255,0.15)", border: "none", borderRadius: 8, padding: 6, cursor: "pointer", color: "#ddd6fe", display: "flex", flexShrink: 0 }}>
-              <X style={{ width: 14, height: 14 }} />
-            </button>
           </div>
-        )}
+        </div>
 
         {/* ── Trial countdown box (signed-in trial users) ─────────────────── */}
-        {isInTrial && trialDaysLeft !== null && (
-          <div style={{
-            borderRadius: 18, overflow: "hidden", marginBottom: 28,
-            background: trialUrgency === "critical" ? "#fef2f2" : trialUrgency === "high" ? "#fff7ed" : "#eff6ff",
-            border: `2px solid ${trialUrgency === "critical" ? "#fca5a5" : trialUrgency === "high" ? "#fdba74" : "#93c5fd"}`,
-            boxShadow: trialUrgency === "critical" ? "0 4px 20px rgba(220,38,38,0.15)" : "0 4px 16px rgba(59,130,246,0.12)",
-          }}>
-            <div style={{
-              height: 4,
-              background: trialUrgency === "critical"
-                ? "linear-gradient(90deg,#dc2626,#ef4444)"
-                : trialUrgency === "high"
-                ? "linear-gradient(90deg,#f97316,#fb923c)"
-                : "linear-gradient(90deg,#2563eb,#3b82f6)",
-            }} />
-            <div style={{ padding: "18px 20px" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
-                <Clock style={{ width: 20, height: 20, color: trialUrgency === "critical" ? "#dc2626" : trialUrgency === "high" ? "#f97316" : "#2563eb", flexShrink: 0 }} />
-                <p style={{ margin: 0, fontWeight: 800, fontSize: 15, color: trialUrgency === "critical" ? "#dc2626" : trialUrgency === "high" ? "#c2410c" : "#1d4ed8" }}>
-                  {trialUrgency === "critical"
-                    ? `⏰ Plus que ${trialDaysLeft} jour${trialDaysLeft > 1 ? "s" : ""} d'essai gratuit !`
-                    : `Votre essai gratuit se termine dans ${trialDaysLeft} jours`}
-                </p>
+        {isInTrial && trialDaysLeft !== null && (() => {
+          const bg = trialUrgency === "critical" ? "#fef2f2" : trialUrgency === "high" ? "#fff7ed" : "#eff6ff";
+          const border = trialUrgency === "critical" ? "#fca5a5" : trialUrgency === "high" ? "#fdba74" : "#93c5fd";
+          const grad = trialUrgency === "critical"
+            ? "linear-gradient(90deg,#dc2626,#ef4444)"
+            : trialUrgency === "high"
+            ? "linear-gradient(90deg,#f97316,#fb923c)"
+            : "linear-gradient(90deg,#2563eb,#3b82f6)";
+          const txtColor = trialUrgency === "critical" ? "#dc2626" : trialUrgency === "high" ? "#c2410c" : "#1d4ed8";
+          const pct = Math.max(5, Math.round(((45 - trialDaysLeft) / 45) * 100));
+          return (
+            <div style={{ borderRadius: 20, overflow: "hidden", marginBottom: 28, background: bg, border: `2px solid ${border}`, boxShadow: trialUrgency === "critical" ? "0 6px 28px rgba(220,38,38,0.20)" : "0 4px 18px rgba(59,130,246,0.14)" }}>
+              <div style={{ height: 5, background: grad }} />
+              <div style={{ padding: "20px 22px" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 14 }}>
+                  <div style={{ width: 44, height: 44, borderRadius: 14, background: trialUrgency === "critical" ? "rgba(220,38,38,0.10)" : trialUrgency === "high" ? "rgba(249,115,22,0.10)" : "rgba(37,99,235,0.08)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <Clock style={{ width: 22, height: 22, color: txtColor }} />
+                  </div>
+                  <div>
+                    <p style={{ margin: 0, fontWeight: 900, fontSize: 17, color: txtColor, lineHeight: 1.2 }}>
+                      {trialUrgency === "critical"
+                        ? `⏰ Plus que ${trialDaysLeft} jour${trialDaysLeft > 1 ? "s" : ""} d'essai gratuit !`
+                        : `Votre essai gratuit se termine dans ${trialDaysLeft} jours`}
+                    </p>
+                    <p style={{ margin: "3px 0 0", fontSize: 12, color: "#6b7280", lineHeight: 1.4 }}>
+                      {trialUrgency === "critical"
+                        ? "Abonnez-vous maintenant pour ne pas perdre l'accès à vos données."
+                        : "Profitez de toutes les fonctionnalités premium jusqu'à la fin de l'essai."}
+                    </p>
+                  </div>
+                </div>
+                <div style={{ background: "rgba(0,0,0,0.07)", borderRadius: 99, height: 8, overflow: "hidden", marginBottom: 6 }}>
+                  <div style={{ height: "100%", width: `${pct}%`, borderRadius: 99, background: grad, transition: "width 0.6s ease" }} />
+                </div>
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "#9ca3af" }}>
+                  <span>Début de l'essai</span>
+                  <span style={{ color: txtColor, fontWeight: 700 }}>{trialDaysLeft} jours restants</span>
+                  <span>Fin (45 j)</span>
+                </div>
               </div>
-              <div style={{ background: "rgba(0,0,0,0.06)", borderRadius: 99, height: 7, overflow: "hidden", marginBottom: 12 }}>
-                <div style={{
-                  height: "100%",
-                  width: `${Math.max(5, Math.round(((45 - trialDaysLeft) / 45) * 100))}%`,
-                  borderRadius: 99,
-                  background: trialUrgency === "critical"
-                    ? "linear-gradient(90deg,#dc2626,#ef4444)"
-                    : trialUrgency === "high"
-                    ? "linear-gradient(90deg,#f97316,#fb923c)"
-                    : "linear-gradient(90deg,#2563eb,#3b82f6)",
-                  transition: "width 0.6s ease",
-                }} />
-              </div>
-              <p style={{ margin: "0 0 4px", fontSize: 12, color: "#6b7280" }}>
-                {trialUrgency === "critical"
-                  ? "Abonnez-vous maintenant pour ne pas perdre vos données et continuer sans interruption."
-                  : "Profitez de toutes les fonctionnalités premium pendant votre essai. Choisissez votre plan ci-dessous."}
-              </p>
             </div>
-          </div>
-        )}
+          );
+        })()}
 
         {/* ── Hero ───────────────────────────────────────────────────────────── */}
         <div style={{ textAlign: "center", marginBottom: 32 }}>
@@ -544,7 +544,7 @@ export default function Pricing() {
                 Économisez l'équivalent de 2 mois avec le plan annuel
               </p>
               <p style={{ margin: "3px 0 0", fontSize: 12, color: "#4b7c59" }}>
-                Starter : <strong>33 €/an</strong> au lieu de 60 € · Pro : <strong>73 €/an</strong> au lieu de 132 € — Facturé en une fois, annulable avant renouvellement
+                Starter : <strong>39 €/an</strong> au lieu de 60 € · Pro : <strong>99 €/an</strong> au lieu de 132 € — Facturé en une fois, annulable avant renouvellement
               </p>
             </div>
           </div>

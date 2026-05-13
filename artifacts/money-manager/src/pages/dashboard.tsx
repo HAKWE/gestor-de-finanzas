@@ -265,31 +265,31 @@ function UpgradeBanner({ plan, onDismiss }: { plan: string; onDismiss: () => voi
 // ── Trial countdown banner ────────────────────────────────────────────────────
 function TrialCountdownBanner({ daysLeft, onDismiss }: { daysLeft: number; onDismiss: () => void }) {
   const isUrgent  = daysLeft <= 7;
-  const isWarning = daysLeft <= 25 && daysLeft > 7;
+  const isStrong  = daysLeft <= 10 && daysLeft > 7;
   const pctUsed   = Math.max(4, Math.round(((45 - daysLeft) / 45) * 100));
 
   if (isUrgent) {
     return (
-      <div style={{ borderRadius: 18, overflow: "hidden", background: "#fef2f2", border: "2px solid #fca5a5", boxShadow: "0 4px 20px rgba(220,38,38,0.14)" }}>
-        <div style={{ height: 4, background: "linear-gradient(90deg,#dc2626,#ef4444)" }} />
-        <div style={{ padding: "14px 16px" }}>
-          <div style={{ display: "flex", alignItems: "flex-start", gap: 10, marginBottom: 10 }}>
-            <span style={{ fontSize: 22, flexShrink: 0 }}>⏰</span>
+      <div style={{ borderRadius: 18, overflow: "hidden", background: "#fef2f2", border: "2px solid #fca5a5", boxShadow: "0 6px 24px rgba(220,38,38,0.20)" }}>
+        <div style={{ height: 5, background: "linear-gradient(90deg,#dc2626,#ef4444)" }} />
+        <div style={{ padding: "16px 18px" }}>
+          <div style={{ display: "flex", alignItems: "flex-start", gap: 12, marginBottom: 12 }}>
+            <span style={{ fontSize: 26, flexShrink: 0 }}>⏰</span>
             <div style={{ flex: 1 }}>
-              <p style={{ fontSize: 14, fontWeight: 900, color: "#dc2626", margin: "0 0 2px" }}>
-                Plus que {daysLeft} jour{daysLeft > 1 ? "s" : ""} d'essai !
+              <p style={{ fontSize: 15, fontWeight: 900, color: "#dc2626", margin: "0 0 3px", lineHeight: 1.3 }}>
+                Plus que {daysLeft} jour{daysLeft > 1 ? "s" : ""} d'essai gratuit !
               </p>
-              <p style={{ fontSize: 11, color: "#6b7280", margin: 0 }}>
-                Abonnez-vous maintenant pour garder vos données et continuer sans interruption.
+              <p style={{ fontSize: 12, color: "#6b7280", margin: 0, lineHeight: 1.5 }}>
+                Abonnez-vous maintenant pour garder l'accès à vos données et ne pas perdre votre historique.
               </p>
             </div>
           </div>
-          <div style={{ background: "#fee2e2", borderRadius: 99, height: 6, overflow: "hidden", marginBottom: 12 }}>
+          <div style={{ background: "#fee2e2", borderRadius: 99, height: 7, overflow: "hidden", marginBottom: 14 }}>
             <div style={{ height: "100%", width: `${pctUsed}%`, borderRadius: 99, background: "linear-gradient(90deg,#dc2626,#ef4444)", transition: "width 0.6s" }} />
           </div>
           <Link href="/pricing">
-            <button style={{ width: "100%", background: "linear-gradient(135deg,#dc2626,#b91c1c)", color: "#fff", border: "none", borderRadius: 12, padding: "11px 14px", fontWeight: 800, fontSize: 13, cursor: "pointer", boxShadow: "0 3px 12px rgba(220,38,38,0.30)" }}>
-              🚀 Choisir mon plan — dès 5 €/mois →
+            <button style={{ width: "100%", background: "linear-gradient(135deg,#dc2626,#b91c1c)", color: "#fff", border: "none", borderRadius: 13, padding: "13px 14px", fontWeight: 800, fontSize: 14, cursor: "pointer", boxShadow: "0 4px 14px rgba(220,38,38,0.35)" }}>
+              🚀 Choisir mon plan maintenant — dès 3,99 €/mois →
             </button>
           </Link>
         </div>
@@ -297,19 +297,19 @@ function TrialCountdownBanner({ daysLeft, onDismiss }: { daysLeft: number; onDis
     );
   }
 
-  if (isWarning) {
+  if (isStrong) {
     return (
-      <div style={{ borderRadius: 18, overflow: "hidden", background: "#fff7ed", border: "2px solid #fdba74", boxShadow: "0 4px 16px rgba(249,115,22,0.12)" }}>
+      <div style={{ borderRadius: 18, overflow: "hidden", background: "#fff7ed", border: "2px solid #fdba74", boxShadow: "0 4px 16px rgba(249,115,22,0.16)" }}>
         <div style={{ height: 4, background: "linear-gradient(90deg,#f97316,#fb923c)" }} />
         <div style={{ padding: "14px 16px" }}>
           <div style={{ display: "flex", alignItems: "flex-start", gap: 10, marginBottom: 10 }}>
-            <span style={{ fontSize: 20, flexShrink: 0 }}>📅</span>
+            <span style={{ fontSize: 22, flexShrink: 0 }}>📅</span>
             <div style={{ flex: 1 }}>
-              <p style={{ fontSize: 13, fontWeight: 800, color: "#c2410c", margin: "0 0 2px" }}>
-                Essai gratuit — {daysLeft} jours restants
+              <p style={{ fontSize: 14, fontWeight: 800, color: "#c2410c", margin: "0 0 2px" }}>
+                Essai gratuit — plus que {daysLeft} jours !
               </p>
               <p style={{ fontSize: 11, color: "#6b7280", margin: 0 }}>
-                Continuez avec accès complet. Choisissez votre plan avant la fin.
+                Ne perdez pas l'accès à vos données. Choisissez votre plan maintenant.
               </p>
             </div>
             <button onClick={onDismiss} style={{ background: "none", border: "none", cursor: "pointer", color: "#fdba74", padding: 3, borderRadius: 6, display: "flex", flexShrink: 0 }}>
@@ -320,7 +320,7 @@ function TrialCountdownBanner({ daysLeft, onDismiss }: { daysLeft: number; onDis
             <div style={{ height: "100%", width: `${pctUsed}%`, borderRadius: 99, background: "linear-gradient(90deg,#f97316,#fb923c)", transition: "width 0.6s" }} />
           </div>
           <Link href="/pricing">
-            <button style={{ background: "linear-gradient(135deg,#f97316,#ea580c)", color: "#fff", border: "none", borderRadius: 10, padding: "9px 16px", fontWeight: 700, fontSize: 12, cursor: "pointer", boxShadow: "0 3px 10px rgba(249,115,22,0.30)" }}>
+            <button style={{ background: "linear-gradient(135deg,#f97316,#ea580c)", color: "#fff", border: "none", borderRadius: 10, padding: "10px 18px", fontWeight: 700, fontSize: 13, cursor: "pointer", boxShadow: "0 3px 10px rgba(249,115,22,0.30)" }}>
               Voir les offres →
             </button>
           </Link>
@@ -330,15 +330,15 @@ function TrialCountdownBanner({ daysLeft, onDismiss }: { daysLeft: number; onDis
   }
 
   return (
-    <div style={{ borderRadius: 18, overflow: "hidden", background: "#eff6ff", border: "1.5px solid #bfdbfe", boxShadow: "0 2px 10px rgba(0,0,0,0.06)" }}>
+    <div style={{ borderRadius: 16, overflow: "hidden", background: "#eff6ff", border: "1.5px solid #bfdbfe", boxShadow: "0 2px 8px rgba(0,0,0,0.05)" }}>
       <div style={{ height: 3, background: "linear-gradient(90deg,#2563eb,#3b82f6)" }} />
-      <div style={{ padding: "13px 16px", display: "flex", alignItems: "flex-start", gap: 10 }}>
-        <span style={{ fontSize: 20, flexShrink: 0 }}>🎁</span>
+      <div style={{ padding: "12px 16px", display: "flex", alignItems: "center", gap: 10 }}>
+        <span style={{ fontSize: 18, flexShrink: 0 }}>🎁</span>
         <div style={{ flex: 1 }}>
-          <p style={{ fontSize: 13, fontWeight: 800, color: "#2563eb", margin: "0 0 2px" }}>
-            Essai gratuit — {daysLeft} jours restants
+          <p style={{ fontSize: 12.5, fontWeight: 700, color: "#2563eb", margin: "0 0 1px" }}>
+            Essai gratuit en cours — {daysLeft} jours restants
           </p>
-          <p style={{ fontSize: 11, color: "#6b7280", margin: 0, lineHeight: 1.4 }}>
+          <p style={{ fontSize: 11, color: "#6b7280", margin: 0 }}>
             Accès complet à toutes les fonctionnalités premium.
           </p>
         </div>
@@ -498,8 +498,9 @@ export default function Dashboard() {
   useEffect(() => {
     if (!subStatus) return;
     const daysLeft = subStatus.trialDaysLeft ?? 999;
+    if (daysLeft > 25) { setShowTrialBanner(false); return; }
     if (daysLeft <= 7) { setShowTrialBanner(true); return; }
-    if (daysLeft <= 25) {
+    if (daysLeft <= 10) {
       const key = `trial-banner-day-${Math.floor(Date.now() / (24 * 60 * 60 * 1000))}`;
       if (localStorage.getItem(key)) setShowTrialBanner(false);
     } else {
@@ -510,7 +511,7 @@ export default function Dashboard() {
   const dismissTrialBanner = () => {
     const daysLeft = subStatus?.trialDaysLeft ?? 999;
     if (daysLeft <= 7) return;
-    if (daysLeft <= 25) {
+    if (daysLeft <= 10) {
       localStorage.setItem(`trial-banner-day-${Math.floor(Date.now() / (24 * 60 * 60 * 1000))}`, "1");
     } else {
       sessionStorage.setItem("trial-banner-dismissed", "1");
