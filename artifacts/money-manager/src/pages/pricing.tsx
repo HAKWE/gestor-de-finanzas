@@ -314,8 +314,8 @@ export default function Pricing() {
             <button
               onClick={() => setBilling("monthly")}
               style={{
-                padding: "8px 20px", borderRadius: 10, border: "none", cursor: "pointer",
-                fontWeight: 700, fontSize: 13,
+                padding: "11px 28px", borderRadius: 11, border: "none", cursor: "pointer",
+                fontWeight: 700, fontSize: 15,
                 background: billing === "monthly" ? "#f97316" : "transparent",
                 color: billing === "monthly" ? "#fff" : "#6b7280",
                 transition: "all 0.15s",
@@ -326,8 +326,8 @@ export default function Pricing() {
             <button
               onClick={() => setBilling("annual")}
               style={{
-                padding: "8px 20px", borderRadius: 10, border: "none", cursor: "pointer",
-                fontWeight: 700, fontSize: 13, display: "flex", alignItems: "center", gap: 7,
+                padding: "11px 28px", borderRadius: 11, border: "none", cursor: "pointer",
+                fontWeight: 700, fontSize: 15, display: "flex", alignItems: "center", gap: 7,
                 background: billing === "annual" ? "#f97316" : "transparent",
                 color: billing === "annual" ? "#fff" : "#6b7280",
                 transition: "all 0.15s",
