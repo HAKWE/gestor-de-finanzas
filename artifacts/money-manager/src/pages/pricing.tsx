@@ -347,9 +347,9 @@ export default function Pricing() {
           {PLANS.map((plan) => {
             const PlanIcon = plan.icon;
             const isLoading = (key: string) => loadingPlan === key;
-            const isCurrentPlan = currentPlan === plan.key;
+            const isCurrentPlan = !isInTrial && currentPlan === plan.key;
             const planRank = PLAN_RANK[plan.key] ?? 0;
-            const isDowngrade = userRank > planRank;
+            const isDowngrade = !isInTrial && userRank > planRank;
 
             const displayPrice = billing === "annual" ? plan.annualMonthlyEq : plan.monthlyPrice;
             const originalMonthly = plan.monthlyPrice;
