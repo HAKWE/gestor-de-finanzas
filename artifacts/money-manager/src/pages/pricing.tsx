@@ -79,12 +79,12 @@ const COMPARISON = [
 
 const PLAN_RANK: Record<string, number> = { free: 0, limited_free: 0, trial: 1, starter: 1, pro: 2, paid: 1 };
 
-async function startCheckout(planKey: string, paymentMethod: "card" | "paypal" = "card"): Promise<string> {
+async function startCheckout(planKey: string, paymentMethod: "card" | "paypal" = "card", billing: "monthly" | "annual" = "monthly"): Promise<string> {
   const res = await fetch(`${basePath}/api/stripe/checkout-by-plan`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
-    body: JSON.stringify({ planName: planKey, paymentMethod }),
+    body: JSON.stringify({ planName: planKey, paymentMethod, billing }),
   });
   const data = await res.json();
   if (!res.ok) throw new Error(data.error || "Erreur de paiement");
@@ -138,7 +138,7 @@ export default function Pricing() {
     const key = `${planKey}-${paymentMethod}`;
     setLoadingPlan(key);
     try {
-      const url = await startCheckout(planKey, paymentMethod);
+      const url = await startCheckout(planKey, paymentMethod, billing);
       window.location.href = url;
       // Reset after 10 s — guards against slow navigation or browser back
       setTimeout(() => setLoadingPlan(null), 10_000);

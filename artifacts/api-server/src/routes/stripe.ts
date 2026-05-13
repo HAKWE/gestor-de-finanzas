@@ -165,7 +165,7 @@ router.get("/stripe/products", async (_req, res): Promise<void> => {
 
 router.post("/stripe/checkout-by-plan", requireAuth, async (req: any, res): Promise<void> => {
   const userId = req.userId;
-  const { planName, paymentMethod } = req.body as { planName: string; paymentMethod?: string };
+  const { planName, paymentMethod, billing } = req.body as { planName: string; paymentMethod?: string; billing?: string };
 
   if (!planName) {
     res.status(400).json({ error: "planName requis (starter | pro)" });
@@ -198,12 +198,17 @@ router.post("/stripe/checkout-by-plan", requireAuth, async (req: any, res): Prom
       active: true,
       type: "recurring",
       currency: "eur",
-      limit: 5,
+      limit: 10,
     });
 
     console.log(`[checkout-by-plan] Found ${prices.data.length} EUR prices for product`);
 
-    const price = prices.data.sort(
+    const interval = billing === "annual" ? "year" : "month";
+    const intervalPrices = prices.data.filter(
+      (p) => p.recurring?.interval === interval
+    );
+    const candidatePrices = intervalPrices.length > 0 ? intervalPrices : prices.data;
+    const price = candidatePrices.sort(
       (a, b) => (a.unit_amount ?? 0) - (b.unit_amount ?? 0)
     )[0];
 
