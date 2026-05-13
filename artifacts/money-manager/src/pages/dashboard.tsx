@@ -277,10 +277,10 @@ function TrialCountdownBanner({ daysLeft, onDismiss }: { daysLeft: number; onDis
             <span style={{ fontSize: 26, flexShrink: 0 }}>⏰</span>
             <div style={{ flex: 1 }}>
               <p style={{ fontSize: 15, fontWeight: 900, color: "#dc2626", margin: "0 0 3px", lineHeight: 1.3 }}>
-                Plus que {daysLeft} jour{daysLeft > 1 ? "s" : ""} d'essai gratuit !
+                ⚠️ Action requise — plus que {daysLeft} jour{daysLeft > 1 ? "s" : ""} !
               </p>
               <p style={{ fontSize: 12, color: "#6b7280", margin: 0, lineHeight: 1.5 }}>
-                Abonnez-vous maintenant pour garder l'accès à vos données et ne pas perdre votre historique.
+                Passez à un plan payant maintenant pour conserver l'accès complet à toutes vos données et fonctionnalités.
               </p>
             </div>
           </div>
@@ -306,10 +306,10 @@ function TrialCountdownBanner({ daysLeft, onDismiss }: { daysLeft: number; onDis
             <span style={{ fontSize: 22, flexShrink: 0 }}>📅</span>
             <div style={{ flex: 1 }}>
               <p style={{ fontSize: 14, fontWeight: 800, color: "#c2410c", margin: "0 0 2px" }}>
-                Essai gratuit — plus que {daysLeft} jours !
+                Votre essai gratuit se termine bientôt — plus que {daysLeft} jours !
               </p>
               <p style={{ fontSize: 11, color: "#6b7280", margin: 0 }}>
-                Ne perdez pas l'accès à vos données. Choisissez votre plan maintenant.
+                Passez au Starter à <strong>3,99 €/mois</strong> et gardez l'accès complet à vos données.
               </p>
             </div>
             <button onClick={onDismiss} style={{ background: "none", border: "none", cursor: "pointer", color: "#fdba74", padding: 3, borderRadius: 6, display: "flex", flexShrink: 0 }}>

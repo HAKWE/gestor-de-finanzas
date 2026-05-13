@@ -49,8 +49,8 @@ const PLANS = [
     icon: Star,
     recommended: true,
     monthlyPrice: 1100,
-    annualPrice: 7300,
-    annualMonthlyEq: 608,
+    annualPrice: 7900,
+    annualMonthlyEq: 658,
     launchPrice: null,
     launchMonths: 0,
     features: [
@@ -91,11 +91,11 @@ async function startCheckout(planKey: string, paymentMethod: "card" | "paypal" =
   return data.url;
 }
 
-function PaypalLogo() {
+function PaypalLogo({ size = 22 }: { size?: number }) {
   return (
-    <svg width="52" height="14" viewBox="0 0 52 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <text x="0" y="11" fontFamily="Arial, sans-serif" fontWeight="bold" fontSize="12" fill="#253B80">Pay</text>
-      <text x="18" y="11" fontFamily="Arial, sans-serif" fontWeight="bold" fontSize="12" fill="#179BD7">Pal</text>
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M19.5 7.5c.3 2.1-.9 4.5-3 5.4-.6.3-1.2.4-1.9.4h-2.4l-.6 3.9H9.4l2.1-13.2h4.8c1.5 0 2.7.6 3.2 3.5z" fill="#253B80"/>
+      <path d="M8.1 7.5c.3 2.1-.9 4.5-3 5.4-.6.3-1.2.4-1.9.4H.8L0 17.2h-2.2l2.1-13.2H4.7c1.5 0 2.7.6 3.4 3.5z" fill="#179BD7" transform="translate(7.5 0)"/>
     </svg>
   );
 }
@@ -193,11 +193,11 @@ export default function Pricing() {
             <span style={{ fontSize: 26, flexShrink: 0 }}>🚀</span>
             <div style={{ flex: 1 }}>
               <p style={{ margin: 0, fontWeight: 900, fontSize: 15, color: "#fff", lineHeight: 1.3 }}>
-                Offre de lancement — 3,99 €/mois au lieu de 5 €
+                OFFRE DE LANCEMENT LIMITÉE — Starter à 3,99 €/mois pendant 3 mois
               </p>
               <p style={{ margin: "4px 0 0", fontSize: 12.5, color: "#ddd6fe", lineHeight: 1.4 }}>
-                Prix spécial pour les 3 premiers mois sur le plan Starter.{" "}
-                <strong style={{ color: "#fbbf24" }}>Profitez-en avant le 31 mai !</strong>
+                Au lieu de 5 €/mois.{" "}
+                <strong style={{ color: "#fbbf24" }}>Offre se termine le 31 mai 2026 — ne manquez pas cette opportunité !</strong>
               </p>
             </div>
           </div>
@@ -329,7 +329,7 @@ export default function Pricing() {
                 color: billing === "annual" ? "#fff" : "#16a34a",
                 fontSize: 10, fontWeight: 800, padding: "2px 7px", borderRadius: 99,
               }}>
-                2 mois offerts
+                Jusqu'à 5 mois offerts
               </span>
             </button>
           </div>
@@ -441,7 +441,7 @@ export default function Pricing() {
                           {eur(annualTotal)} facturé annuellement
                         </span>
                         <span style={{ background: "#dcfce7", color: "#15803d", fontSize: 10, fontWeight: 800, padding: "2px 7px", borderRadius: 99 }}>
-                          2 mois offerts
+                          {plan.key === "pro" ? "5 mois offerts" : "2 mois offerts"}
                         </span>
                       </div>
                     ) : (
@@ -501,24 +501,27 @@ export default function Pricing() {
                         disabled={!!loadingPlan || !isLoaded}
                         onClick={() => handlePlanClick(plan.key, "paypal")}
                         style={{
-                          width: "100%", height: 46, borderRadius: 13,
+                          width: "100%", height: 48, borderRadius: 13,
                           background: isLoading(`${plan.key}-paypal`)
                             ? "#f0c430"
                             : "linear-gradient(135deg,#ffd140,#ffca2c)",
-                          border: "none",
+                          border: "2px solid rgba(0,0,0,0.06)",
                           cursor: !!loadingPlan ? "wait" : "pointer",
-                          display: "flex", alignItems: "center", justifyContent: "center", gap: 9,
-                          boxShadow: "0 3px 10px rgba(255,196,44,0.40)",
+                          display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+                          boxShadow: "0 4px 14px rgba(255,196,44,0.45)",
                           opacity: !!loadingPlan && loadingPlan !== `${plan.key}-paypal` ? 0.6 : 1,
                           transition: "opacity 0.15s",
                         }}
                       >
                         {isLoading(`${plan.key}-paypal`) ? (
-                          <Loader2 style={{ width: 15, height: 15, color: "#253B80", animation: "spin 0.8s linear infinite" }} />
+                          <Loader2 style={{ width: 16, height: 16, color: "#253B80", animation: "spin 0.8s linear infinite" }} />
                         ) : (
                           <>
-                            <span style={{ fontSize: 13, fontWeight: 900, color: "#253B80", letterSpacing: "-0.3px" }}>Pay</span>
-                            <span style={{ fontSize: 13, fontWeight: 900, color: "#179BD7", letterSpacing: "-0.3px" }}>Pal</span>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                              <path d="M7.5 21.5h2.6l.4-2.6h1.7c2.8 0 4.9-1.4 5.5-4.3.5-2.5-.8-4-3.1-4.1H9.6L7.5 21.5z" fill="#179BD7"/>
+                              <path d="M9.9 10.5h4.5c.6 0 1.1.1 1.5.2-.4-2.8-2.3-3.7-5-3.7H7.2L5 18.9h2.9l.7-4.6.9-5.9 1 2.1z" fill="#253B80"/>
+                            </svg>
+                            <span style={{ fontSize: 14, fontWeight: 800, color: "#253B80", letterSpacing: "-0.2px" }}>Payer avec PayPal</span>
                           </>
                         )}
                       </button>
@@ -528,6 +531,21 @@ export default function Pricing() {
               </div>
             );
           })}
+        </div>
+
+        {/* ── Social proof ─────────────────────────────────────────────────── */}
+        <div style={{ textAlign: "center", marginBottom: 28 }}>
+          <div style={{
+            display: "inline-flex", alignItems: "center", gap: 8,
+            background: "#fff", border: "1.5px solid #e5e7eb",
+            borderRadius: 99, padding: "10px 20px",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
+          }}>
+            <span style={{ fontSize: 18 }}>👥</span>
+            <span style={{ fontSize: 13, fontWeight: 700, color: "#374151" }}>
+              Rejoignez <strong style={{ color: "#f97316" }}>+500 entrepreneurs</strong> qui gèrent déjà leur argent mobile avec nous
+            </span>
+          </div>
         </div>
 
         {/* ── Annual savings callout ───────────────────────────────────────── */}
@@ -541,10 +559,10 @@ export default function Pricing() {
             <span style={{ fontSize: 28, flexShrink: 0 }}>🎉</span>
             <div>
               <p style={{ margin: 0, fontWeight: 800, fontSize: 14, color: "#15803d" }}>
-                Économisez l'équivalent de 2 mois avec le plan annuel
+                Payez annuellement et économisez jusqu'à 5 mois !
               </p>
               <p style={{ margin: "3px 0 0", fontSize: 12, color: "#4b7c59" }}>
-                Starter : <strong>39 €/an</strong> au lieu de 60 € · Pro : <strong>99 €/an</strong> au lieu de 132 € — Facturé en une fois, annulable avant renouvellement
+                Starter : <strong>39 €/an</strong> au lieu de 60 € (économie 21 €) · Pro : <strong>79 €/an</strong> au lieu de 132 € (≈ 5 mois offerts) — Annulable avant renouvellement
               </p>
             </div>
           </div>
