@@ -22,7 +22,7 @@ function requireAuth(req: any, res: any, next: any) {
   next();
 }
 
-router.get("/api/referral/me", requireAuth, async (req: any, res): Promise<void> => {
+router.get("/referral/me", requireAuth, async (req: any, res): Promise<void> => {
   const userId: string = req.userId;
   try {
     let codeRow = await db
@@ -70,7 +70,7 @@ router.get("/api/referral/me", requireAuth, async (req: any, res): Promise<void>
   }
 });
 
-router.post("/api/referral/claim", requireAuth, async (req: any, res): Promise<void> => {
+router.post("/referral/claim", requireAuth, async (req: any, res): Promise<void> => {
   const userId: string = req.userId;
   const { code } = req.body as { code?: string };
 
