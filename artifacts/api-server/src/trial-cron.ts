@@ -3,7 +3,7 @@ import { sql, eq, isNotNull } from "drizzle-orm";
 import { logger } from "./lib/logger";
 
 const TRIAL_DAYS = 45;
-const FROM = "MobileMoney Manager <noreply@mobilemoneymanager.africa>";
+const FROM = "MobileMoney Manager <noreply@mail.mobilemoneymanager.africa>";
 const BASE_URL = "https://mobilemoneymanager.africa";
 
 // ── Shared email chrome ──────────────────────────────────────────────────────
