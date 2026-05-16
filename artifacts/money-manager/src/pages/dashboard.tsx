@@ -8,6 +8,7 @@ import {
   Zap, Crown, X, Plus, Receipt,
   TrendingUp, TrendingDown, BarChart2, Download,
 } from "lucide-react";
+import { ReferralCard } from "../components/referral-card";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid,
   Tooltip as RechartsTooltip, ResponsiveContainer,
@@ -887,6 +888,9 @@ export default function Dashboard() {
             </>
           )}
         </div>
+
+        {/* ── Referral / Parrainage card ────────────────────────────────────── */}
+        <ReferralCard />
 
         {/* ── Pro active banner ─────────────────────────────────────────────── */}
         {isPaid && !isInTrial && (

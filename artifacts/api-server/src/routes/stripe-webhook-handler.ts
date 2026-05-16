@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import Stripe from "stripe";
-import { eq, sql } from "drizzle-orm";
-import { db, userProfilesTable } from "@workspace/db";
+import { eq, sql, and } from "drizzle-orm";
+import { db, userProfilesTable, referralsTable } from "@workspace/db";
 import { logger } from "../lib/logger";
 import { getUncachableStripeClient } from "../stripeClient";
 
@@ -151,6 +151,76 @@ export async function handleStripeWebhook(req: Request, res: Response): Promise<
               subscription.status,
               periodEnd
             );
+          }
+
+          // ── Referral reward: give 1 free month to both parties ────────────
+          if (userId) {
+            try {
+              const pendingReferral = await db
+                .select()
+                .from(referralsTable)
+                .where(and(
+                  eq(referralsTable.referredUserId, userId),
+                  eq(referralsTable.status, "pending")
+                ))
+                .limit(1)
+                .then((r) => r[0]);
+
+              if (pendingReferral) {
+                const THIRTY_DAYS = 30 * 24 * 60 * 60;
+                const subPeriodEnd: number = (subscription as any).current_period_end ?? Math.floor(Date.now() / 1000) + THIRTY_DAYS;
+
+                // Extend referred user's subscription by 30 days
+                await stripe.subscriptions.update(subscription.id, {
+                  trial_end: subPeriodEnd + THIRTY_DAYS,
+                  proration_behavior: "none",
+                });
+                logger.info(
+                  { subscriptionId: subscription.id, userId },
+                  "[referral] Extended referred user subscription by 30 days"
+                );
+
+                // Extend referrer's subscription by 30 days
+                const referrerProfile = await db
+                  .select()
+                  .from(userProfilesTable)
+                  .where(eq(userProfilesTable.userId, pendingReferral.referrerUserId))
+                  .limit(1)
+                  .then((r) => r[0]);
+
+                if (referrerProfile?.stripeSubscriptionId) {
+                  const referrerSub = await stripe.subscriptions.retrieve(
+                    referrerProfile.stripeSubscriptionId
+                  );
+                  const referrerPeriodEnd: number =
+                    (referrerSub as any).current_period_end
+                    ?? (referrerSub as any).trial_end
+                    ?? Math.floor(Date.now() / 1000);
+                  const newTrialEnd = Math.max(referrerPeriodEnd, Math.floor(Date.now() / 1000)) + THIRTY_DAYS;
+                  await stripe.subscriptions.update(referrerProfile.stripeSubscriptionId, {
+                    trial_end: newTrialEnd,
+                    proration_behavior: "none",
+                  });
+                  logger.info(
+                    { subscriptionId: referrerProfile.stripeSubscriptionId, referrerUserId: pendingReferral.referrerUserId },
+                    "[referral] Extended referrer subscription by 30 days"
+                  );
+                }
+
+                // Mark referral as rewarded
+                await db
+                  .update(referralsTable)
+                  .set({ status: "rewarded", rewardedAt: new Date() })
+                  .where(eq(referralsTable.id, pendingReferral.id));
+
+                logger.info(
+                  { referralId: pendingReferral.id, referrerUserId: pendingReferral.referrerUserId, referredUserId: userId },
+                  "[referral] Referral rewarded — 1 month free granted to both parties"
+                );
+              }
+            } catch (referralErr) {
+              logger.error({ err: referralErr, userId }, "[referral] Failed to process referral reward");
+            }
           }
         }
         break;

@@ -1,168 +1,12 @@
-import { useState } from "react";
-import { useUser } from "@clerk/react";
 import { useLanguage } from "../lib/language-context";
 import { Layout } from "../components/layout";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
 import { usePwaInstall } from "../hooks/use-pwa-install";
-import { Smartphone, CheckCircle2, Gift, Copy, Check, ExternalLink } from "lucide-react";
+import { Smartphone, CheckCircle2 } from "lucide-react";
+import { ReferralCard } from "../components/referral-card";
 
 const ORANGE = "#f97316";
-
-function ReferralCard({ language }: { language: string }) {
-  const { user } = useUser();
-  const [copied, setCopied] = useState(false);
-  const fr = language !== "en";
-
-  const referralCode = user?.id?.slice(-8).toUpperCase() ?? "--------";
-  const referralLink = `https://mobilemoneymanager.africa?ref=${referralCode}`;
-
-  const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(referralLink);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2500);
-    } catch {
-      const ta = document.createElement("textarea");
-      ta.value = referralLink;
-      document.body.appendChild(ta);
-      ta.select();
-      document.execCommand("copy");
-      document.body.removeChild(ta);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2500);
-    }
-  };
-
-  const handleShare = () => {
-    if (navigator.share) {
-      navigator.share({
-        title: "MobileMoney Manager",
-        text: fr
-          ? "Gérez facilement vos finances mobile en Afrique avec MobileMoney Manager. Rejoignez-moi !"
-          : "Easily manage your mobile finances in Africa with MobileMoney Manager. Join me!",
-        url: referralLink,
-      });
-    } else {
-      handleCopy();
-    }
-  };
-
-  return (
-    <div style={{
-      borderRadius: 18, overflow: "hidden",
-      border: "1px solid #fed7aa",
-      background: "linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%)",
-    }}>
-      <div style={{ padding: "20px 22px", borderBottom: "1px solid #fed7aa" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <div style={{
-            width: 42, height: 42, borderRadius: 12,
-            background: ORANGE, display: "flex", alignItems: "center", justifyContent: "center",
-            flexShrink: 0,
-          }}>
-            <Gift style={{ width: 20, height: 20, color: "#fff" }} />
-          </div>
-          <div>
-            <div style={{ fontWeight: 800, fontSize: 16, color: "#111" }}>
-              {fr ? "Parrainer un ami" : "Refer a friend"}
-            </div>
-            <div style={{ fontSize: 13, color: "#6b7280", marginTop: 2 }}>
-              {fr
-                ? "1 mois Pro gratuit — pour vous ET votre ami parrainé."
-                : "1 free Pro month — for you AND your referred friend."}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div style={{ padding: "20px 22px", display: "flex", flexDirection: "column", gap: 16 }}>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-          {[
-            {
-              step: "1",
-              icon: "🔗",
-              title: fr ? "Partagez votre lien" : "Share your link",
-              desc: fr ? "Envoyez-le à vos amis entrepreneurs." : "Send it to your entrepreneur friends.",
-            },
-            {
-              step: "2",
-              icon: "🎁",
-              title: fr ? "Ils s'abonnent" : "They subscribe",
-              desc: fr ? "Ils bénéficient aussi d'1 mois Pro offert." : "They also get 1 free Pro month.",
-            },
-          ].map(({ step, icon, title, desc }) => (
-            <div key={step} style={{
-              background: "#fff", borderRadius: 12, padding: "14px 16px",
-              border: "1px solid #f0ede9",
-            }}>
-              <div style={{ fontSize: 22, marginBottom: 8 }}>{icon}</div>
-              <div style={{ fontWeight: 700, fontSize: 13, color: "#111", marginBottom: 4 }}>{title}</div>
-              <div style={{ fontSize: 12, color: "#6b7280", lineHeight: 1.5 }}>{desc}</div>
-            </div>
-          ))}
-        </div>
-
-        <div style={{
-          background: "#fff", border: "1px solid #fed7aa", borderRadius: 12, padding: "10px 14px",
-          display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, flexWrap: "wrap",
-        }}>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 10, fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 2 }}>
-              {fr ? "Votre lien de parrainage" : "Your referral link"}
-            </div>
-            <div style={{ fontSize: 12, color: "#374151", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-              {referralLink}
-            </div>
-          </div>
-          <button
-            onClick={handleCopy}
-            style={{
-              background: copied ? "#22c55e" : ORANGE,
-              color: "#fff", border: "none", borderRadius: 8,
-              padding: "7px 14px", fontWeight: 700, fontSize: 12,
-              cursor: "pointer", display: "flex", alignItems: "center", gap: 5,
-              flexShrink: 0, transition: "background 0.15s",
-            }}
-          >
-            {copied
-              ? <><Check style={{ width: 13, height: 13 }} /> {fr ? "Copié !" : "Copied!"}</>
-              : <><Copy style={{ width: 13, height: 13 }} /> {fr ? "Copier" : "Copy"}</>
-            }
-          </button>
-        </div>
-
-        <button
-          onClick={handleShare}
-          style={{
-            background: ORANGE, color: "#fff", border: "none", borderRadius: 12,
-            padding: "12px 20px", fontWeight: 700, fontSize: 14, cursor: "pointer",
-            display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-            boxShadow: "0 2px 10px rgba(249,115,22,0.28)",
-          }}
-        >
-          <ExternalLink style={{ width: 15, height: 15 }} />
-          {fr ? "Partager avec un ami" : "Share with a friend"}
-        </button>
-
-        <div style={{
-          background: "#fff", borderRadius: 10, padding: "10px 14px",
-          border: "1px solid #f0ede9",
-          display: "flex", alignItems: "flex-start", gap: 10,
-        }}>
-          <span style={{ fontSize: 16, flexShrink: 0 }}>⚡</span>
-          <p style={{ fontSize: 12, color: "#6b7280", margin: 0, lineHeight: 1.5 }}>
-            {fr
-              ? "Dès qu'un ami s'abonne via votre lien, vous recevez tous les deux 1 mois de Pro offert automatiquement."
-              : "Once a friend subscribes via your link, you both automatically receive 1 free Pro month."}
-          </p>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 export default function Settings() {
   const { t, language, setLanguage } = useLanguage();
@@ -197,7 +41,7 @@ export default function Settings() {
               {fr ? "Langue de l'application" : "App language"}
             </Label>
             <div style={{ marginTop: 8 }}>
-              <Select value={language} onValueChange={(val: "fr"|"en") => setLanguage(val)}>
+              <Select value={language} onValueChange={(val: "fr" | "en") => setLanguage(val)}>
                 <SelectTrigger>
                   <SelectValue placeholder={fr ? "Choisir la langue" : "Choose language"} />
                 </SelectTrigger>
@@ -211,7 +55,7 @@ export default function Settings() {
         </div>
 
         {/* Referral */}
-        <ReferralCard language={language} />
+        <ReferralCard />
 
         {/* PWA install */}
         <div style={{

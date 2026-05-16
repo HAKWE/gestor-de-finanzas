@@ -255,6 +255,30 @@ export default function Pricing() {
           );
         })()}
 
+        {/* ── Referral banner ──────────────────────────────────────────────── */}
+        <div style={{
+          display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
+          background: "linear-gradient(135deg, #fff7ed, #fef3c7)",
+          border: "1.5px solid #fed7aa", borderRadius: 14,
+          padding: "13px 20px", marginBottom: 24,
+          flexWrap: "wrap",
+        }}>
+          <span style={{ fontSize: 20 }}>🎁</span>
+          <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: "#92400e" }}>
+            Programme de parrainage —{" "}
+            <span style={{ color: "#c2410c" }}>Invitez un ami et gagnez tous les deux 1 mois gratuit</span>
+          </p>
+          <a href="/dashboard" style={{
+            marginLeft: "auto", flexShrink: 0,
+            background: "#f97316", color: "#fff",
+            borderRadius: 99, padding: "6px 16px",
+            fontSize: 13, fontWeight: 700, textDecoration: "none",
+            whiteSpace: "nowrap",
+          }}>
+            Mon lien →
+          </a>
+        </div>
+
         {/* ── Hero ───────────────────────────────────────────────────────────── */}
         <div style={{ textAlign: "center", marginBottom: 32 }}>
           <div style={{

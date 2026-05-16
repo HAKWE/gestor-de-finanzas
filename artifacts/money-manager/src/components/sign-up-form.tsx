@@ -131,6 +131,18 @@ export function SignUpForm({ showTitle = false, fullForm = false, simpleForm = f
         await clerk.setActive({ session: result.createdSessionId });
         if (form.firstName.trim()) sessionStorage.setItem("pendingFirstName", form.firstName.trim());
         if (form.lastName.trim()) sessionStorage.setItem("pendingLastName", form.lastName.trim());
+        const refCode = localStorage.getItem("referralCode");
+        if (refCode) {
+          try {
+            await fetch(`${basePath}/api/referral/claim`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              credentials: "include",
+              body: JSON.stringify({ code: refCode }),
+            });
+          } catch (_) {}
+          localStorage.removeItem("referralCode");
+        }
         setLocation(`${basePath}/onboarding`);
       } else {
         setCodeError("Vérification incomplète. Veuillez réessayer.");
