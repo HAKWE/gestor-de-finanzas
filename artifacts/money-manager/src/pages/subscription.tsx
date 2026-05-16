@@ -11,6 +11,120 @@ const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 const ORANGE = "#f97316";
 const RED = "#ef4444";
 
+function TrialSection({ sub }: { sub: SubStatus }) {
+  const dLeft = sub.trialDaysLeft ?? 0;
+  const pctUsed = Math.max(4, Math.round(((45 - dLeft) / 45) * 100));
+  const isCritical = dLeft <= 7;
+  const isStrong   = dLeft <= 9 && dLeft > 7;
+  const cardBg     = isCritical ? "#fef2f2" : isStrong ? "#fff7ed" : "#eff6ff";
+  const cardBorder = isCritical ? "#fca5a5" : isStrong ? "#fdba74" : "#bfdbfe";
+  const barGrad    = isCritical ? "linear-gradient(90deg,#dc2626,#ef4444)" : isStrong ? "linear-gradient(90deg,#f97316,#fb923c)" : "linear-gradient(90deg,#2563eb,#3b82f6)";
+  const barBg      = isCritical ? "#fee2e2" : isStrong ? "#fed7aa" : "#dbeafe";
+  const labelColor = isCritical ? "#b91c1c" : isStrong ? "#c2410c" : "#1d4ed8";
+  const headColor  = isCritical ? "#991b1b" : isStrong ? "#7c2d12" : "#1e3a8a";
+  const badgeColor = isCritical ? "#dc2626" : isStrong ? "#ea580c" : "#1d4ed8";
+  const badgeBg    = isCritical ? "rgba(220,38,38,0.12)" : isStrong ? "rgba(249,115,22,0.12)" : "rgba(37,99,235,0.15)";
+  const icon       = isCritical ? "⏰" : isStrong ? "📅" : "🎁";
+  const statusLabel = isCritical ? "Action requise" : isStrong ? "Essai bientôt terminé" : "Essai gratuit en cours";
+  const ctaLabel   = isCritical ? "Upgrade maintenant →" : isStrong ? "Choisir mon plan →" : "Voir les offres →";
+  const ctaBg      = isCritical ? "linear-gradient(135deg,#dc2626,#b91c1c)" : ORANGE;
+  const ctaShadow  = isCritical ? "0 4px 14px rgba(220,38,38,0.35)" : "0 2px 12px rgba(249,115,22,0.30)";
+  const headerBg   = isCritical ? "linear-gradient(135deg,#7f1d1d,#b91c1c)" : "linear-gradient(135deg,#431407,#9a3412)";
+  const headerTitle = isCritical ? "Ne perdez pas vos données !" : isStrong ? "Continuez sans interruption" : "Continuez après votre essai";
+  const headerSub  = isCritical ? "Passez à Starter maintenant — dès 3,99 €/mois" : "À partir de 3,99 €/mois · Annulable à tout moment";
+
+  return (
+    <>
+      <div style={{ borderRadius: 20, overflow: "hidden", border: `2px solid ${cardBorder}`, background: cardBg, boxShadow: isCritical ? "0 6px 28px rgba(220,38,38,0.16)" : "0 4px 20px rgba(37,99,235,0.10)" }}>
+        <div style={{ height: isCritical ? 5 : 4, background: barGrad }} />
+        <div style={{ padding: "24px 24px 20px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 16 }}>
+            <div style={{ width: 52, height: 52, borderRadius: 16, background: isCritical ? "rgba(220,38,38,0.10)" : isStrong ? "rgba(249,115,22,0.10)" : "rgba(37,99,235,0.12)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <span style={{ fontSize: 26 }}>{icon}</span>
+            </div>
+            <div>
+              <p style={{ color: labelColor, fontSize: 12, fontWeight: 700, margin: 0, textTransform: "uppercase", letterSpacing: "0.08em" }}>{statusLabel}</p>
+              <p style={{ color: headColor, fontSize: 20, fontWeight: 800, margin: "2px 0 0" }}>
+                {dLeft > 0
+                  ? `${dLeft} jour${dLeft > 1 ? "s" : ""} restant${dLeft > 1 ? "s" : ""}`
+                  : "Accès complet"}
+              </p>
+            </div>
+            <span style={{ marginLeft: "auto", background: badgeBg, border: `1.5px solid ${cardBorder}`, borderRadius: 999, padding: "4px 12px", fontSize: 12, fontWeight: 700, color: badgeColor }}>
+              {isCritical ? "⚠ Urgent" : "✓ Actif"}
+            </span>
+          </div>
+
+          <div style={{ background: barBg, borderRadius: 99, height: 7, overflow: "hidden", marginBottom: 10 }}>
+            <div style={{ height: "100%", width: `${pctUsed}%`, borderRadius: 99, background: barGrad }} />
+          </div>
+          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16 }}>
+            <span style={{ fontSize: 11, color: "#9ca3af", fontWeight: 600 }}>Début de l'essai</span>
+            <span style={{ fontSize: 11, fontWeight: 700, color: labelColor }}>{pctUsed}% écoulé</span>
+            <span style={{ fontSize: 11, color: "#9ca3af", fontWeight: 600 }}>Fin</span>
+          </div>
+
+          {sub.trialEndsAt && (
+            <div style={{ background: isCritical ? "rgba(220,38,38,0.08)" : isStrong ? "rgba(249,115,22,0.08)" : "rgba(37,99,235,0.08)", borderRadius: 12, padding: "12px 16px", display: "flex", alignItems: "center", gap: 10 }}>
+              <CalendarDays style={{ width: 16, height: 16, color: badgeColor, flexShrink: 0 }} />
+              <p style={{ color: headColor, fontSize: 13, margin: 0, lineHeight: 1.5 }}>
+                {isCritical
+                  ? <><strong style={{ color: badgeColor }}>⚠ Expire le {formatDate(sub.trialEndsAt)}</strong> — Passez à un plan payant pour conserver vos données.</>
+                  : <>Essai se termine le <strong style={{ color: badgeColor }}>{formatDate(sub.trialEndsAt)}</strong></>
+                }
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {!isCritical && (
+        <div style={{ border: "1.5px solid #e5e7eb", borderRadius: 14, padding: "16px 18px", background: "#fafafa" }}>
+          <p style={{ fontSize: 13, fontWeight: 700, color: "#374151", margin: "0 0 10px" }}>Accès complet pendant votre essai :</p>
+          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            {["Transactions illimitées", "Rapports & graphiques avancés", "Export PDF", "Import SMS & relevés"].map(f => (
+              <div key={f} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <Check style={{ width: 13, height: 13, color: "#2563eb", flexShrink: 0 }} />
+                <span style={{ fontSize: 13, color: "#374151" }}>{f}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div style={{ borderRadius: 20, overflow: "hidden", border: isCritical ? "2px solid #fca5a5" : "1.5px solid #fed7aa", boxShadow: isCritical ? "0 6px 28px rgba(220,38,38,0.16)" : "0 4px 20px rgba(249,115,22,0.10)" }}>
+        <div style={{ background: headerBg, padding: "18px 22px", display: "flex", alignItems: "center", gap: 12 }}>
+          <div style={{ width: 40, height: 40, borderRadius: 12, background: "rgba(255,255,255,0.15)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <Crown style={{ width: 20, height: 20, color: "#fed7aa" }} />
+          </div>
+          <div style={{ flex: 1 }}>
+            <p style={{ fontWeight: 800, fontSize: 15, color: "#fff7ed", margin: 0 }}>{headerTitle}</p>
+            <p style={{ fontSize: 12, color: "#fdba74", margin: "2px 0 0" }}>{headerSub}</p>
+          </div>
+        </div>
+        <div style={{ background: "#fff", padding: "16px 22px" }}>
+          {isCritical && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 14 }}>
+              {["Accès complet à tout votre historique", "Transactions illimitées", "Export PDF & rapports avancés"].map(f => (
+                <div key={f} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <Check style={{ width: 13, height: 13, color: RED, flexShrink: 0 }} />
+                  <span style={{ fontSize: 13, color: "#374151" }}>{f}</span>
+                </div>
+              ))}
+            </div>
+          )}
+          <Link href="/pricing">
+            <button style={{ width: "100%", background: ctaBg, color: "#fff", border: "none", borderRadius: 12, padding: "13px 24px", fontWeight: 800, fontSize: 14, cursor: "pointer", boxShadow: ctaShadow, display: "flex", alignItems: "center", justifyContent: "center", gap: 7 }}>
+              <Zap style={{ width: 16, height: 16 }} />
+              {ctaLabel}
+            </button>
+          </Link>
+        </div>
+      </div>
+    </>
+  );
+}
+
 interface SubStatus {
   plan: "free" | "starter" | "pro" | "paid";
   planLabel: string;
@@ -467,70 +581,7 @@ export default function Subscription() {
             )}
           </>
         ) : sub?.effectivePlan === "trial" ? (
-          /* Trial active */
-          <>
-            <div style={{ borderRadius: 20, overflow: "hidden", border: "1.5px solid #bfdbfe", background: "#eff6ff", boxShadow: "0 4px 20px rgba(37,99,235,0.10)" }}>
-              <div style={{ height: 4, background: "linear-gradient(90deg,#2563eb,#3b82f6)" }} />
-              <div style={{ padding: "24px 24px 20px" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 18 }}>
-                  <div style={{ width: 52, height: 52, borderRadius: 16, background: "rgba(37,99,235,0.12)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <span style={{ fontSize: 26 }}>🎁</span>
-                  </div>
-                  <div>
-                    <p style={{ color: "#1d4ed8", fontSize: 12, fontWeight: 700, margin: 0, textTransform: "uppercase", letterSpacing: "0.08em" }}>Essai gratuit en cours</p>
-                    <p style={{ color: "#1e3a8a", fontSize: 20, fontWeight: 800, margin: "2px 0 0" }}>
-                      {(sub.trialDaysLeft ?? 0) > 0
-                        ? `${sub.trialDaysLeft} jour${(sub.trialDaysLeft ?? 0) > 1 ? "s" : ""} restant${(sub.trialDaysLeft ?? 0) > 1 ? "s" : ""}`
-                        : "Accès complet"}
-                    </p>
-                  </div>
-                  <span style={{ marginLeft: "auto", background: "rgba(37,99,235,0.15)", border: "1.5px solid rgba(37,99,235,0.30)", borderRadius: 999, padding: "4px 12px", fontSize: 12, fontWeight: 700, color: "#1d4ed8" }}>
-                    ✓ Actif
-                  </span>
-                </div>
-                {sub.trialEndsAt && (
-                  <div style={{ background: "rgba(37,99,235,0.10)", borderRadius: 12, padding: "12px 16px", display: "flex", alignItems: "center", gap: 10 }}>
-                    <CalendarDays style={{ width: 16, height: 16, color: "#2563eb", flexShrink: 0 }} />
-                    <p style={{ color: "#1e3a8a", fontSize: 13, margin: 0, lineHeight: 1.5 }}>
-                      Essai se termine le <strong style={{ color: "#1d4ed8" }}>{formatDate(sub.trialEndsAt)}</strong>
-                    </p>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div style={{ border: "1.5px solid #e5e7eb", borderRadius: 14, padding: "16px 18px", background: "#fafafa" }}>
-              <p style={{ fontSize: 13, fontWeight: 700, color: "#374151", margin: "0 0 10px" }}>Accès complet pendant votre essai :</p>
-              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                {["Transactions illimitées", "Rapports & graphiques avancés", "Export PDF", "Import SMS & relevés"].map(f => (
-                  <div key={f} style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <Check style={{ width: 13, height: 13, color: "#2563eb", flexShrink: 0 }} />
-                    <span style={{ fontSize: 13, color: "#374151" }}>{f}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div style={{ borderRadius: 20, overflow: "hidden", border: "1.5px solid #fed7aa", boxShadow: "0 4px 20px rgba(249,115,22,0.10)" }}>
-              <div style={{ background: "linear-gradient(135deg, #431407 0%, #9a3412 100%)", padding: "18px 22px", display: "flex", alignItems: "center", gap: 12 }}>
-                <div style={{ width: 40, height: 40, borderRadius: 12, background: "rgba(255,255,255,0.15)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                  <Crown style={{ width: 20, height: 20, color: "#fed7aa" }} />
-                </div>
-                <div>
-                  <p style={{ fontWeight: 800, fontSize: 15, color: "#fff7ed", margin: 0 }}>Continuez après votre essai</p>
-                  <p style={{ fontSize: 12, color: "#fdba74", margin: "2px 0 0" }}>À partir de 5 €/mois · Annulable à tout moment</p>
-                </div>
-              </div>
-              <div style={{ background: "#fff", padding: "16px 22px" }}>
-                <Link href="/pricing">
-                  <button style={{ width: "100%", background: ORANGE, color: "#fff", border: "none", borderRadius: 12, padding: "13px 24px", fontWeight: 800, fontSize: 14, cursor: "pointer", boxShadow: "0 2px 12px rgba(249,115,22,0.30)", display: "flex", alignItems: "center", justifyContent: "center", gap: 7 }}>
-                    <Zap style={{ width: 16, height: 16 }} />
-                    Choisir mon plan →
-                  </button>
-                </Link>
-              </div>
-            </div>
-          </>
+          <TrialSection sub={sub} />
         ) : sub?.effectivePlan === "limited_free" ? (
           /* Trial expired — Limited Free */
           <>

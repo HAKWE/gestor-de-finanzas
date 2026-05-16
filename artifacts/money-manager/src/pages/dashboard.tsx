@@ -264,33 +264,36 @@ function UpgradeBanner({ plan, onDismiss }: { plan: string; onDismiss: () => voi
 }
 
 // ── Trial countdown banner ────────────────────────────────────────────────────
+// Urgency levels:
+//   daysLeft > 24  → hidden (days 1–20 elapsed)
+//   daysLeft 10–24 → subtle blue   (days 21–35)
+//   daysLeft  8–9  → orange        (days 36–37)
+//   daysLeft  ≤ 7  → red, non-dismissable (last 7 days)
 function TrialCountdownBanner({ daysLeft, onDismiss }: { daysLeft: number; onDismiss: () => void }) {
-  const isUrgent  = daysLeft <= 7;
-  const isStrong  = daysLeft <= 10 && daysLeft > 7;
-  const pctUsed   = Math.max(4, Math.round(((45 - daysLeft) / 45) * 100));
+  const pctUsed = Math.max(4, Math.round(((45 - daysLeft) / 45) * 100));
 
-  if (isUrgent) {
+  if (daysLeft <= 7) {
     return (
-      <div style={{ borderRadius: 18, overflow: "hidden", background: "#fef2f2", border: "2px solid #fca5a5", boxShadow: "0 6px 24px rgba(220,38,38,0.20)" }}>
+      <div style={{ borderRadius: 18, overflow: "hidden", background: "#fef2f2", border: "2px solid #fca5a5", boxShadow: "0 6px 28px rgba(220,38,38,0.22)" }}>
         <div style={{ height: 5, background: "linear-gradient(90deg,#dc2626,#ef4444)" }} />
         <div style={{ padding: "16px 18px" }}>
-          <div style={{ display: "flex", alignItems: "flex-start", gap: 12, marginBottom: 12 }}>
-            <span style={{ fontSize: 26, flexShrink: 0 }}>⏰</span>
+          <div style={{ display: "flex", alignItems: "flex-start", gap: 12, marginBottom: 10 }}>
+            <span style={{ fontSize: 24, flexShrink: 0 }}>⏰</span>
             <div style={{ flex: 1 }}>
               <p style={{ fontSize: 15, fontWeight: 900, color: "#dc2626", margin: "0 0 3px", lineHeight: 1.3 }}>
-                ⚠️ Action requise — plus que {daysLeft} jour{daysLeft > 1 ? "s" : ""} !
+                Votre essai se termine bientôt !
               </p>
               <p style={{ fontSize: 12, color: "#6b7280", margin: 0, lineHeight: 1.5 }}>
-                Passez à un plan payant maintenant pour conserver l'accès complet à toutes vos données et fonctionnalités.
+                Plus que <strong style={{ color: "#dc2626" }}>{daysLeft} jour{daysLeft > 1 ? "s" : ""}</strong> — Upgrade maintenant pour garder l'accès complet à toutes vos données.
               </p>
             </div>
           </div>
-          <div style={{ background: "#fee2e2", borderRadius: 99, height: 7, overflow: "hidden", marginBottom: 14 }}>
-            <div style={{ height: "100%", width: `${pctUsed}%`, borderRadius: 99, background: "linear-gradient(90deg,#dc2626,#ef4444)", transition: "width 0.6s" }} />
+          <div style={{ background: "#fee2e2", borderRadius: 99, height: 6, overflow: "hidden", marginBottom: 13 }}>
+            <div style={{ height: "100%", width: `${pctUsed}%`, borderRadius: 99, background: "linear-gradient(90deg,#dc2626,#ef4444)" }} />
           </div>
           <Link href="/pricing">
             <button style={{ width: "100%", background: "linear-gradient(135deg,#dc2626,#b91c1c)", color: "#fff", border: "none", borderRadius: 13, padding: "13px 14px", fontWeight: 800, fontSize: 14, cursor: "pointer", boxShadow: "0 4px 14px rgba(220,38,38,0.35)" }}>
-              🚀 Choisir mon plan maintenant — dès 3,99 €/mois →
+              🚀 Upgrade maintenant — dès 3,99 €/mois →
             </button>
           </Link>
         </div>
@@ -298,19 +301,19 @@ function TrialCountdownBanner({ daysLeft, onDismiss }: { daysLeft: number; onDis
     );
   }
 
-  if (isStrong) {
+  if (daysLeft <= 9) {
     return (
-      <div style={{ borderRadius: 18, overflow: "hidden", background: "#fff7ed", border: "2px solid #fdba74", boxShadow: "0 4px 16px rgba(249,115,22,0.16)" }}>
+      <div style={{ borderRadius: 18, overflow: "hidden", background: "#fff7ed", border: "2px solid #fdba74", boxShadow: "0 4px 18px rgba(249,115,22,0.16)" }}>
         <div style={{ height: 4, background: "linear-gradient(90deg,#f97316,#fb923c)" }} />
         <div style={{ padding: "14px 16px" }}>
           <div style={{ display: "flex", alignItems: "flex-start", gap: 10, marginBottom: 10 }}>
-            <span style={{ fontSize: 22, flexShrink: 0 }}>📅</span>
+            <span style={{ fontSize: 20, flexShrink: 0 }}>📅</span>
             <div style={{ flex: 1 }}>
               <p style={{ fontSize: 14, fontWeight: 800, color: "#c2410c", margin: "0 0 2px" }}>
-                Votre essai gratuit se termine bientôt — plus que {daysLeft} jours !
+                Essai se termine dans {daysLeft} jours
               </p>
-              <p style={{ fontSize: 11, color: "#6b7280", margin: 0 }}>
-                Passez au Starter à <strong>3,99 €/mois</strong> et gardez l'accès complet à vos données.
+              <p style={{ fontSize: 12, color: "#6b7280", margin: 0 }}>
+                Passez au Starter à <strong>3,99 €/mois</strong> pour ne pas perdre votre accès.
               </p>
             </div>
             <button onClick={onDismiss} style={{ background: "none", border: "none", cursor: "pointer", color: "#fdba74", padding: 3, borderRadius: 6, display: "flex", flexShrink: 0 }}>
@@ -318,11 +321,11 @@ function TrialCountdownBanner({ daysLeft, onDismiss }: { daysLeft: number; onDis
             </button>
           </div>
           <div style={{ background: "#fed7aa", borderRadius: 99, height: 5, overflow: "hidden", marginBottom: 11 }}>
-            <div style={{ height: "100%", width: `${pctUsed}%`, borderRadius: 99, background: "linear-gradient(90deg,#f97316,#fb923c)", transition: "width 0.6s" }} />
+            <div style={{ height: "100%", width: `${pctUsed}%`, borderRadius: 99, background: "linear-gradient(90deg,#f97316,#fb923c)" }} />
           </div>
           <Link href="/pricing">
             <button style={{ background: "linear-gradient(135deg,#f97316,#ea580c)", color: "#fff", border: "none", borderRadius: 10, padding: "10px 18px", fontWeight: 700, fontSize: 13, cursor: "pointer", boxShadow: "0 3px 10px rgba(249,115,22,0.30)" }}>
-              Voir les offres →
+              Choisir mon plan →
             </button>
           </Link>
         </div>
@@ -336,17 +339,17 @@ function TrialCountdownBanner({ daysLeft, onDismiss }: { daysLeft: number; onDis
       <div style={{ padding: "12px 16px", display: "flex", alignItems: "center", gap: 10 }}>
         <span style={{ fontSize: 18, flexShrink: 0 }}>🎁</span>
         <div style={{ flex: 1 }}>
-          <p style={{ fontSize: 12.5, fontWeight: 700, color: "#2563eb", margin: "0 0 1px" }}>
-            Essai gratuit en cours — {daysLeft} jours restants
+          <p style={{ fontSize: 13, fontWeight: 700, color: "#1d4ed8", margin: "0 0 1px" }}>
+            Votre essai gratuit se termine dans {daysLeft} jours
           </p>
           <p style={{ fontSize: 11, color: "#6b7280", margin: 0 }}>
-            Accès complet à toutes les fonctionnalités premium.
+            Passez au Starter à <strong>3,99 €/mois</strong> pour continuer sans interruption.
           </p>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
           <Link href="/pricing">
-            <button style={{ background: "#2563eb", color: "#fff", border: "none", borderRadius: 9, padding: "6px 11px", fontWeight: 700, fontSize: 11, cursor: "pointer", whiteSpace: "nowrap" }}>
-              Voir les offres
+            <button style={{ background: "#2563eb", color: "#fff", border: "none", borderRadius: 9, padding: "7px 12px", fontWeight: 700, fontSize: 11, cursor: "pointer", whiteSpace: "nowrap" }}>
+              Upgrade →
             </button>
           </Link>
           <button onClick={onDismiss} style={{ background: "none", border: "none", cursor: "pointer", color: "#93c5fd", padding: 3, borderRadius: 6, display: "flex" }}>
@@ -499,24 +502,23 @@ export default function Dashboard() {
   useEffect(() => {
     if (!subStatus) return;
     const daysLeft = subStatus.trialDaysLeft ?? 999;
-    if (daysLeft > 25) { setShowTrialBanner(false); return; }
+    // Days 1–20 elapsed (daysLeft > 24): no banner
+    if (daysLeft > 24) { setShowTrialBanner(false); return; }
+    // Last 7 days: always show, non-dismissable
     if (daysLeft <= 7) { setShowTrialBanner(true); return; }
-    if (daysLeft <= 10) {
-      const key = `trial-banner-day-${Math.floor(Date.now() / (24 * 60 * 60 * 1000))}`;
-      if (localStorage.getItem(key)) setShowTrialBanner(false);
-    } else {
-      if (sessionStorage.getItem("trial-banner-dismissed")) setShowTrialBanner(false);
+    // Days 21–37 elapsed: dismissable, re-appears after 24 h
+    const dismissed = localStorage.getItem("trial-banner-dismiss-ts");
+    if (dismissed) {
+      const age = Date.now() - parseInt(dismissed, 10);
+      if (age < 24 * 60 * 60 * 1000) { setShowTrialBanner(false); return; }
     }
+    setShowTrialBanner(true);
   }, [subStatus]);
 
   const dismissTrialBanner = () => {
     const daysLeft = subStatus?.trialDaysLeft ?? 999;
-    if (daysLeft <= 7) return;
-    if (daysLeft <= 10) {
-      localStorage.setItem(`trial-banner-day-${Math.floor(Date.now() / (24 * 60 * 60 * 1000))}`, "1");
-    } else {
-      sessionStorage.setItem("trial-banner-dismissed", "1");
-    }
+    if (daysLeft <= 7) return; // non-dismissable
+    localStorage.setItem("trial-banner-dismiss-ts", String(Date.now()));
     setShowTrialBanner(false);
   };
 
