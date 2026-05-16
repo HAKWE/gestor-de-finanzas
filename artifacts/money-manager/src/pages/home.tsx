@@ -109,11 +109,18 @@ export default function Home() {
 
       {/* ── TOP URGENCY BAR ── */}
       <div style={{
-        background: "linear-gradient(90deg,#111827,#1f2937)",
+        background: "linear-gradient(90deg,#ea580c,#f97316,#fb923c)",
         color: "#fff", textAlign: "center",
-        padding: "8px 16px", fontSize: 12, fontWeight: 700, letterSpacing: "0.02em",
+        padding: "11px 16px", fontSize: 13, fontWeight: 800, letterSpacing: "0.01em",
+        lineHeight: 1.4,
       }}>
-        🚀 OFFRE DE LANCEMENT — Starter à <span style={{ color: "#fbbf24" }}>3,99 €/mois</span> les 3 premiers mois · Se termine le <span style={{ color: "#fb923c" }}>31 mai 2026</span>
+        🔥 OFFRE DE LANCEMENT — Starter à{" "}
+        <span style={{
+          background: "#fff", color: "#ea580c",
+          padding: "1px 8px", borderRadius: 6, fontWeight: 900,
+        }}>3,99 €/mois</span>
+        {" "}au lieu de 5 € · Les 3 premiers mois ·{" "}
+        <span style={{ textDecoration: "underline", textUnderlineOffset: 3 }}>Se termine le 31 mai 2026</span>
       </div>
 
       {/* ── HEADER ── */}
@@ -200,14 +207,14 @@ export default function Home() {
               fontSize: "clamp(28px,5vw,52px)", fontWeight: 900,
               color: "#111", lineHeight: 1.1, letterSpacing: "-0.03em", margin: 0,
             }}>
-              Gérez votre{" "}
+              Suivez votre{" "}
               <span style={{ color: ORANGE }}>Orange Money,</span>{" "}
               Wave et MTN MoMo{" "}
-              <span style={{ color: ORANGE }}>facilement</span>
+              <span style={{ color: ORANGE }}>en un seul endroit</span>
             </h1>
 
-            <p style={{ fontSize: 17, color: "#4b5563", lineHeight: 1.65, margin: 0, maxWidth: 520 }}>
-              Le tableau de bord financier des <strong>coiffeuses, vendeurs, artisans</strong> et petits commerçants en Afrique. Tout centralisé, tout clair.
+            <p style={{ fontSize: 16, color: "#4b5563", lineHeight: 1.6, margin: 0, maxWidth: 520, fontWeight: 500 }}>
+              ✅ 45 jours d'essai gratuit &nbsp;·&nbsp; ✅ Aucune carte requise &nbsp;·&nbsp; ✅ Conçu pour les coiffeuses et petits commerçants
             </p>
 
             {/* Wallet badges */}
@@ -226,24 +233,48 @@ export default function Home() {
 
             {/* Primary CTA */}
             <div>
-              <Link href="/sign-up">
-                <button
-                  className="lp-cta-pulse"
-                  style={{
-                    background: "linear-gradient(135deg,#f97316,#ea580c)",
-                    color: "#fff", border: "none", borderRadius: 14,
-                    padding: "16px 32px", fontWeight: 900, fontSize: 17,
-                    cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 10,
-                    letterSpacing: "-0.01em",
-                  }}
-                >
-                  🎁 Commencer gratuitement en 30 secondes
-                  <ArrowRight style={{ width: 18, height: 18 }} />
-                </button>
-              </Link>
-              <p style={{ fontSize: 12, color: "#9ca3af", marginTop: 10, marginBottom: 0 }}>
-                ✓ Gratuit 45 jours &nbsp;·&nbsp; ✓ Aucune carte bancaire &nbsp;·&nbsp; ✓ Annulable à tout moment
-              </p>
+              {/* Urgency nudge above button */}
+              <div style={{
+                display: "inline-flex", alignItems: "center", gap: 7,
+                background: "#fef3c7", border: "1.5px solid #fcd34d",
+                borderRadius: 10, padding: "6px 14px", marginBottom: 12,
+              }}>
+                <span style={{ fontSize: 14 }}>⏳</span>
+                <span style={{ fontSize: 12, fontWeight: 800, color: "#92400e" }}>
+                  Offre 3,99 €/mois expire le 31 mai — Ne ratez pas ça !
+                </span>
+              </div>
+
+              <div style={{ display: "block" }}>
+                <Link href="/sign-up">
+                  <button
+                    className="lp-cta-pulse"
+                    style={{
+                      background: "linear-gradient(135deg,#f97316,#ea580c)",
+                      color: "#fff", border: "none", borderRadius: 14,
+                      padding: "17px 34px", fontWeight: 900, fontSize: 18,
+                      cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 10,
+                      letterSpacing: "-0.01em", width: "100%", justifyContent: "center",
+                      maxWidth: 460,
+                    }}
+                  >
+                    🎁 Commencer gratuitement en 30 secondes
+                    <ArrowRight style={{ width: 19, height: 19 }} />
+                  </button>
+                </Link>
+              </div>
+
+              <div style={{ display: "flex", gap: 16, marginTop: 11, flexWrap: "wrap" }}>
+                {[
+                  { icon: "✅", text: "45 jours gratuits" },
+                  { icon: "🚫", text: "Aucune carte bancaire" },
+                  { icon: "↩️", text: "Annulable à tout moment" },
+                ].map(({ icon, text }) => (
+                  <span key={text} style={{ fontSize: 12, color: "#6b7280", fontWeight: 600, display: "flex", alignItems: "center", gap: 4 }}>
+                    {icon} {text}
+                  </span>
+                ))}
+              </div>
             </div>
 
             {/* Trust line */}
@@ -291,7 +322,7 @@ export default function Home() {
               </p>
             </div>
 
-            <SignUpForm fullForm />
+            <SignUpForm simpleForm />
 
             {/* Mini trust row */}
             <div style={{
@@ -314,14 +345,17 @@ export default function Home() {
       </section>
 
       {/* ── TRUST BAR ── */}
-      <div style={{ background: "#1e293b", padding: "14px 20px" }}>
+      <div style={{ background: "#111827", padding: "16px 20px", borderTop: "3px solid #f97316" }}>
         <div className="lp-trust-bar" style={{ maxWidth: 900, margin: "0 auto" }}>
           {TRUST_BADGES.map(({ icon, label }) => (
             <div key={label} style={{
-              display: "flex", alignItems: "center", gap: 7,
-              fontSize: 12, fontWeight: 700, color: "#94a3b8",
+              display: "flex", alignItems: "center", gap: 8,
+              fontSize: 13, fontWeight: 800, color: "#e2e8f0",
+              background: "rgba(255,255,255,0.06)",
+              border: "1px solid rgba(255,255,255,0.10)",
+              borderRadius: 8, padding: "6px 14px",
             }}>
-              <span style={{ fontSize: 15 }}>{icon}</span>
+              <span style={{ fontSize: 16 }}>{icon}</span>
               {label}
             </div>
           ))}

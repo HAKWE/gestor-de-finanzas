@@ -53,9 +53,10 @@ function FieldError({ message }: { message?: string }) {
 interface SignUpFormProps {
   showTitle?: boolean;
   fullForm?: boolean;
+  simpleForm?: boolean;
 }
 
-export function SignUpForm({ showTitle = false, fullForm = false }: SignUpFormProps) {
+export function SignUpForm({ showTitle = false, fullForm = false, simpleForm = false }: SignUpFormProps) {
   const { isLoaded } = useAuth();
   const clerk = useClerk();
   const [, setLocation] = useLocation();
@@ -84,8 +85,10 @@ export function SignUpForm({ showTitle = false, fullForm = false }: SignUpFormPr
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = "Email invalide.";
     if (!form.password) e.password = "Mot de passe requis.";
     else if (form.password.length < 8) e.password = "Minimum 8 caractères.";
-    if (!form.confirmPassword) e.confirmPassword = "Confirmez votre mot de passe.";
-    else if (form.password !== form.confirmPassword) e.confirmPassword = "Les mots de passe ne correspondent pas.";
+    if (!simpleForm) {
+      if (!form.confirmPassword) e.confirmPassword = "Confirmez votre mot de passe.";
+      else if (form.password !== form.confirmPassword) e.confirmPassword = "Les mots de passe ne correspondent pas.";
+    }
     return e;
   }
 
@@ -261,49 +264,51 @@ export function SignUpForm({ showTitle = false, fullForm = false }: SignUpFormPr
         <FieldError message={errors.password} />
       </div>
 
-      <div>
-        <Label htmlFor="sf-confirmPassword">Confirmer le mot de passe</Label>
-        <div className="relative">
-          <Input
-            id="sf-confirmPassword"
-            type={showConfirm ? "text" : "password"}
-            value={form.confirmPassword}
-            onChange={(e) => {
-              setForm({ ...form, confirmPassword: e.target.value });
-              if (errors.confirmPassword) setErrors({ ...errors, confirmPassword: undefined });
-            }}
-            className={`pr-10 ${
-              form.confirmPassword && form.password !== form.confirmPassword
-                ? "border-red-400"
-                : form.confirmPassword && form.password === form.confirmPassword
-                ? "border-green-500"
-                : errors.confirmPassword
-                ? "border-red-400"
-                : ""
-            }`}
-            autoComplete="new-password"
-          />
-          <button
-            type="button"
-            className="absolute inset-y-0 right-3 flex items-center text-muted-foreground"
-            onClick={() => setShowConfirm(!showConfirm)}
-            tabIndex={-1}
-          >
-            {showConfirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-          </button>
+      {!simpleForm && (
+        <div>
+          <Label htmlFor="sf-confirmPassword">Confirmer le mot de passe</Label>
+          <div className="relative">
+            <Input
+              id="sf-confirmPassword"
+              type={showConfirm ? "text" : "password"}
+              value={form.confirmPassword}
+              onChange={(e) => {
+                setForm({ ...form, confirmPassword: e.target.value });
+                if (errors.confirmPassword) setErrors({ ...errors, confirmPassword: undefined });
+              }}
+              className={`pr-10 ${
+                form.confirmPassword && form.password !== form.confirmPassword
+                  ? "border-red-400"
+                  : form.confirmPassword && form.password === form.confirmPassword
+                  ? "border-green-500"
+                  : errors.confirmPassword
+                  ? "border-red-400"
+                  : ""
+              }`}
+              autoComplete="new-password"
+            />
+            <button
+              type="button"
+              className="absolute inset-y-0 right-3 flex items-center text-muted-foreground"
+              onClick={() => setShowConfirm(!showConfirm)}
+              tabIndex={-1}
+            >
+              {showConfirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            </button>
+          </div>
+          {form.confirmPassword && form.password === form.confirmPassword && (
+            <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
+              <CheckCircle2 className="h-3 w-3" /> Les mots de passe correspondent
+            </p>
+          )}
+          {form.confirmPassword && form.password !== form.confirmPassword && (
+            <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
+              <XCircle className="h-3 w-3" /> Les mots de passe ne correspondent pas
+            </p>
+          )}
+          {!form.confirmPassword && <FieldError message={errors.confirmPassword} />}
         </div>
-        {form.confirmPassword && form.password === form.confirmPassword && (
-          <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
-            <CheckCircle2 className="h-3 w-3" /> Les mots de passe correspondent
-          </p>
-        )}
-        {form.confirmPassword && form.password !== form.confirmPassword && (
-          <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
-            <XCircle className="h-3 w-3" /> Les mots de passe ne correspondent pas
-          </p>
-        )}
-        {!form.confirmPassword && <FieldError message={errors.confirmPassword} />}
-      </div>
+      )}
 
       <Button type="submit" className="w-full h-11 text-base mt-1" disabled={buttonDisabled}>
         {submitting ? (
