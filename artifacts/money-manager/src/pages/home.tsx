@@ -109,22 +109,31 @@ export default function Home() {
 
       {/* ── TOP URGENCY BAR ── */}
       <div style={{
-        background: "linear-gradient(90deg,#b45309,#d97706,#f59e0b)",
+        background: "#111827",
         color: "#fff", textAlign: "center",
-        padding: "12px 16px", fontSize: 13, fontWeight: 800, letterSpacing: "0.01em",
-        lineHeight: 1.5,
+        padding: "0", lineHeight: 1,
       }}>
-        🔥&nbsp; OFFRE DE LANCEMENT — Starter à{" "}
-        <span style={{
-          background: "#fff", color: "#b45309",
-          padding: "2px 9px", borderRadius: 6, fontWeight: 900, fontSize: 14,
-        }}>3,99 €/mois</span>
-        {" "}pendant 3 mois{" "}
-        <span style={{ opacity: 0.85, fontWeight: 600 }}>(au lieu de 5 €)</span>
-        {" "}·{" "}
-        <span style={{ textDecoration: "underline", textUnderlineOffset: 3, fontWeight: 900 }}>
-          Offre se termine le 31 mai 2026
-        </span>
+        <div style={{
+          background: "linear-gradient(90deg,#f97316,#ea580c)",
+          padding: "13px 16px", fontSize: 14, fontWeight: 900,
+          letterSpacing: "0.01em", lineHeight: 1.5,
+          display: "flex", alignItems: "center", justifyContent: "center",
+          flexWrap: "wrap", gap: "6px 10px",
+        }}>
+          <span style={{ fontSize: 16 }}>🔥</span>
+          <span>OFFRE DE LANCEMENT</span>
+          <span style={{
+            background: "#fff", color: "#ea580c",
+            padding: "3px 11px", borderRadius: 8, fontWeight: 900, fontSize: 15,
+            boxShadow: "0 2px 8px rgba(0,0,0,0.20)",
+          }}>3,99 €/mois</span>
+          <span style={{ fontWeight: 600 }}>pendant 3 mois (au lieu de 5 €)</span>
+          <span style={{ opacity: 0.4 }}>·</span>
+          <span style={{ textDecoration: "underline", textUnderlineOffset: 3 }}>
+            Se termine le 31 mai 2026
+          </span>
+          <span style={{ fontSize: 16 }}>⏳</span>
+        </div>
       </div>
 
       {/* ── HEADER ── */}
@@ -208,18 +217,18 @@ export default function Home() {
 
             {/* Headline */}
             <h1 style={{
-              fontSize: "clamp(28px,5vw,52px)", fontWeight: 900,
-              color: "#111", lineHeight: 1.1, letterSpacing: "-0.03em", margin: 0,
+              fontSize: "clamp(26px,4.5vw,50px)", fontWeight: 900,
+              color: "#111", lineHeight: 1.15, letterSpacing: "-0.03em", margin: 0,
             }}>
+              Arrêtez de tout noter dans un carnet.{" "}
               Gérez votre{" "}
               <span style={{ color: ORANGE }}>Orange Money,</span>{" "}
               Wave et MTN MoMo{" "}
-              <span style={{ color: ORANGE }}>sans stress</span>{" "}
-              et en un seul endroit
+              <span style={{ color: ORANGE }}>comme un pro.</span>
             </h1>
 
             <p style={{ fontSize: 15, color: "#374151", lineHeight: 1.7, margin: 0, maxWidth: 530, fontWeight: 500 }}>
-              45 jours d'essai gratuit &nbsp;•&nbsp; Aucune carte bancaire requise &nbsp;•&nbsp; Conçu pour les coiffeuses, vendeurs et petits commerçants en Afrique
+              45 jours d'essai gratuit &nbsp;•&nbsp; Aucune carte requise &nbsp;•&nbsp; Conçu pour les coiffeuses et petits commerçants qui veulent gagner du temps et de l'argent
             </p>
 
             {/* Wallet badges */}
@@ -263,7 +272,7 @@ export default function Home() {
                       maxWidth: 480,
                     }}
                   >
-                    Commencer gratuitement en 30 secondes
+                    Commencer gratuitement maintenant
                     <ArrowRight style={{ width: 22, height: 22 }} />
                   </button>
                 </Link>
@@ -350,6 +359,39 @@ export default function Home() {
                   <span>{icon}</span> {label}
                 </div>
               ))}
+            </div>
+
+            {/* Inline testimonial */}
+            <div style={{
+              marginTop: 18,
+              background: "#fafaf9",
+              border: "1.5px solid #f0ede9",
+              borderRadius: 14,
+              padding: "14px 16px",
+            }}>
+              <div style={{ display: "flex", gap: 3, marginBottom: 8 }}>
+                {[1,2,3,4,5].map(s => <Star key={s} style={{ width: 12, height: 12, color: ORANGE, fill: ORANGE }} />)}
+              </div>
+              <p style={{ fontSize: 13, color: "#374151", lineHeight: 1.65, margin: "0 0 10px", fontStyle: "italic" }}>
+                "Avant j'avais tout dans ma tête et dans un cahier. Maintenant en 2 minutes je sais exactement ce que j'ai gagné. Je recommande à toutes mes collègues !"
+              </p>
+              <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
+                <div style={{
+                  width: 36, height: 36, borderRadius: "50%",
+                  background: "linear-gradient(135deg,#f97316,#fb923c)",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontSize: 18, flexShrink: 0,
+                }}>💇‍♀️</div>
+                <div>
+                  <div style={{ fontWeight: 800, fontSize: 13, color: "#111" }}>Fatou Camara</div>
+                  <div style={{ fontSize: 11, color: "#9ca3af" }}>Coiffeuse · Conakry, Guinée</div>
+                </div>
+                <span style={{
+                  marginLeft: "auto", fontSize: 10, fontWeight: 700,
+                  background: "#f0fdf4", color: "#16a34a",
+                  border: "1px solid #bbf7d0", borderRadius: 999, padding: "2px 8px",
+                }}>✓ Vérifié</span>
+              </div>
             </div>
           </div>
         </div>
