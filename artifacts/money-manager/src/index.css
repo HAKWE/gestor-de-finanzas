@@ -170,3 +170,85 @@
     @apply font-sans antialiased bg-background text-foreground;
   }
 }
+
+/* ─── Landing page responsive helpers ─── */
+.lp-hero-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 32px;
+  align-items: start;
+}
+@media (min-width: 900px) {
+  .lp-hero-grid {
+    grid-template-columns: minmax(0,1fr) 420px;
+    gap: 56px;
+    align-items: center;
+  }
+}
+
+.lp-benefits-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+@media (max-width: 600px) {
+  .lp-benefits-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.lp-testimonials-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+@media (min-width: 1100px) {
+  .lp-testimonials-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+@media (max-width: 600px) {
+  .lp-testimonials-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.lp-trust-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 24px;
+  align-items: center;
+  justify-content: center;
+}
+
+.lp-hero-cta {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: flex-start;
+}
+@media (max-width: 899px) {
+  .lp-signup-card-order {
+    order: 2;
+  }
+  .lp-hero-left-order {
+    order: 1;
+  }
+}
+
+/* Pulse animation for CTA button */
+@keyframes lp-pulse {
+  0%, 100% { box-shadow: 0 4px 20px rgba(249,115,22,0.4); }
+  50% { box-shadow: 0 4px 32px rgba(249,115,22,0.7); }
+}
+.lp-cta-pulse {
+  animation: lp-pulse 2.5s ease-in-out infinite;
+}
+
+@keyframes lp-fadein {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.lp-fadein {
+  animation: lp-fadein 0.5s ease both;
+}
