@@ -15,6 +15,8 @@ export const userProfilesTable = pgTable("user_profiles", {
   subscriptionPlan: text("subscription_plan"),
   subscriptionPeriodEnd: timestamp("subscription_period_end", { withTimezone: true }),
   trialEndsAt: timestamp("trial_ends_at", { withTimezone: true }),
+  emailDay1Sent: boolean("email_day1_sent").notNull().default(false),
+  emailDay10Sent: boolean("email_day10_sent").notNull().default(false),
   trialReminder30dSent: boolean("trial_reminder_30d_sent").notNull().default(false),
   trialReminder7dSent: boolean("trial_reminder_7d_sent").notNull().default(false),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
