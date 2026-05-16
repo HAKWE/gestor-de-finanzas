@@ -109,31 +109,23 @@ export default function Home() {
 
       {/* ── TOP URGENCY BAR ── */}
       <div style={{
-        background: "#111827",
+        background: "#0f172a",
         color: "#fff", textAlign: "center",
-        padding: "0", lineHeight: 1,
+        padding: "10px 16px", lineHeight: 1.5,
+        display: "flex", alignItems: "center", justifyContent: "center",
+        flexWrap: "wrap", gap: "5px 10px",
+        fontSize: 13, fontWeight: 600,
       }}>
-        <div style={{
-          background: "linear-gradient(90deg,#f97316,#ea580c)",
-          padding: "13px 16px", fontSize: 14, fontWeight: 900,
-          letterSpacing: "0.01em", lineHeight: 1.5,
-          display: "flex", alignItems: "center", justifyContent: "center",
-          flexWrap: "wrap", gap: "6px 10px",
-        }}>
-          <span style={{ fontSize: 16 }}>🔥</span>
-          <span>OFFRE DE LANCEMENT</span>
-          <span style={{
-            background: "#fff", color: "#ea580c",
-            padding: "3px 11px", borderRadius: 8, fontWeight: 900, fontSize: 15,
-            boxShadow: "0 2px 8px rgba(0,0,0,0.20)",
-          }}>3,99 €/mois</span>
-          <span style={{ fontWeight: 600 }}>pendant 3 mois (au lieu de 5 €)</span>
-          <span style={{ opacity: 0.4 }}>·</span>
-          <span style={{ textDecoration: "underline", textUnderlineOffset: 3 }}>
-            Se termine le 31 mai 2026
-          </span>
-          <span style={{ fontSize: 16 }}>⏳</span>
-        </div>
+        <span style={{ color: "#94a3b8" }}>Offre de lancement</span>
+        <span style={{ color: "#475569" }}>—</span>
+        <span style={{ color: "#fff" }}>Starter à</span>
+        <span style={{
+          background: ORANGE, color: "#fff",
+          padding: "2px 10px", borderRadius: 6, fontWeight: 900, fontSize: 13,
+        }}>3,99 €/mois</span>
+        <span style={{ color: "#94a3b8" }}>pendant 3 mois · au lieu de 5 €</span>
+        <span style={{ color: "#475569" }}>·</span>
+        <span style={{ color: "#fbbf24", fontWeight: 700 }}>⏳ Se termine le 31 mai 2026</span>
       </div>
 
       {/* ── HEADER ── */}
@@ -171,7 +163,7 @@ export default function Home() {
       </header>
 
       {/* ── HERO ── */}
-      <section style={{ background: "#fff", padding: "48px 20px 56px", borderBottom: "1px solid #f0ede9" }}>
+      <section style={{ background: "#fff", padding: "64px 20px 72px", borderBottom: "1px solid #f0ede9" }}>
         <div className="lp-hero-grid" style={{ maxWidth: 1080, margin: "0 auto" }}>
 
           {/* LEFT: headline + CTA */}
@@ -206,11 +198,11 @@ export default function Home() {
             {/* Trial badge */}
             <div style={{
               display: "inline-flex", alignItems: "center", gap: 7,
-              background: "#f0fdf4", border: "1.5px solid #bbf7d0",
-              borderRadius: 999, padding: "5px 14px", width: "fit-content",
+              background: "#f8fafc", border: "1px solid #e2e8f0",
+              borderRadius: 999, padding: "6px 16px", width: "fit-content",
             }}>
-              <Zap style={{ width: 13, height: 13, color: "#16a34a", fill: "#16a34a" }} />
-              <span style={{ fontSize: 12, fontWeight: 800, color: "#15803d" }}>
+              <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#16a34a", display: "inline-block", flexShrink: 0 }} />
+              <span style={{ fontSize: 12, fontWeight: 700, color: "#334155" }}>
                 45 jours d'essai gratuit — Aucune carte bancaire requise
               </span>
             </div>
@@ -250,12 +242,12 @@ export default function Home() {
               {/* Urgency nudge above button */}
               <div style={{
                 display: "inline-flex", alignItems: "center", gap: 7,
-                background: "#fef3c7", border: "1.5px solid #fcd34d",
-                borderRadius: 10, padding: "6px 14px", marginBottom: 12,
+                background: "#fffbeb", border: "1px solid #fde68a",
+                borderRadius: 8, padding: "5px 12px", marginBottom: 14,
               }}>
-                <span style={{ fontSize: 14 }}>⏳</span>
-                <span style={{ fontSize: 12, fontWeight: 800, color: "#92400e" }}>
-                  Offre 3,99 €/mois expire le 31 mai — Ne ratez pas ça !
+                <span style={{ fontSize: 13 }}>⏳</span>
+                <span style={{ fontSize: 12, fontWeight: 700, color: "#78350f" }}>
+                  Offre 3,99 €/mois — expire le 31 mai
                 </span>
               </div>
 
@@ -320,19 +312,19 @@ export default function Home() {
           }}>
             {/* Accent bar */}
             <div style={{
-              position: "absolute", top: 0, left: 0, right: 0, height: 4,
-              background: "linear-gradient(90deg,#f97316,#fb923c,#22c55e)",
+              position: "absolute", top: 0, left: 0, right: 0, height: 3,
+              background: ORANGE,
             }} />
 
             <div style={{ marginBottom: 22 }}>
               <div style={{
                 display: "inline-flex", alignItems: "center", gap: 6,
-                background: "linear-gradient(90deg,#fff7ed,#fef3c7)",
-                border: "1.5px solid #fcd34d",
+                background: "#f8fafc", border: "1px solid #e2e8f0",
                 borderRadius: 999, padding: "5px 14px",
-                fontSize: 12, fontWeight: 800, color: "#92400e", marginBottom: 14,
+                fontSize: 11, fontWeight: 700, color: "#475569", marginBottom: 14,
               }}>
-                🎁 45 jours gratuits · Aucune carte bancaire
+                <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#16a34a", display: "inline-block" }} />
+                45 jours gratuits · Aucune carte bancaire
               </div>
               <h2 style={{ fontSize: 22, fontWeight: 900, color: "#111", margin: 0, letterSpacing: "-0.03em", lineHeight: 1.2 }}>
                 Créez votre compte gratuit
