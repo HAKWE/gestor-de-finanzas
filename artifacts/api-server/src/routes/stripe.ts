@@ -351,11 +351,12 @@ router.get("/stripe/subscription-status", requireAuth, async (req: any, res): Pr
     }
 
     // Step 3: query live Stripe API directly for accurate subscription data
+    // NOTE: do NOT expand data.items.data.price.product — that's 5 levels, Stripe only allows 4.
+    // Retrieve the product name separately after finding the active subscription.
     const subscriptions = await stripe.subscriptions.list({
       customer: customerId,
       status: "all",
       limit: 10,
-      expand: ["data.items.data.price.product"],
     });
 
     const active = subscriptions.data.find(s => s.status === "active" || s.status === "trialing");
@@ -367,8 +368,16 @@ router.get("/stripe/subscription-status", requireAuth, async (req: any, res): Pr
     }
 
     const item = active.items.data[0];
-    const product = item?.price?.product as any;
-    const name: string = product?.name || "";
+    // Retrieve product name via a separate call to stay within Stripe's 4-level expand limit
+    let name = "";
+    if (item?.price?.product) {
+      try {
+        const product = await stripe.products.retrieve(item.price.product as string);
+        name = product.name || "";
+      } catch {
+        name = "";
+      }
+    }
     const plan = name.toLowerCase().includes("pro") ? "pro"
       : name.toLowerCase().includes("starter") ? "starter"
       : "paid";

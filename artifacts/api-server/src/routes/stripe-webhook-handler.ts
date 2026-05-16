@@ -186,6 +186,34 @@ export async function handleStripeWebhook(req: Request, res: Response): Promise<
         break;
       }
 
+      case "invoice.payment_succeeded": {
+        const invoice = event.data.object as Stripe.Invoice;
+        const customerId = invoice.customer as string;
+        const subscriptionId = (invoice as any).subscription as string | null;
+        logger.info(
+          { invoiceId: invoice.id, customerId, subscriptionId },
+          "[stripe-webhook] invoice.payment_succeeded"
+        );
+        if (subscriptionId && customerId) {
+          const stripe = await getUncachableStripeClient();
+          const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+          const item = subscription.items.data[0];
+          if (item) {
+            const periodEnd = (subscription as any).current_period_end
+              ?? (subscription as any).cancel_at
+              ?? null;
+            await updateUserSubscription(
+              customerId,
+              subscription.id,
+              item.price.id,
+              subscription.status,
+              periodEnd
+            );
+          }
+        }
+        break;
+      }
+
       default:
         logger.info({ type: event.type }, "[stripe-webhook] Unhandled event type (ignored)");
     }
