@@ -310,13 +310,18 @@ export function SignUpForm({ showTitle = false, fullForm = false, simpleForm = f
         </div>
       )}
 
-      <Button type="submit" className="w-full h-11 text-base mt-1" disabled={buttonDisabled}>
+      <Button
+        type="submit"
+        className="w-full mt-1"
+        style={{ height: 52, fontSize: 16, fontWeight: 800, letterSpacing: "-0.01em" }}
+        disabled={buttonDisabled}
+      >
         {submitting ? (
-          <Loader2 className="h-4 w-4 animate-spin" />
+          <Loader2 className="h-5 w-5 animate-spin" />
         ) : !isLoaded ? (
           <><Loader2 className="h-4 w-4 animate-spin mr-2" />Chargement...</>
         ) : (
-          "Créer mon compte"
+          "Créer mon compte →"
         )}
       </Button>
 

@@ -109,18 +109,22 @@ export default function Home() {
 
       {/* ── TOP URGENCY BAR ── */}
       <div style={{
-        background: "linear-gradient(90deg,#ea580c,#f97316,#fb923c)",
+        background: "linear-gradient(90deg,#b45309,#d97706,#f59e0b)",
         color: "#fff", textAlign: "center",
-        padding: "11px 16px", fontSize: 13, fontWeight: 800, letterSpacing: "0.01em",
-        lineHeight: 1.4,
+        padding: "12px 16px", fontSize: 13, fontWeight: 800, letterSpacing: "0.01em",
+        lineHeight: 1.5,
       }}>
-        🔥 OFFRE DE LANCEMENT — Starter à{" "}
+        🔥&nbsp; OFFRE DE LANCEMENT — Starter à{" "}
         <span style={{
-          background: "#fff", color: "#ea580c",
-          padding: "1px 8px", borderRadius: 6, fontWeight: 900,
+          background: "#fff", color: "#b45309",
+          padding: "2px 9px", borderRadius: 6, fontWeight: 900, fontSize: 14,
         }}>3,99 €/mois</span>
-        {" "}au lieu de 5 € · Les 3 premiers mois ·{" "}
-        <span style={{ textDecoration: "underline", textUnderlineOffset: 3 }}>Se termine le 31 mai 2026</span>
+        {" "}pendant 3 mois{" "}
+        <span style={{ opacity: 0.85, fontWeight: 600 }}>(au lieu de 5 €)</span>
+        {" "}·{" "}
+        <span style={{ textDecoration: "underline", textUnderlineOffset: 3, fontWeight: 900 }}>
+          Offre se termine le 31 mai 2026
+        </span>
       </div>
 
       {/* ── HEADER ── */}
@@ -207,14 +211,15 @@ export default function Home() {
               fontSize: "clamp(28px,5vw,52px)", fontWeight: 900,
               color: "#111", lineHeight: 1.1, letterSpacing: "-0.03em", margin: 0,
             }}>
-              Suivez votre{" "}
+              Gérez votre{" "}
               <span style={{ color: ORANGE }}>Orange Money,</span>{" "}
               Wave et MTN MoMo{" "}
-              <span style={{ color: ORANGE }}>en un seul endroit</span>
+              <span style={{ color: ORANGE }}>sans stress</span>{" "}
+              et en un seul endroit
             </h1>
 
-            <p style={{ fontSize: 16, color: "#4b5563", lineHeight: 1.6, margin: 0, maxWidth: 520, fontWeight: 500 }}>
-              ✅ 45 jours d'essai gratuit &nbsp;·&nbsp; ✅ Aucune carte requise &nbsp;·&nbsp; ✅ Conçu pour les coiffeuses et petits commerçants
+            <p style={{ fontSize: 15, color: "#374151", lineHeight: 1.7, margin: 0, maxWidth: 530, fontWeight: 500 }}>
+              45 jours d'essai gratuit &nbsp;•&nbsp; Aucune carte bancaire requise &nbsp;•&nbsp; Conçu pour les coiffeuses, vendeurs et petits commerçants en Afrique
             </p>
 
             {/* Wallet badges */}
@@ -250,21 +255,26 @@ export default function Home() {
                   <button
                     className="lp-cta-pulse"
                     style={{
-                      background: "linear-gradient(135deg,#f97316,#ea580c)",
-                      color: "#fff", border: "none", borderRadius: 14,
-                      padding: "17px 34px", fontWeight: 900, fontSize: 18,
-                      cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 10,
-                      letterSpacing: "-0.01em", width: "100%", justifyContent: "center",
-                      maxWidth: 460,
+                      background: "linear-gradient(135deg,#f97316,#c2410c)",
+                      color: "#fff", border: "none", borderRadius: 16,
+                      padding: "20px 38px", fontWeight: 900, fontSize: 19,
+                      cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 12,
+                      letterSpacing: "-0.02em", width: "100%", justifyContent: "center",
+                      maxWidth: 480,
                     }}
                   >
-                    🎁 Commencer gratuitement en 30 secondes
-                    <ArrowRight style={{ width: 19, height: 19 }} />
+                    Commencer gratuitement en 30 secondes
+                    <ArrowRight style={{ width: 22, height: 22 }} />
                   </button>
                 </Link>
               </div>
 
-              <div style={{ display: "flex", gap: 16, marginTop: 11, flexWrap: "wrap" }}>
+              {/* Social proof nudge */}
+              <p style={{ fontSize: 13, color: "#374151", fontWeight: 600, marginTop: 10, marginBottom: 0 }}>
+                👥 Rejoignez +500 entrepreneurs qui gèrent déjà mieux leur argent
+              </p>
+
+              <div style={{ display: "flex", gap: 16, marginTop: 4, flexWrap: "wrap" }}>
                 {[
                   { icon: "✅", text: "45 jours gratuits" },
                   { icon: "🚫", text: "Aucune carte bancaire" },
@@ -305,20 +315,21 @@ export default function Home() {
               background: "linear-gradient(90deg,#f97316,#fb923c,#22c55e)",
             }} />
 
-            <div style={{ marginBottom: 20 }}>
+            <div style={{ marginBottom: 22 }}>
               <div style={{
                 display: "inline-flex", alignItems: "center", gap: 6,
-                background: "#fff7ed", border: "1px solid #fed7aa",
-                borderRadius: 999, padding: "4px 12px",
-                fontSize: 11, fontWeight: 800, color: ORANGE, marginBottom: 12,
+                background: "linear-gradient(90deg,#fff7ed,#fef3c7)",
+                border: "1.5px solid #fcd34d",
+                borderRadius: 999, padding: "5px 14px",
+                fontSize: 12, fontWeight: 800, color: "#92400e", marginBottom: 14,
               }}>
                 🎁 45 jours gratuits · Aucune carte bancaire
               </div>
-              <h2 style={{ fontSize: 20, fontWeight: 900, color: "#111", margin: 0, letterSpacing: "-0.02em" }}>
-                Créer votre compte gratuit
+              <h2 style={{ fontSize: 22, fontWeight: 900, color: "#111", margin: 0, letterSpacing: "-0.03em", lineHeight: 1.2 }}>
+                Créez votre compte gratuit
               </h2>
-              <p style={{ fontSize: 13, color: "#6b7280", marginTop: 5 }}>
-                Inscription en 30 secondes. Commencez tout de suite.
+              <p style={{ fontSize: 13, color: "#6b7280", marginTop: 6 }}>
+                Email + mot de passe · Inscription en 30 secondes
               </p>
             </div>
 
