@@ -45,16 +45,19 @@ function deriveSubscriptionStatus(
   plan: string | null,
   stripeSubscriptionId: string | null,
   periodEnd: Date | null,
-): "active" | "cancelled" | "expired" | "free" {
-  if (!plan || plan === "free") return "free";
-  if (!stripeSubscriptionId && !periodEnd) return "free";
-  if (!periodEnd) return "active";
-  const now = new Date();
-  if (periodEnd > now) {
-    // A subscription ID but period_end in the future → active (may be cancel_at_period_end)
-    return "active";
+  trialEndsAt: Date | null,
+): "active" | "trial" | "cancelled" | "expired" | "free" {
+  // Paid plan with an active subscription
+  if (plan && plan !== "free" && plan !== "limited_free") {
+    if (!stripeSubscriptionId && !periodEnd) return "active";
+    if (!periodEnd) return "active";
+    const now = new Date();
+    return periodEnd > now ? "active" : "expired";
   }
-  return "expired";
+  // No paid plan — check if still within free trial
+  if (trialEndsAt && trialEndsAt > new Date()) return "trial";
+  // Trial expired, no paid plan
+  return "free";
 }
 
 // ── GET /api/admin/stats ──────────────────────────────────────────────────────
@@ -90,7 +93,8 @@ router.get("/admin/stats", requireAdmin, async (_req, res): Promise<void> => {
 
       const plan = p.subscriptionPlan ?? "free";
       const periodEnd = p.subscriptionPeriodEnd ?? null;
-      const subscriptionStatus = deriveSubscriptionStatus(plan, p.stripeSubscriptionId ?? null, periodEnd);
+      const trialEndsAt = p.trialEndsAt ?? null;
+      const subscriptionStatus = deriveSubscriptionStatus(plan, p.stripeSubscriptionId ?? null, periodEnd, trialEndsAt);
 
       userMap.set(p.userId, {
         userId: p.userId,
@@ -98,6 +102,8 @@ router.get("/admin/stats", requireAdmin, async (_req, res): Promise<void> => {
         name,
         plan,
         subscriptionStatus,
+        trialEndsAt: trialEndsAt?.toISOString() ?? null,
+        trialDaysLeft: trialEndsAt ? Math.max(0, Math.ceil((trialEndsAt.getTime() - Date.now()) / (1000 * 60 * 60 * 24))) : 0,
         stripeCustomerId: p.stripeCustomerId ?? null,
         stripeSubscriptionId: p.stripeSubscriptionId ?? null,
         periodEnd: periodEnd?.toISOString() ?? null,
@@ -122,6 +128,8 @@ router.get("/admin/stats", requireAdmin, async (_req, res): Promise<void> => {
           name,
           plan: "free",
           subscriptionStatus: "free",
+          trialEndsAt: null,
+          trialDaysLeft: 0,
           stripeCustomerId: null,
           stripeSubscriptionId: null,
           periodEnd: null,
@@ -137,16 +145,18 @@ router.get("/admin/stats", requireAdmin, async (_req, res): Promise<void> => {
       (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     );
 
-    const total    = users.length;
-    const free     = users.filter(u => !u.plan || u.plan === "free").length;
-    const starter  = users.filter(u => u.plan === "starter").length;
-    const pro      = users.filter(u => u.plan === "pro").length;
-    const paid     = starter + pro;
-    const active   = users.filter(u => u.subscriptionStatus === "active").length;
-    const convRate = total > 0 ? ((paid / total) * 100).toFixed(1) : "0.0";
+    const total       = users.length;
+    const trial       = users.filter(u => u.subscriptionStatus === "trial").length;
+    const free        = users.filter(u => u.subscriptionStatus === "free").length;
+    const starter     = users.filter(u => u.plan === "starter").length;
+    const pro         = users.filter(u => u.plan === "pro").length;
+    const paid        = starter + pro;
+    const active      = users.filter(u => u.subscriptionStatus === "active").length;
+    const convRate    = total > 0 ? ((paid / total) * 100).toFixed(1) : "0.0";
+    const trialConv   = trial > 0 ? ((paid / trial) * 100).toFixed(1) : "0.0";
 
     res.json({
-      stats: { total, free, starter, pro, paid, active, convRate },
+      stats: { total, trial, free, starter, pro, paid, active, convRate, trialConv },
       users,
       generatedAt: new Date().toISOString(),
     });
