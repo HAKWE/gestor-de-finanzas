@@ -48,3 +48,6 @@ channel = "stable-25_05"
 [userenv.shared]
 APP_DOMAIN = "mobilemoneymanager.africa"
 ADMIN_EMAIL = "sosthen@gmail.com"
+
+[userenv.production]
+VITE_CLERK_PROXY_URL = "https://mobilemoneymanager.africa/api/__clerk"
