@@ -8,7 +8,11 @@ import { Eye, EyeOff, Loader2, CheckCircle2, XCircle } from "lucide-react";
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
-function getPasswordStrength(password: string): { score: number; label: string; color: string } {
+function getPasswordStrength(password: string): {
+  score: number;
+  label: string;
+  color: string;
+} {
   if (password.length === 0) return { score: 0, label: "", color: "" };
   let score = 0;
   if (password.length >= 8) score++;
@@ -34,7 +38,9 @@ function PasswordStrengthBar({ password }: { password: string }) {
           />
         ))}
       </div>
-      <p className={`text-xs font-medium ${score <= 1 ? "text-red-500" : score === 2 ? "text-yellow-600" : score === 3 ? "text-blue-600" : "text-green-600"}`}>
+      <p
+        className={`text-xs font-medium ${score <= 1 ? "text-red-500" : score === 2 ? "text-yellow-600" : score === 3 ? "text-blue-600" : "text-green-600"}`}
+      >
         Force : {label}
       </p>
     </div>
@@ -45,7 +51,8 @@ function FieldError({ message }: { message?: string }) {
   if (!message) return null;
   return (
     <p className="text-sm text-red-500 mt-1 flex items-center gap-1">
-      <XCircle className="h-3 w-3 shrink-0" />{message}
+      <XCircle className="h-3 w-3 shrink-0" />
+      {message}
     </p>
   );
 }
@@ -56,7 +63,11 @@ interface SignUpFormProps {
   simpleForm?: boolean;
 }
 
-export function SignUpForm({ showTitle = false, fullForm = false, simpleForm = false }: SignUpFormProps) {
+export function SignUpForm({
+  showTitle = false,
+  fullForm = false,
+  simpleForm = false,
+}: SignUpFormProps) {
   const { isLoaded } = useAuth();
   const clerk = useClerk();
   const [, setLocation] = useLocation();
@@ -73,7 +84,9 @@ export function SignUpForm({ showTitle = false, fullForm = false, simpleForm = f
     password: "",
     confirmPassword: "",
   });
-  const [errors, setErrors] = useState<Partial<typeof form & { global: string }>>({});
+  const [errors, setErrors] = useState<
+    Partial<typeof form & { global: string }>
+  >({});
   const [code, setCode] = useState("");
   const [codeError, setCodeError] = useState("");
 
@@ -82,35 +95,64 @@ export function SignUpForm({ showTitle = false, fullForm = false, simpleForm = f
     if (fullForm && !form.firstName.trim()) e.firstName = "Prénom requis.";
     if (fullForm && !form.lastName.trim()) e.lastName = "Nom requis.";
     if (!form.email.trim()) e.email = "Email requis.";
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = "Email invalide.";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email))
+      e.email = "Email invalide.";
     if (!form.password) e.password = "Mot de passe requis.";
     else if (form.password.length < 8) e.password = "Minimum 8 caractères.";
     if (!simpleForm) {
-      if (!form.confirmPassword) e.confirmPassword = "Confirmez votre mot de passe.";
-      else if (form.password !== form.confirmPassword) e.confirmPassword = "Les mots de passe ne correspondent pas.";
+      if (!form.confirmPassword)
+        e.confirmPassword = "Confirmez votre mot de passe.";
+      else if (form.password !== form.confirmPassword)
+        e.confirmPassword = "Les mots de passe ne correspondent pas.";
     }
     return e;
   }
 
-  async function handleSubmit(e: React.FormEvent) {
+    async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    console.log("✅ Form submitted! handleSubmit was called");
+
     const errs = validate();
     setErrors(errs);
-    if (Object.keys(errs).length > 0) return;
+    if (Object.keys(errs).length > 0) {
+      console.log("❌ Validation errors:", errs);
+      return;
+    }
 
-    if (!isLoaded || !clerk?.client) return;
+    console.log("isLoaded:", isLoaded);
+    console.log("clerk?.client:", !!clerk?.client);
+
+    if (!isLoaded || !clerk?.client) {
+      console.log("❌ Clerk not ready - skipping signup");
+      setErrors({ global: "Clerk not ready. Please refresh the page." });
+      return;
+    }
 
     setSubmitting(true);
+    setErrors({});
+
     try {
+      console.log("🔄 Starting Clerk signup for:", form.email);
+      // ... rest of the try block remains the same
       const signUp = clerk.client.signUp;
-      await signUp.create({
+      const result = await signUp.create({
         emailAddress: form.email.trim(),
         password: form.password,
+        firstName: form.firstName.trim() || undefined,
+        lastName: form.lastName.trim() || undefined,
       });
+
+      console.log("✅ Clerk signup successful! ID:", result.id);
+
       await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
       setStep("verify");
     } catch (err: any) {
-      const msg = err?.errors?.[0]?.longMessage || err?.errors?.[0]?.message || "Une erreur est survenue. Réessayez.";
+      console.error("❌ Clerk signup FAILED:", err);
+      const msg =
+        err?.errors?.[0]?.longMessage ||
+        err?.errors?.[0]?.message ||
+        err?.message ||
+        "Failed to create account. Please try again.";
       setErrors({ global: msg });
     } finally {
       setSubmitting(false);
@@ -119,8 +161,14 @@ export function SignUpForm({ showTitle = false, fullForm = false, simpleForm = f
 
   async function handleVerify(e: React.FormEvent) {
     e.preventDefault();
-    if (!code.trim()) { setCodeError("Entrez le code de vérification."); return; }
-    if (!clerk?.client) { setCodeError("Service non prêt. Rechargez la page."); return; }
+    if (!code.trim()) {
+      setCodeError("Entrez le code de vérification.");
+      return;
+    }
+    if (!clerk?.client) {
+      setCodeError("Service non prêt. Rechargez la page.");
+      return;
+    }
 
     setSubmitting(true);
     setCodeError("");
@@ -129,8 +177,10 @@ export function SignUpForm({ showTitle = false, fullForm = false, simpleForm = f
       const result = await signUp.attemptEmailAddressVerification({ code });
       if (result.status === "complete") {
         await clerk.setActive({ session: result.createdSessionId });
-        if (form.firstName.trim()) sessionStorage.setItem("pendingFirstName", form.firstName.trim());
-        if (form.lastName.trim()) sessionStorage.setItem("pendingLastName", form.lastName.trim());
+        if (form.firstName.trim())
+          sessionStorage.setItem("pendingFirstName", form.firstName.trim());
+        if (form.lastName.trim())
+          sessionStorage.setItem("pendingLastName", form.lastName.trim());
         const refCode = localStorage.getItem("referralCode");
         if (refCode) {
           try {
@@ -148,7 +198,10 @@ export function SignUpForm({ showTitle = false, fullForm = false, simpleForm = f
         setCodeError("Vérification incomplète. Veuillez réessayer.");
       }
     } catch (err: any) {
-      const msg = err?.errors?.[0]?.longMessage || err?.errors?.[0]?.message || "Code incorrect.";
+      const msg =
+        err?.errors?.[0]?.longMessage ||
+        err?.errors?.[0]?.message ||
+        "Code incorrect.";
       setCodeError(msg);
     } finally {
       setSubmitting(false);
@@ -161,18 +214,23 @@ export function SignUpForm({ showTitle = false, fullForm = false, simpleForm = f
         {showTitle && (
           <div className="mb-2">
             <h2 className="text-xl font-bold">Vérifiez votre e-mail</h2>
-            <p className="text-sm text-muted-foreground mt-1">Un code a été envoyé à <strong>{form.email}</strong></p>
+            <p className="text-sm text-muted-foreground mt-1">
+              Un code a été envoyé à <strong>{form.email}</strong>
+            </p>
           </div>
         )}
         <div className="rounded-lg bg-blue-50 border border-blue-200 px-4 py-3 text-sm text-blue-800">
-          Code envoyé à <strong>{form.email}</strong>. Vérifiez votre boîte e-mail.
+          Code envoyé à <strong>{form.email}</strong>. Vérifiez votre boîte
+          e-mail.
         </div>
         <div>
           <Label htmlFor="code">Code de vérification</Label>
           <Input
             id="code"
             value={code}
-            onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+            onChange={(e) =>
+              setCode(e.target.value.replace(/\D/g, "").slice(0, 6))
+            }
             placeholder="123456"
             className={`text-center text-2xl tracking-widest font-mono ${codeError ? "border-red-400" : ""}`}
             autoComplete="one-time-code"
@@ -181,8 +239,16 @@ export function SignUpForm({ showTitle = false, fullForm = false, simpleForm = f
           />
           <FieldError message={codeError} />
         </div>
-        <Button type="submit" className="w-full h-11 text-base" disabled={submitting}>
-          {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Vérifier"}
+        <Button
+          type="submit"
+          className="w-full h-11 text-base"
+          disabled={submitting}
+        >
+          {submitting ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            "Vérifier"
+          )}
         </Button>
         <button
           type="button"
@@ -202,7 +268,9 @@ export function SignUpForm({ showTitle = false, fullForm = false, simpleForm = f
       {showTitle && (
         <div className="mb-1">
           <h2 className="text-xl font-bold">Créer un compte</h2>
-          <p className="text-sm text-muted-foreground">Gérez votre argent comme un pro</p>
+          <p className="text-sm text-muted-foreground">
+            Gérez votre argent comme un pro
+          </p>
         </div>
       )}
 
@@ -269,7 +337,11 @@ export function SignUpForm({ showTitle = false, fullForm = false, simpleForm = f
             onClick={() => setShowPassword(!showPassword)}
             tabIndex={-1}
           >
-            {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            {showPassword ? (
+              <EyeOff className="h-4 w-4" />
+            ) : (
+              <Eye className="h-4 w-4" />
+            )}
           </button>
         </div>
         <PasswordStrengthBar password={form.password} />
@@ -286,16 +358,18 @@ export function SignUpForm({ showTitle = false, fullForm = false, simpleForm = f
               value={form.confirmPassword}
               onChange={(e) => {
                 setForm({ ...form, confirmPassword: e.target.value });
-                if (errors.confirmPassword) setErrors({ ...errors, confirmPassword: undefined });
+                if (errors.confirmPassword)
+                  setErrors({ ...errors, confirmPassword: undefined });
               }}
               className={`pr-10 ${
                 form.confirmPassword && form.password !== form.confirmPassword
                   ? "border-red-400"
-                  : form.confirmPassword && form.password === form.confirmPassword
-                  ? "border-green-500"
-                  : errors.confirmPassword
-                  ? "border-red-400"
-                  : ""
+                  : form.confirmPassword &&
+                      form.password === form.confirmPassword
+                    ? "border-green-500"
+                    : errors.confirmPassword
+                      ? "border-red-400"
+                      : ""
               }`}
               autoComplete="new-password"
             />
@@ -305,33 +379,49 @@ export function SignUpForm({ showTitle = false, fullForm = false, simpleForm = f
               onClick={() => setShowConfirm(!showConfirm)}
               tabIndex={-1}
             >
-              {showConfirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              {showConfirm ? (
+                <EyeOff className="h-4 w-4" />
+              ) : (
+                <Eye className="h-4 w-4" />
+              )}
             </button>
           </div>
           {form.confirmPassword && form.password === form.confirmPassword && (
             <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
-              <CheckCircle2 className="h-3 w-3" /> Les mots de passe correspondent
+              <CheckCircle2 className="h-3 w-3" /> Les mots de passe
+              correspondent
             </p>
           )}
           {form.confirmPassword && form.password !== form.confirmPassword && (
             <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
-              <XCircle className="h-3 w-3" /> Les mots de passe ne correspondent pas
+              <XCircle className="h-3 w-3" /> Les mots de passe ne correspondent
+              pas
             </p>
           )}
-          {!form.confirmPassword && <FieldError message={errors.confirmPassword} />}
+          {!form.confirmPassword && (
+            <FieldError message={errors.confirmPassword} />
+          )}
         </div>
       )}
 
       <Button
         type="submit"
         className="w-full mt-1"
-        style={{ height: 52, fontSize: 16, fontWeight: 800, letterSpacing: "-0.01em" }}
+        style={{
+          height: 52,
+          fontSize: 16,
+          fontWeight: 800,
+          letterSpacing: "-0.01em",
+        }}
         disabled={buttonDisabled}
       >
         {submitting ? (
           <Loader2 className="h-5 w-5 animate-spin" />
         ) : !isLoaded ? (
-          <><Loader2 className="h-4 w-4 animate-spin mr-2" />Chargement...</>
+          <>
+            <Loader2 className="h-4 w-4 animate-spin mr-2" />
+            Chargement...
+          </>
         ) : (
           "Créer mon compte →"
         )}
@@ -339,7 +429,10 @@ export function SignUpForm({ showTitle = false, fullForm = false, simpleForm = f
 
       <p className="text-center text-sm text-muted-foreground">
         Déjà un compte ?{" "}
-        <Link href={`${basePath}/sign-in`} className="text-primary font-medium hover:underline">
+        <Link
+          href={`${basePath}/sign-in`}
+          className="text-primary font-medium hover:underline"
+        >
           Se connecter
         </Link>
       </p>
