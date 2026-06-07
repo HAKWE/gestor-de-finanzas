@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { createHmac, timingSafeEqual } from "crypto";
+import { createVerify } from "crypto";
 import { getAuth, createClerkClient } from "@clerk/express";
 import { logger } from "../lib/logger";
 import { dueClient } from "../lib/dueClient";
@@ -60,23 +60,24 @@ function verifyDueWebhookSignature(
   rawBody: Buffer,
   signatureHeader: string | undefined,
 ): boolean {
-  const secret = process.env.DUE_WEBHOOK_SECRET;
-  if (!secret) {
-    logger.warn("DUE_WEBHOOK_SECRET not set — skipping signature verification");
+  const publicKey = process.env.DUE_WEBHOOK_PUBLIC_KEY;
+  if (!publicKey) {
+    logger.warn("DUE_WEBHOOK_PUBLIC_KEY not set — skipping signature verification");
     return true;
   }
-  if (!signatureHeader) return false;
+  if (!signatureHeader) {
+    logger.warn("Due webhook: missing x-due-signature header");
+    return false;
+  }
 
   try {
-    const expected = createHmac("sha256", secret)
-      .update(rawBody)
-      .digest("hex");
-    const received = signatureHeader.replace(/^sha256=/, "");
-    return timingSafeEqual(
-      Buffer.from(expected, "hex"),
-      Buffer.from(received, "hex"),
-    );
-  } catch {
+    // Due sends the Ed25519 signature as a base64-encoded string
+    const signatureBuffer = Buffer.from(signatureHeader, "base64");
+    const verify = createVerify("ed25519");
+    verify.update(rawBody);
+    return verify.verify(publicKey, signatureBuffer);
+  } catch (err) {
+    logger.error({ err }, "Due webhook: Ed25519 signature verification error");
     return false;
   }
 }
