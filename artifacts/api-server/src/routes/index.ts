@@ -8,6 +8,7 @@ import stripeRouter from "./stripe";
 import reportsRouter from "./reports";
 import adminRouter from "./admin";
 import referralRouter from "./referral";
+import dueRouter from "./due";
 
 const router: IRouter = Router();
 
@@ -20,6 +21,7 @@ router.use(stripeRouter);
 router.use(reportsRouter);
 router.use(adminRouter);
 router.use(referralRouter);
+router.use(dueRouter);
 
 router.get("/env-status", (_req, res) => {
   const stripeKey = process.env.STRIPE_SECRET_KEY ?? "";

@@ -6,6 +6,7 @@ import { clerkMiddleware } from "@clerk/express";
 import { CLERK_PROXY_PATH, clerkProxyMiddleware } from "./middlewares/clerkProxyMiddleware";
 import { WebhookHandlers } from "./webhookHandlers";
 import { handleStripeWebhook } from "./routes/stripe-webhook-handler";
+import { handleDueWebhook } from "./routes/due";
 import router from "./routes";
 import { logger } from "./lib/logger";
 
@@ -40,6 +41,9 @@ app.post(
   express.raw({ type: "application/json" }),
   handleStripeWebhook
 );
+
+// ── Due webhook — raw body MUST be parsed before express.json() ───────────────
+app.post("/api/due/webhook", express.raw({ type: "application/json" }), handleDueWebhook);
 
 // ─────────────────────────────────────────────────────────────────────────────
 

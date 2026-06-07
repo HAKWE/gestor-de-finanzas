@@ -1,0 +1,102 @@
+Here is the actual code from the sandbox project:
+
+### 1. DueClient (full file)
+```javascript
+const axios = require('axios');
+const config = require('../config');
+const logger = require('../utils/logger');
+const handleError = require('../utils/handleError');
+
+/**
+ * DueClient — wrapper around the Due (OpenDue) sandbox REST API.
+ */
+class DueClient {
+  constructor() {
+    this.http = axios.create({
+      baseURL: config.baseUrl + '/v1',
+      headers: {
+        'Authorization': `Bearer ${config.apiKey}`,
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      timeout: 15_000,
+    });
+
+    this.http.interceptors.request.use((req) => {
+      logger.info(`→ ${req.method.toUpperCase()} ${req.baseURL}${req.url}`);
+      return req;
+    });
+
+    this.http.interceptors.response.use(
+      (res) => {
+        logger.success(`← ${res.status} ${res.config.url}`);
+        return res;
+      },
+      (err) => Promise.reject(err),
+    );
+  }
+
+  async getAccountInfo() {
+    try {
+      const res = await this.http.get('/kyc');
+      return { ok: true, data: res.data };
+    } catch (err) {
+      return handleError(err, 'getAccountInfo');
+    }
+  }
+
+  async createQuote({ source, destination }) {
+    try {
+      const res = await this.http.post('/transfers/quote', { source, destination });
+      return { ok: true, data: res.data };
+    } catch (err) {
+      return handleError(err, 'createQuote');
+    }
+  }
+
+  async createTransfer({ quote, recipient, memo, metadata = {} }) {
+    const payload = {
+      quote,
+      recipient,
+      ...(memo && { memo }),
+      ...(Object.keys(metadata).length && { metadata }),
+    };
+
+    try {
+      const res = await this.http.post('/transfers', payload);
+      return { ok: true, data: res.data };
+    } catch (err) {
+      return handleError(err, 'createTransfer');
+    }
+  }
+
+  async sendPayout({ source, destination, recipientId, memo, metadata }) {
+    logger.info(`Payout: ${source.amount} ${source.currency}/${source.rail} → ${destination.currency}/${destination.rail}`);
+
+    const quoteResult = await this.createQuote({ source, destination });
+    if (!quoteResult.ok) {
+      logger.error('Quote failed', quoteResult);
+      return { ok: false, step: 'quote', ...quoteResult };
+    }
+
+    const { token } = quoteResult.data;
+
+    const transferResult = await this.createTransfer({
+      quote: token,
+      recipient: recipientId,
+      memo,
+      metadata,
+    });
+
+    if (!transferResult.ok) {
+      logger.error('Transfer failed', transferResult);
+      return { ok: false, step: 'transfer', ...transferResult };
+    }
+
+    return { ok: true, quote: quoteResult.data, transfer: transferResult.data };
+  }
+
+  // Add other methods as needed...
+}
+
+module.exports = DueClient;

@@ -76,7 +76,7 @@ router.post("/transactions", requireAuth, async (req: any, res): Promise<void> =
 
   const [transaction] = await db
     .insert(transactionsTable)
-    .values({ ...parsed.data, userId: req.userId, amount: String(parsed.data.amount) })
+    .values({ ...parsed.data, userId: req.userId, amount: String(parsed.data.amount), date: parsed.data.date instanceof Date ? parsed.data.date.toISOString() : parsed.data.date })
     .returning();
 
   res.status(201).json({
