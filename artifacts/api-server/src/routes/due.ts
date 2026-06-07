@@ -98,6 +98,18 @@ router.get(
   },
 );
 
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+// Due memos only allow [a-zA-Z0-9 - . /] — strip everything else and
+// collapse multiple spaces into a single hyphen so the string stays readable.
+function sanitizeMemo(raw: string): string {
+  return raw
+    .replace(/\s+/g, "-")            // spaces → hyphens
+    .replace(/[^a-zA-Z0-9\-.\/]/g, "")  // strip remaining disallowed chars
+    .replace(/-{2,}/g, "-")          // collapse double-hyphens
+    .slice(0, 200);                   // respect Due's 200-char max
+}
+
 // ── POST /api/due/payout ──────────────────────────────────────────────────────
 // Admin-only: create a Due payout (quote → transfer).
 //
@@ -112,7 +124,8 @@ router.post(
   "/due/payout",
   requireAdmin,
   async (req: any, res): Promise<void> => {
-    const { source, destination, recipientId, memo, metadata } = req.body ?? {};
+    const { source, destination, recipientId, memo: rawMemo, metadata } = req.body ?? {};
+    const memo = rawMemo ? sanitizeMemo(String(rawMemo)) : undefined;
 
     if (!source || !destination || !recipientId) {
       res.status(400).json({
