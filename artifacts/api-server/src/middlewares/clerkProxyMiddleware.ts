@@ -25,6 +25,20 @@ import type { RequestHandler } from "express";
 const CLERK_FAPI = "https://frontend-api.clerk.dev";
 export const CLERK_PROXY_PATH = "/api/__clerk";
 
+/**
+ * Returns the proxy URL that clerkMiddleware() should trust for JWT `iss`
+ * verification. In production the proxy URL is the first entry in
+ * REPLIT_DOMAINS (the primary custom/replit.app domain). In dev it returns
+ * undefined so clerkMiddleware() uses the default Clerk FAPI URL.
+ */
+export function buildProxyUrl(): string | undefined {
+  if (process.env.NODE_ENV !== "production") return undefined;
+  const domains = process.env.REPLIT_DOMAINS ?? "";
+  const primary = domains.split(",")[0]?.trim();
+  if (!primary) return undefined;
+  return `https://${primary}${CLERK_PROXY_PATH}`;
+}
+
 export function clerkProxyMiddleware(): RequestHandler {
   // Only run proxy in production — Clerk proxying doesn't work for dev instances
   if (process.env.NODE_ENV !== "production") {

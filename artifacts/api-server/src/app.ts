@@ -3,7 +3,7 @@ import cors from "cors";
 import pinoHttp from "pino-http";
 import cookieParser from "cookie-parser";
 import { clerkMiddleware } from "@clerk/express";
-import { CLERK_PROXY_PATH, clerkProxyMiddleware } from "./middlewares/clerkProxyMiddleware";
+import { CLERK_PROXY_PATH, clerkProxyMiddleware, buildProxyUrl } from "./middlewares/clerkProxyMiddleware";
 import { WebhookHandlers } from "./webhookHandlers";
 import { handleStripeWebhook } from "./routes/stripe-webhook-handler";
 import { handleDueWebhook } from "./routes/due";
@@ -74,7 +74,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-app.use(clerkMiddleware());
+app.use(clerkMiddleware({ proxyUrl: buildProxyUrl() }));
 
 app.use("/api", router);
 
