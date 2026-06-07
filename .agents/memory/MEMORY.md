@@ -1,0 +1,1 @@
+- [Due API rails and constraints](due-api-rails.md) — correct rails for USDC→XOF payout, memo rules, amount convention.
