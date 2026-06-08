@@ -185,7 +185,7 @@ interface PayoutFormProps {
 }
 
 function PayoutFormInner({ onSuccess }: PayoutFormProps) {
-  const { getToken } = useAuth();
+  const { getToken, userId } = useAuth();
 
   /** Safe wrapper — returns null if Clerk isn't ready instead of throwing. */
   async function safeGetToken(): Promise<string | null> {
@@ -386,7 +386,15 @@ function PayoutFormInner({ onSuccess }: PayoutFormProps) {
         source: { amount: parseFloat(form.amountUsd), currency: "USDC", rail: "base-sepolia" },
         destination: { currency: country.currency, rail: country.rail },
         memo: form.memo.trim() || undefined,
-        metadata: { phone: form.phone.trim(), provider, country: country.name },
+        metadata: {
+          phone: form.phone.trim(),
+          provider,
+          country: country.name,
+          // Subscription renewal fields — consumed by the Due webhook handler
+          userId: userId ?? "",
+          planKey: subInfo?.effectivePlan ?? subInfo?.plan ?? "starter",
+          paymentType: "subscription_renewal",
+        },
       };
       const res = await fetch(`${BASE_PATH}/api/due/payout`, {
         method: "POST",

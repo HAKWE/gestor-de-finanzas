@@ -2,6 +2,8 @@ import { Router, type IRouter, type Request, type Response, type NextFunction } 
 import { createVerify } from "crypto";
 import { getAuth, createClerkClient } from "@clerk/express";
 import { z } from "zod/v4";
+import { eq } from "drizzle-orm";
+import { db, userProfilesTable } from "@workspace/db";
 import { logger } from "../lib/logger";
 import { dueClient } from "../lib/dueClient";
 import { payoutRateLimiter, dueReadRateLimiter } from "../middlewares/rateLimiter";
@@ -396,7 +398,58 @@ function verifyDueWebhookSignature(
   }
 }
 
-export function handleDueWebhook(req: any, res: any): void {
+// ── Subscription renewal via Mobile Money ─────────────────────────────────────
+
+const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
+
+async function renewMobileMoneySubscription(
+  userId: string,
+  planKey: string,
+  transferId: string,
+): Promise<void> {
+  const profiles = await db
+    .select()
+    .from(userProfilesTable)
+    .where(eq(userProfilesTable.userId, userId))
+    .limit(1);
+
+  const profile = profiles[0];
+  if (!profile) {
+    logger.warn(
+      { userId: anonId(userId), transferId },
+      "[due-webhook] No user profile found for Mobile Money renewal — skipping",
+    );
+    return;
+  }
+
+  const now = new Date();
+  // Extend from current period end when it's still in the future; otherwise from now
+  const base =
+    profile.subscriptionPeriodEnd && profile.subscriptionPeriodEnd > now
+      ? profile.subscriptionPeriodEnd
+      : now;
+  const newPeriodEnd = new Date(base.getTime() + THIRTY_DAYS_MS);
+
+  // Use metadata planKey if it's a known plan; fall back to the user's existing plan
+  const plan =
+    ["starter", "pro"].includes(planKey)
+      ? planKey
+      : (profile.subscriptionPlan ?? "starter");
+
+  await db
+    .update(userProfilesTable)
+    .set({ subscriptionPlan: plan, subscriptionPeriodEnd: newPeriodEnd })
+    .where(eq(userProfilesTable.userId, userId));
+
+  logger.info(
+    { userId: anonId(userId), transferId, plan, newPeriodEnd },
+    "[due-webhook] ✅ Mobile Money subscription renewed",
+  );
+}
+
+// ── Webhook handler ────────────────────────────────────────────────────────────
+
+export async function handleDueWebhook(req: any, res: any): Promise<void> {
   const sig = req.headers["x-due-signature"] as string | undefined;
 
   if (!verifyDueWebhookSignature(req.body as Buffer, sig)) {
@@ -414,32 +467,80 @@ export function handleDueWebhook(req: any, res: any): void {
   }
 
   const eventType = event.type as string | undefined;
-  logger.info({ eventType }, "Due webhook received");
+  logger.info({ eventType }, "[due-webhook] Event received");
 
-  switch (eventType) {
-    case "transfer.completed": {
-      const transfer = event.data as Record<string, unknown> | undefined;
-      logger.info({ transferId: transfer?.id }, "Due transfer completed");
-      break;
-    }
-    case "transfer.failed": {
-      const transfer = event.data as Record<string, unknown> | undefined;
-      logger.error(
-        { transferId: transfer?.id, reason: transfer?.failure_reason },
-        "Due transfer failed",
+  /** Process a transfer that has reached "completed" status. */
+  async function onTransferCompleted(transfer: Record<string, unknown> | undefined): Promise<void> {
+    if (!transfer) return;
+    const transferId = String(transfer.id ?? "unknown");
+    const metadata = (transfer.metadata ?? {}) as Record<string, string>;
+
+    logger.info({ transferId, paymentType: metadata.paymentType }, "[due-webhook] Transfer completed");
+
+    if (metadata.paymentType === "subscription_renewal" && metadata.userId) {
+      logger.info(
+        { transferId, userId: anonId(metadata.userId), planKey: metadata.planKey },
+        "[due-webhook] Subscription renewal triggered",
       );
-      break;
+      await renewMobileMoneySubscription(
+        metadata.userId,
+        metadata.planKey ?? "starter",
+        transferId,
+      );
+    } else {
+      logger.info(
+        { transferId, paymentType: metadata.paymentType ?? "(none)" },
+        "[due-webhook] Transfer completed — not a subscription renewal, no action taken",
+      );
     }
-    case "transfer.pending": {
-      const transfer = event.data as Record<string, unknown> | undefined;
-      logger.info({ transferId: transfer?.id }, "Due transfer pending");
-      break;
-    }
-    default:
-      logger.info({ eventType }, "Due webhook: unhandled event type");
   }
 
-  res.status(200).json({ received: true });
+  try {
+    switch (eventType) {
+      case "transfer.completed": {
+        const transfer = event.data as Record<string, unknown> | undefined;
+        await onTransferCompleted(transfer);
+        break;
+      }
+
+      // Some Due environments fire status_changed instead of (or alongside) transfer.completed
+      case "transfer.status_changed": {
+        const transfer = event.data as Record<string, unknown> | undefined;
+        if (transfer?.status === "completed") {
+          await onTransferCompleted(transfer);
+        } else {
+          logger.info(
+            { transferId: transfer?.id, status: transfer?.status },
+            "[due-webhook] Transfer status changed (not completed — ignored)",
+          );
+        }
+        break;
+      }
+
+      case "transfer.failed": {
+        const transfer = event.data as Record<string, unknown> | undefined;
+        logger.error(
+          { transferId: transfer?.id, reason: transfer?.failure_reason },
+          "[due-webhook] Transfer failed",
+        );
+        break;
+      }
+
+      case "transfer.pending": {
+        const transfer = event.data as Record<string, unknown> | undefined;
+        logger.info({ transferId: transfer?.id }, "[due-webhook] Transfer pending");
+        break;
+      }
+
+      default:
+        logger.info({ eventType }, "[due-webhook] Unhandled event type — ignored");
+    }
+
+    res.status(200).json({ received: true, type: eventType });
+  } catch (err: unknown) {
+    logger.error({ err, eventType }, "[due-webhook] Handler error");
+    res.status(500).json({ error: "Internal webhook processing error" });
+  }
 }
 
 export default router;
