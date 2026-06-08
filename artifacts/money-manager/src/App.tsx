@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, Component } from "react";
+import type { ErrorInfo, ReactNode } from "react";
 import { ClerkProvider, Show, useClerk, useAuth, useUser } from '@clerk/react';
 import { Switch, Route, useLocation, Router as WouterRouter, Redirect } from 'wouter';
 import { queryClient } from "./lib/queryClient";
@@ -611,16 +612,49 @@ function ClerkProviderWithRoutes() {
   );
 }
 
+class AppErrorBoundary extends Component<{ children: ReactNode }, { error: Error | null }> {
+  constructor(props: { children: ReactNode }) {
+    super(props);
+    this.state = { error: null };
+  }
+  static getDerivedStateFromError(error: Error) {
+    return { error };
+  }
+  componentDidCatch(error: Error, info: ErrorInfo) {
+    console.error("[AppErrorBoundary]", error, info.componentStack);
+  }
+  render() {
+    if (this.state.error) {
+      return (
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "100dvh", padding: 32, textAlign: "center", fontFamily: "sans-serif" }}>
+          <div style={{ fontSize: 40, marginBottom: 16 }}>⚠️</div>
+          <h1 style={{ fontSize: 20, fontWeight: 700, color: "#111", marginBottom: 8 }}>Quelque chose s'est mal passé</h1>
+          <p style={{ color: "#6b7280", fontSize: 14, marginBottom: 24 }}>Veuillez recharger la page. Si le problème persiste, contactez le support.</p>
+          <button
+            onClick={() => window.location.reload()}
+            style={{ background: "#f97316", color: "#fff", border: "none", borderRadius: 12, padding: "12px 28px", fontWeight: 700, fontSize: 14, cursor: "pointer" }}
+          >
+            Recharger la page
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 function App() {
   return (
-    <LanguageProvider>
-      <TooltipProvider>
-        <WouterRouter base={basePath}>
-          <ClerkProviderWithRoutes />
-        </WouterRouter>
-        <Toaster />
-      </TooltipProvider>
-    </LanguageProvider>
+    <AppErrorBoundary>
+      <LanguageProvider>
+        <TooltipProvider>
+          <WouterRouter base={basePath}>
+            <ClerkProviderWithRoutes />
+          </WouterRouter>
+          <Toaster />
+        </TooltipProvider>
+      </LanguageProvider>
+    </AppErrorBoundary>
   );
 }
 

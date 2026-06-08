@@ -27,8 +27,17 @@ if (!basePath) {
   );
 }
 
+const clerkProxyUrl =
+  process.env.VITE_CLERK_PROXY_URL ??
+  (process.env.REPLIT_DEV_DOMAIN
+    ? `https://${process.env.REPLIT_DEV_DOMAIN}/api/__clerk`
+    : undefined);
+
 export default defineConfig({
   base: basePath,
+  define: {
+    "import.meta.env.VITE_CLERK_PROXY_URL": JSON.stringify(clerkProxyUrl),
+  },
   plugins: [
     react(),
     tailwindcss(),
