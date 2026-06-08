@@ -86,9 +86,14 @@ const COUNTRIES: Country[] = [
   { name: "Ghana",          flag: "🇬🇭", dialCode: "+233", currency: "GHS", rail: "ghs_local", providers: ["MTN MoMo", "Vodafone Cash", "AirtelTigo Money"] },
 ];
 
+// Static EUR fallback rates (XOF/XAF are legally pegged to EUR at 655.957)
 const FX_RATES: Record<string, number> = {
   XOF: 656, XAF: 656, NGN: 1700, KES: 140, GHS: 17,
 };
+
+// Due sandbox only accepts USDC/base-sepolia as source.
+// Convert the returned USDC→dest rate to EUR→dest: 1 EUR ≈ 1.07 USDC.
+const EUR_USD_RATE = 1.07;
 
 const QUICK_AMOUNTS = [5, 10, 20, 50];
 
@@ -323,20 +328,26 @@ function PayoutFormInner({ onSuccess }: PayoutFormProps) {
         const data = await res.json();
         const dest = data.quote?.destination as { amount?: number; currency?: string } | undefined;
         const src  = data.quote?.source     as { amount?: number } | undefined;
-        const fxRate: number | undefined = typeof data.quote?.fxRate === "number" ? data.quote.fxRate : undefined;
-        const fee: number | undefined = (typeof src?.amount === "number" && typeof dest?.amount === "number" && fxRate)
-          ? Math.max(0, src.amount - dest.amount / fxRate) : undefined;
+
+        // Due sandbox quotes USDC→dest; adjust to EUR→dest by applying EUR/USD ratio
+        const usdcFxRate = typeof data.quote?.fxRate === "number" ? data.quote.fxRate : undefined;
+        const fxRate = usdcFxRate ? parseFloat((usdcFxRate * EUR_USD_RATE).toFixed(2)) : undefined;
+        const rawDestAmt = typeof dest?.amount === "number" ? dest.amount : null;
+        const adjustedDestAmt = rawDestAmt !== null ? Math.round(rawDestAmt * EUR_USD_RATE) : null;
+        const fee: number | undefined = (typeof src?.amount === "number" && adjustedDestAmt !== null && fxRate)
+          ? Math.max(0, src.amount * EUR_USD_RATE - adjustedDestAmt / fxRate) : undefined;
         setLiveQuote({
-          destAmount: typeof dest?.amount === "number" ? Math.round(dest.amount) : approxLocal,
-          srcAmount: src?.amount,
-          fxRate,
+          destAmount: adjustedDestAmt !== null ? adjustedDestAmt : approxLocal,
+          srcAmount: src?.amount != null ? +(src.amount * EUR_USD_RATE).toFixed(2) : undefined,
+          fxRate: fxRate ?? FX_RATES[country.currency],
           fee,
-          isLive: typeof dest?.amount === "number",
+          isLive: adjustedDestAmt !== null,
         });
       } catch {
-        // API unreachable or Clerk not loaded — fall back to local approximate rate
+        // API unreachable or channel not supported — fall back to static EUR rates
         setLiveQuote({
           destAmount: approxLocal,
+          fxRate: FX_RATES[country.currency],
           isLive: false,
         });
       } finally {

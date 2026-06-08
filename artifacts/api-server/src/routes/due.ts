@@ -145,7 +145,7 @@ router.get(
     );
 
     const result = await dueClient.createQuote({
-      source: { amount, currency: "EUR", rail: "sepa_instant" },
+      source: { amount, currency: "USDC", rail: "base-sepolia" },
       destination: { currency: to_currency, rail: to_rail },
     });
 
