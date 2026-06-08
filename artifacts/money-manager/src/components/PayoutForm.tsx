@@ -252,13 +252,13 @@ function PayoutFormInner({ onSuccess }: PayoutFormProps) {
     if (quoteTimer.current) clearTimeout(quoteTimer.current);
     quoteTimer.current = setTimeout(async () => {
       try {
-        const token = await getToken();
+        const token = await safeGetToken();
         const url = `${BASE_PATH}/api/due/quote?amount=${amt}&to_currency=${country.currency}&to_rail=${country.rail}`;
         const res = await fetch(url, {
           credentials: "include",
           headers: token ? { Authorization: `Bearer ${token}` } : {},
         });
-        if (!res.ok) throw new Error("quote failed");
+        if (!res.ok) throw new Error(`quote ${res.status}`);
         const data = await res.json();
         const dest = data.quote?.destination as { amount?: number; currency?: string } | undefined;
         const src  = data.quote?.source     as { amount?: number } | undefined;
@@ -273,7 +273,11 @@ function PayoutFormInner({ onSuccess }: PayoutFormProps) {
           isLive: typeof dest?.amount === "number",
         });
       } catch {
-        setLiveQuote(null);
+        // API unreachable or Clerk not loaded — fall back to local approximate rate
+        setLiveQuote({
+          destAmount: approxLocal,
+          isLive: false,
+        });
       } finally {
         setQuoteLoading(false);
       }
@@ -315,7 +319,7 @@ function PayoutFormInner({ onSuccess }: PayoutFormProps) {
     setStep("submitting");
     setServerError("");
     try {
-      const token = await getToken();
+      const token = await safeGetToken();
       const body = {
         recipientId: form.recipientId.trim(),
         source: { amount: parseFloat(form.amountUsd), currency: "USDC", rail: "base-sepolia" },
@@ -936,4 +940,14 @@ function inputStyle(hasError: boolean, hasLeftIcon = false): React.CSSProperties
     fontFamily: "inherit",
     transition: "border-color 0.15s",
   };
+}
+
+// ── Default export wrapped in error boundary ───────────────────────────────────
+
+export default function PayoutForm(props: PayoutFormProps) {
+  return (
+    <PayoutErrorBoundary>
+      <PayoutFormInner {...props} />
+    </PayoutErrorBoundary>
+  );
 }
