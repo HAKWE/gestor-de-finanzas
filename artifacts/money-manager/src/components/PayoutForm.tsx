@@ -424,7 +424,7 @@ function PayoutFormInner({ onSuccess }: PayoutFormProps) {
                 </span>
               } />
               {result.sourceAmount != null && (
-                <Row label="Envoyé" value={<span style={{ fontWeight: 700 }}>${result.sourceAmount.toFixed(2)} USD</span>} />
+                <Row label="Envoyé" value={<span style={{ fontWeight: 700 }}>${Number(result.sourceAmount).toFixed(2)} USD</span>} />
               )}
               {result.destinationAmount != null && (
                 <Row label="Reçu" value={
