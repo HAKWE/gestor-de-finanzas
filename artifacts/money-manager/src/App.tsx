@@ -30,6 +30,7 @@ import Legal from "./pages/legal";
 import AdminPage from "./pages/admin";
 import ReferralRedirectPage from "./pages/referral-redirect";
 import Payout from "./pages/payout";
+import Payouts from "./pages/payouts";
 import NotFound from "@/pages/not-found";
 
 const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
@@ -598,6 +599,7 @@ function ClerkProviderWithRoutes() {
           <Route path="/success" component={Success} />
           <Route path="/subscription"><ProtectedRoute component={Subscription} /></Route>
           <Route path="/payout"><ProtectedRoute component={Payout} /></Route>
+          <Route path="/payouts"><ProtectedRoute component={Payouts} /></Route>
           <Route path="/confidentialite" component={Privacy} />
           <Route path="/conditions" component={Terms} />
           <Route path="/mentions-legales" component={Legal} />
