@@ -255,11 +255,15 @@ router.post(
     });
 
     if (!result.ok) {
+      const errStr = typeof result.error === "string" ? result.error : "";
+
       // Detect stale recipient ID (created under a different API key / account)
       const isRecipientGone =
-        result.step === "transfer" &&
-        typeof result.error === "string" &&
-        /recipient not found/i.test(result.error);
+        result.step === "transfer" && /recipient not found/i.test(errStr);
+
+      // Detect KYC not approved on the Due sender account
+      const isKycBlocked =
+        result.step === "transfer" && /kyc not passed/i.test(errStr);
 
       req.log.error(
         { userId: anonId(req.userId), step: result.step, rawError: result.error },
@@ -270,6 +274,14 @@ router.post(
         res.status(404).json({
           error: "Destinataire introuvable. Supprimez-le et recréez-le.",
           code: "recipient_not_found",
+          step: result.step,
+        });
+      } else if (isKycBlocked) {
+        res.status(403).json({
+          error:
+            "La vérification d'identité (KYC) du compte Due n'est pas encore approuvée. " +
+            "Complétez la vérification pour débloquer les transferts.",
+          code: "kyc_not_passed",
           step: result.step,
         });
       } else {

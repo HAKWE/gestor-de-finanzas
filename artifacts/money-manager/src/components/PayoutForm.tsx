@@ -438,6 +438,11 @@ function PayoutFormInner({ onSuccess }: PayoutFormProps) {
           setStep("form");
           return;
         }
+        if (data.code === "kyc_not_passed") {
+          setServerError("kyc_not_passed");
+          setStep("error");
+          return;
+        }
         throw new Error(data.error ?? `Erreur ${res.status}`);
       }
       const r: PayoutResult = {
@@ -565,24 +570,65 @@ function PayoutFormInner({ onSuccess }: PayoutFormProps) {
   // ═══════════════════════════════════════════════════════════════════════════
 
   if (step === "error") {
+    const isKyc = serverError === "kyc_not_passed";
     return (
       <div style={{ maxWidth: 480, margin: "0 auto", padding: "0 4px" }}>
         <style>{KEYFRAMES}</style>
-        <div style={{ background: "#fff", borderRadius: 22, border: "1px solid #fecaca", boxShadow: "0 4px 20px rgba(220,38,38,0.08)", overflow: "hidden", animation: "fadeUp 0.3s ease" }}>
-          <div style={{ background: "linear-gradient(135deg, #fef2f2, #fee2e2)", padding: "28px 24px 20px", textAlign: "center" }}>
-            <div style={{ width: 64, height: 64, borderRadius: 20, background: RED, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px" }}>
-              <AlertCircle style={{ width: 32, height: 32, color: "#fff" }} />
+        <div style={{
+          background: "#fff", borderRadius: 22,
+          border: `1px solid ${isKyc ? "#fde68a" : "#fecaca"}`,
+          boxShadow: `0 4px 20px ${isKyc ? "rgba(234,179,8,0.10)" : "rgba(220,38,38,0.08)"}`,
+          overflow: "hidden", animation: "fadeUp 0.3s ease",
+        }}>
+          <div style={{ background: isKyc ? "linear-gradient(135deg, #fffbeb, #fef3c7)" : "linear-gradient(135deg, #fef2f2, #fee2e2)", padding: "28px 24px 20px", textAlign: "center" }}>
+            <div style={{ width: 64, height: 64, borderRadius: 20, background: isKyc ? "#d97706" : RED, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px" }}>
+              {isKyc
+                ? <ShieldCheck style={{ width: 32, height: 32, color: "#fff" }} />
+                : <AlertCircle style={{ width: 32, height: 32, color: "#fff" }} />}
             </div>
-            <h2 style={{ fontSize: 20, fontWeight: 800, color: "#7f1d1d", margin: "0 0 8px" }}>Virement échoué</h2>
-            <p style={{ fontSize: 13, color: "#b91c1c", background: "#fff", borderRadius: 10, padding: "10px 14px", margin: 0, textAlign: "left", lineHeight: 1.6 }}>{serverError}</p>
+            <h2 style={{ fontSize: 20, fontWeight: 800, color: isKyc ? "#78350f" : "#7f1d1d", margin: "0 0 8px" }}>
+              {isKyc ? "Vérification d'identité requise" : "Virement échoué"}
+            </h2>
+            {isKyc ? (
+              <div style={{ textAlign: "left" }}>
+                <p style={{ fontSize: 13, color: "#92400e", background: "#fff", borderRadius: 10, padding: "12px 14px", margin: "0 0 10px", lineHeight: 1.7 }}>
+                  Le compte Due utilisé pour les virements n'a pas encore été vérifié (KYC en cours de révision).
+                  Les transferts sont bloqués jusqu'à l'approbation complète.
+                </p>
+                <p style={{ fontSize: 13, color: "#92400e", background: "#fff", borderRadius: 10, padding: "12px 14px", margin: 0, lineHeight: 1.7 }}>
+                  <strong>Action requise :</strong> complétez la vérification d'identité sur le tableau de bord Due, puis réessayez.
+                </p>
+              </div>
+            ) : (
+              <p style={{ fontSize: 13, color: "#b91c1c", background: "#fff", borderRadius: 10, padding: "10px 14px", margin: 0, textAlign: "left", lineHeight: 1.6 }}>{serverError}</p>
+            )}
           </div>
           <div style={{ padding: "20px 24px 24px", display: "flex", gap: 10, flexDirection: "column" }}>
-            <button onClick={() => setStep("confirm")} style={{ width: "100%", background: ORANGE, color: "#fff", border: "none", borderRadius: 14, padding: "14px 0", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>
-              Réessayer
-            </button>
-            <button onClick={reset} style={{ width: "100%", background: "#f9fafb", color: "#374151", border: `1.5px solid ${BORDER}`, borderRadius: 14, padding: "13px 0", fontWeight: 600, fontSize: 14, cursor: "pointer" }}>
-              Recommencer
-            </button>
+            {isKyc ? (
+              <>
+                <a
+                  href="https://app.due.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, width: "100%", background: "#d97706", color: "#fff", border: "none", borderRadius: 14, padding: "14px 0", fontWeight: 700, fontSize: 14, cursor: "pointer", textDecoration: "none", boxSizing: "border-box" }}
+                >
+                  <ExternalLink style={{ width: 15, height: 15 }} />
+                  Ouvrir le tableau de bord Due
+                </a>
+                <button onClick={reset} style={{ width: "100%", background: "#f9fafb", color: "#374151", border: `1.5px solid ${BORDER}`, borderRadius: 14, padding: "13px 0", fontWeight: 600, fontSize: 14, cursor: "pointer" }}>
+                  Réessayer plus tard
+                </button>
+              </>
+            ) : (
+              <>
+                <button onClick={() => setStep("confirm")} style={{ width: "100%", background: ORANGE, color: "#fff", border: "none", borderRadius: 14, padding: "14px 0", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>
+                  Réessayer
+                </button>
+                <button onClick={reset} style={{ width: "100%", background: "#f9fafb", color: "#374151", border: `1.5px solid ${BORDER}`, borderRadius: 14, padding: "13px 0", fontWeight: 600, fontSize: 14, cursor: "pointer" }}>
+                  Recommencer
+                </button>
+              </>
+            )}
           </div>
         </div>
       </div>
