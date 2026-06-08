@@ -34,8 +34,17 @@ export const CLERK_PROXY_PATH = "/api/__clerk";
 export function buildProxyUrl(): string | undefined {
   const secretKey = process.env.CLERK_SECRET_KEY ?? "";
   if (!secretKey.startsWith("sk_live_")) return undefined; // dev instance
-  const domains = process.env.REPLIT_DOMAINS ?? "";
-  const primary = domains.split(",")[0]?.trim();
+
+  const domains = (process.env.REPLIT_DOMAINS ?? "")
+    .split(",")
+    .map((d) => d.trim())
+    .filter(Boolean);
+
+  // Prefer the custom domain — the JWT `iss` uses it, not the .replit.app subdomain
+  const primary =
+    domains.find((d) => !d.endsWith(".replit.app") && !d.endsWith(".replit.dev")) ??
+    domains[0];
+
   if (!primary) return undefined;
   return `https://${primary}${CLERK_PROXY_PATH}`;
 }
