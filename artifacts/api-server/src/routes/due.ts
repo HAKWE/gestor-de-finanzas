@@ -105,8 +105,8 @@ const PayoutBodySchema = z.object({
   source: z.object({
     amount: z
       .number({ error: "source.amount must be a number" })
-      .min(2, "Minimum payout amount is 2 USDC")
-      .max(10_000, "Maximum payout amount is 10,000 USDC"),
+      .min(5, "Minimum payout amount is 5 EUR")
+      .max(200, "Maximum payout amount is 200 EUR"),
     currency: z.string().min(1, "source.currency is required"),
     rail: z.string().min(1, "source.rail is required"),
   }),
@@ -119,7 +119,7 @@ const PayoutBodySchema = z.object({
 });
 
 // ── GET /api/due/quote ────────────────────────────────────────────────────────
-// Returns a live exchange quote for a given USDC amount and destination.
+// Returns a live exchange quote for a given EUR amount and destination.
 // Used by the frontend for real-time XOF/XAF/KES/NGN/GHS estimates.
 
 router.get(
@@ -131,9 +131,9 @@ router.get(
       req.query as Record<string, string>;
 
     const amount = parseFloat(amountStr);
-    if (!Number.isFinite(amount) || amount < 2 || !to_currency || !to_rail) {
+    if (!Number.isFinite(amount) || amount < 5 || !to_currency || !to_rail) {
       res.status(400).json({
-        error: "amount (≥2), to_currency, and to_rail are required",
+        error: "amount (≥5), to_currency, and to_rail are required",
         code: "validation_error",
       });
       return;
@@ -145,7 +145,7 @@ router.get(
     );
 
     const result = await dueClient.createQuote({
-      source: { amount, currency: "USDC", rail: "base-sepolia" },
+      source: { amount, currency: "EUR", rail: "sepa_instant" },
       destination: { currency: to_currency, rail: to_rail },
     });
 

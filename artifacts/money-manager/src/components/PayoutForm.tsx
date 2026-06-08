@@ -3,7 +3,7 @@ import type { ReactNode, ErrorInfo } from "react";
 import { useAuth } from "@clerk/react";
 import {
   Send, CheckCircle2, AlertCircle, Loader2, ArrowLeft,
-  Info, Phone, FileText, DollarSign, ShieldCheck, RefreshCw,
+  Info, Phone, FileText, Euro, ShieldCheck, RefreshCw,
   Copy, Check, TriangleAlert, Users, ExternalLink, User,
   Zap, CreditCard, Calendar, Crown,
 } from "lucide-react";
@@ -87,7 +87,7 @@ const COUNTRIES: Country[] = [
 ];
 
 const FX_RATES: Record<string, number> = {
-  XOF: 610, XAF: 610, NGN: 1600, KES: 130, GHS: 16,
+  XOF: 656, XAF: 656, NGN: 1700, KES: 140, GHS: 17,
 };
 
 const QUICK_AMOUNTS = [5, 10, 20, 50];
@@ -308,7 +308,7 @@ function PayoutFormInner({ onSuccess }: PayoutFormProps) {
   // Debounced live quote
   useEffect(() => {
     const amt = parseFloat(form.amountUsd);
-    if (!amt || amt < 2) { setLiveQuote(null); setQuoteLoading(false); return; }
+    if (!amt || amt < 5) { setLiveQuote(null); setQuoteLoading(false); return; }
     setQuoteLoading(true);
     if (quoteTimer.current) clearTimeout(quoteTimer.current);
     quoteTimer.current = setTimeout(async () => {
@@ -352,8 +352,8 @@ function PayoutFormInner({ onSuccess }: PayoutFormProps) {
     const errs: Partial<Record<keyof FormState, string>> = {};
     const amt = parseFloat(form.amountUsd);
     if (!form.amountUsd || isNaN(amt))    errs.amountUsd = "Montant requis";
-    else if (amt < 2)                     errs.amountUsd = "Minimum 2 USD";
-    else if (amt > 10_000)                errs.amountUsd = "Maximum 10 000 USD";
+    else if (amt < 5)                     errs.amountUsd = "Minimum 5 EUR";
+    else if (amt > 200)                   errs.amountUsd = "Maximum 200 EUR";
     if (!form.phone.trim())               errs.phone = "Numéro requis";
     else if (!/^\+?[0-9\s\-]{7,16}$/.test(form.phone.trim()))
                                           errs.phone = "Numéro invalide";
@@ -383,7 +383,7 @@ function PayoutFormInner({ onSuccess }: PayoutFormProps) {
       const token = await safeGetToken();
       const body = {
         recipientId: form.recipientId.trim(),
-        source: { amount: parseFloat(form.amountUsd), currency: "USDC", rail: "base-sepolia" },
+        source: { amount: parseFloat(form.amountUsd), currency: "EUR", rail: "sepa_instant" },
         destination: { currency: country.currency, rail: country.rail },
         memo: form.memo.trim() || undefined,
         metadata: {
@@ -493,7 +493,7 @@ function PayoutFormInner({ onSuccess }: PayoutFormProps) {
                 </span>
               } />
               {result.sourceAmount != null && (
-                <Row label="Envoyé" value={<span style={{ fontWeight: 700 }}>${Number(result.sourceAmount).toFixed(2)} USD</span>} />
+                <Row label="Envoyé" value={<span style={{ fontWeight: 700 }}>{fmtCurrency(Number(result.sourceAmount), "EUR")}</span>} />
               )}
               {result.destinationAmount != null && (
                 <Row label="Reçu" value={
@@ -503,7 +503,7 @@ function PayoutFormInner({ onSuccess }: PayoutFormProps) {
                 } />
               )}
               {result.fxRate != null && (
-                <Row label="Taux" value={`1 USD = ${result.fxRate} ${result.destinationCurrency ?? country.currency}`} />
+                <Row label="Taux" value={`1 EUR = ${result.fxRate} ${result.destinationCurrency ?? country.currency}`} />
               )}
               <Row label="Réseau" value={`${provider} · ${country.flag} ${country.name}`} />
               <Row label="Téléphone" value={form.phone} />
@@ -577,7 +577,7 @@ function PayoutFormInner({ onSuccess }: PayoutFormProps) {
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", paddingBottom: 12, marginBottom: 12, borderBottom: `1px solid ${BORDER}` }}>
                 <div>
                   <p style={{ margin: 0, fontSize: 11, color: "#9ca3af", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em" }}>Vous envoyez</p>
-                  <p style={{ margin: "4px 0 0", fontSize: 24, fontWeight: 800, color: "#111" }}>${parseFloat(form.amountUsd).toFixed(2)} <span style={{ fontSize: 14, color: "#6b7280" }}>USD</span></p>
+                  <p style={{ margin: "4px 0 0", fontSize: 24, fontWeight: 800, color: "#111" }}>{fmtCurrency(parseFloat(form.amountUsd), "EUR")}</p>
                 </div>
                 <div style={{ textAlign: "right" }}>
                   <p style={{ margin: 0, fontSize: 11, color: "#9ca3af", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em" }}>Destinataire reçoit</p>
@@ -591,10 +591,10 @@ function PayoutFormInner({ onSuccess }: PayoutFormProps) {
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                 {liveQuote?.fxRate && (
-                  <Row label="Taux de change" value={`1 USD = ${liveQuote.fxRate.toFixed(2)} ${country.currency}`} />
+                  <Row label="Taux de change" value={`1 EUR = ${liveQuote.fxRate.toFixed(2)} ${country.currency}`} />
                 )}
                 {hasFee && liveQuote?.fee != null && (
-                  <Row label="Frais réseau" value={`≈ $${liveQuote.fee.toFixed(3)} USD`} />
+                  <Row label="Frais réseau" value={`≈ ${fmtCurrency(liveQuote.fee, "EUR")}`} />
                 )}
                 {!hasFee && (
                   <Row label="Frais réseau" value={<span style={{ color: GREEN, fontWeight: 700 }}>Inclus dans le taux</span>} />
@@ -679,7 +679,7 @@ function PayoutFormInner({ onSuccess }: PayoutFormProps) {
             <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
               <span style={{ fontSize: 13, fontWeight: 800, color: "#111" }}>Abonnement {subInfo.planLabel}</span>
               <span style={{ fontSize: 11, fontWeight: 700, color: ORANGE, background: "#fff", borderRadius: 999, padding: "2px 8px", border: "1px solid #fed7aa" }}>
-                {PLAN_DEFAULT_AMOUNT[subInfo.effectivePlan ?? subInfo.plan] ?? "5"} USD / mois
+                {PLAN_DEFAULT_AMOUNT[subInfo.effectivePlan ?? subInfo.plan] ?? "5"} €/mois
               </span>
             </div>
             {subInfo.currentPeriodEnd && (
@@ -826,20 +826,20 @@ function PayoutFormInner({ onSuccess }: PayoutFormProps) {
                 transition: "all 0.15s",
               }}
             >
-              ${amt}
+              €{amt}
             </button>
           ))}
         </div>
 
-        <FieldLabel label="Montant personnalisé en USD" required />
+        <FieldLabel label="Montant personnalisé en EUR" required />
         <div style={{ position: "relative" }}>
           <span style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: "#9ca3af", pointerEvents: "none" }}>
-            <DollarSign style={{ width: 16, height: 16 }} />
+            <Euro style={{ width: 16, height: 16 }} />
           </span>
           <input
             type="number"
-            min={2}
-            max={10000}
+            min={5}
+            max={200}
             step="0.01"
             placeholder="10.00"
             value={form.amountUsd}
@@ -847,13 +847,13 @@ function PayoutFormInner({ onSuccess }: PayoutFormProps) {
             style={inputStyle(!!fieldErrors.amountUsd, true)}
           />
           <span style={{ position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)", fontSize: 13, color: "#9ca3af", fontWeight: 600, pointerEvents: "none" }}>
-            USDC
+            EUR
           </span>
         </div>
         {fieldErrors.amountUsd && <ErrMsg msg={fieldErrors.amountUsd} />}
 
         {/* Live estimate bar */}
-        {amountNum >= 2 && (
+        {amountNum >= 5 && (
           <div style={{ marginTop: 10, background: "#fff7ed", border: "1px solid #fed7aa", borderRadius: 12, padding: "12px 16px", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
             <div>
               <span style={{ fontSize: 11, color: "#92400e", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", display: "block", marginBottom: 2 }}>
@@ -868,7 +868,7 @@ function PayoutFormInner({ onSuccess }: PayoutFormProps) {
             {!quoteLoading && liveQuote?.fxRate && (
               <div style={{ textAlign: "right" }}>
                 <span style={{ fontSize: 11, color: "#92400e", lineHeight: 1.4, display: "block" }}>
-                  1 USD = {liveQuote.fxRate.toFixed(2)} {country.currency}
+                  1 EUR = {liveQuote.fxRate.toFixed(2)} {country.currency}
                 </span>
                 <span style={{ fontSize: 10, color: GREEN, fontWeight: 700 }}>✓ en direct</span>
               </div>
@@ -878,7 +878,7 @@ function PayoutFormInner({ onSuccess }: PayoutFormProps) {
             )}
           </div>
         )}
-        <p style={{ fontSize: 11, color: "#9ca3af", margin: "6px 0 0" }}>Min 2 USD · Max 10 000 USD · Taux confirmé au moment du transfert</p>
+        <p style={{ fontSize: 11, color: "#9ca3af", margin: "6px 0 0" }}>Min 5 EUR · Max 200 EUR · Taux confirmé au moment du transfert</p>
       </Card>
 
       {/* ── Recipient ───────────────────────────────────────────────────────── */}
