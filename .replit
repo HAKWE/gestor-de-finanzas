@@ -48,7 +48,6 @@ channel = "stable-25_05"
 [userenv.shared]
 APP_DOMAIN = "mobilemoneymanager.africa"
 ADMIN_EMAIL = "sosthen@gmail.com"
-DUE_BASE_URL = "https://api.sandbox.due.network"
 
 [userenv.production]
 VITE_CLERK_PROXY_URL = "https://mobilemoneymanager.africa/api/__clerk"
