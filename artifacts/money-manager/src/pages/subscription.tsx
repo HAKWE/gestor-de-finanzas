@@ -3,7 +3,7 @@ import { Link } from "wouter";
 import { Layout } from "../components/layout";
 import {
   Crown, Star, ExternalLink, ArrowLeft, CalendarDays,
-  ShieldCheck, Loader2, AlertCircle, Check, Zap, X, AlertTriangle,
+  ShieldCheck, Loader2, AlertCircle, Check, Zap, X, AlertTriangle, Smartphone, ChevronRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -488,6 +488,40 @@ export default function Subscription() {
                 </button>
               </div>
             )}
+
+            {/* ─── Mobile Money payment ─── */}
+            <div style={{ border: "1.5px solid #fed7aa", borderRadius: 18, background: "linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%)", overflow: "hidden" }}>
+              <div style={{ padding: "18px 22px 14px", display: "flex", alignItems: "center", gap: 12 }}>
+                <div style={{ width: 42, height: 42, borderRadius: 13, background: ORANGE, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <Smartphone style={{ width: 20, height: 20, color: "#fff" }} />
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p style={{ fontWeight: 800, fontSize: 15, color: "#111", margin: 0 }}>Payer avec Mobile Money</p>
+                  <p style={{ fontSize: 12, color: "#9a3412", margin: "2px 0 0" }}>Orange Money · Wave · MTN MoMo · Airtel · M-Pesa</p>
+                </div>
+              </div>
+              <div style={{ padding: "0 22px 18px" }}>
+                <p style={{ fontSize: 13, color: "#78350f", margin: "0 0 14px", lineHeight: 1.6 }}>
+                  Payez votre abonnement directement depuis votre portefeuille mobile sans carte bancaire. Le crédit est appliqué après confirmation de réception.
+                </p>
+                <Link href="/payout">
+                  <button style={{
+                    width: "100%", background: ORANGE, color: "#fff",
+                    border: "none", borderRadius: 13, padding: "12px 20px",
+                    fontWeight: 700, fontSize: 14, cursor: "pointer",
+                    display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+                    transition: "opacity 0.15s",
+                  }}
+                    onMouseEnter={e => (e.currentTarget.style.opacity = "0.88")}
+                    onMouseLeave={e => (e.currentTarget.style.opacity = "1")}
+                  >
+                    <Smartphone style={{ width: 15, height: 15 }} />
+                    Payer mon abonnement
+                    <ChevronRight style={{ width: 15, height: 15, marginLeft: "auto" }} />
+                  </button>
+                </Link>
+              </div>
+            </div>
 
             {/* ─── Stripe portal (secondary) ─── */}
             <details style={{ border: "1.5px solid hsl(var(--border))", borderRadius: 16, background: "hsl(var(--card))", overflow: "hidden" }}>

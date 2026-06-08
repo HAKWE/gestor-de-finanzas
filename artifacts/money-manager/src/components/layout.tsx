@@ -61,7 +61,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   ];
 
   const subLink = { href: "/subscription", label: "Mon abonnement", icon: CreditCard };
-  const payoutLink = { href: "/payout", label: "Virement Mobile Money", icon: Send };
+  const payoutLink = { href: "/payout", label: "Payer avec Mobile Money", icon: Send };
   const links = isPaid ? [...baseLinks, subLink, payoutLink] : [...baseLinks, payoutLink];
 
   return (
