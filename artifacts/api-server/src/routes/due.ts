@@ -255,16 +255,31 @@ router.post(
     });
 
     if (!result.ok) {
-      const code = result.step === "quote" ? "quote_failed" : "transfer_failed";
+      // Detect stale recipient ID (created under a different API key / account)
+      const isRecipientGone =
+        result.step === "transfer" &&
+        typeof result.error === "string" &&
+        /recipient not found/i.test(result.error);
+
       req.log.error(
         { userId: anonId(req.userId), step: result.step, rawError: result.error },
         "Due payout failed",
       );
-      res.status(502).json({
-        error: clientError(result.error),
-        code,
-        step: result.step,
-      });
+
+      if (isRecipientGone) {
+        res.status(404).json({
+          error: "Destinataire introuvable. Supprimez-le et recréez-le.",
+          code: "recipient_not_found",
+          step: result.step,
+        });
+      } else {
+        const code = result.step === "quote" ? "quote_failed" : "transfer_failed";
+        res.status(502).json({
+          error: clientError(result.error),
+          code,
+          step: result.step,
+        });
+      }
       return;
     }
 

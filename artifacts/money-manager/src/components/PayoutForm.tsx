@@ -246,6 +246,7 @@ function PayoutFormInner({ onSuccess }: PayoutFormProps) {
   const [recipients, setRecipients] = useState<DueRecipient[] | null>(null);
   const [recipientsError, setRecipientsError] = useState<string | null>(null);
   const [selectedRecipientId, setSelectedRecipientId] = useState<string | null>(null);
+  const [staleRecipientWarning, setStaleRecipientWarning] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -427,7 +428,18 @@ function PayoutFormInner({ onSuccess }: PayoutFormProps) {
         body: JSON.stringify(body),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? `Erreur ${res.status}`);
+      if (!res.ok) {
+        // Stale recipient (created under old API credentials) — clear it and let
+        // the user pick/create a new one instead of showing the scary error screen.
+        if (data.code === "recipient_not_found") {
+          setSelectedRecipientId(null);
+          setForm(f => ({ ...f, recipientId: "" }));
+          setStaleRecipientWarning(true);
+          setStep("form");
+          return;
+        }
+        throw new Error(data.error ?? `Erreur ${res.status}`);
+      }
       const r: PayoutResult = {
         transferId: data.transferId,
         status: data.status,
@@ -711,6 +723,24 @@ function PayoutFormInner({ onSuccess }: PayoutFormProps) {
             )}
           </div>
           <CreditCard style={{ width: 20, height: 20, color: "#f97316", flexShrink: 0 }} />
+        </div>
+      )}
+
+      {/* ── Stale recipient warning ──────────────────────────────────────────── */}
+      {staleRecipientWarning && (
+        <div style={{ background: "#fffbeb", border: "1.5px solid #fde68a", borderRadius: 14, padding: "14px 16px", display: "flex", gap: 10, alignItems: "flex-start" }}>
+          <TriangleAlert style={{ width: 16, height: 16, color: "#b45309", flexShrink: 0, marginTop: 1 }} />
+          <div style={{ flex: 1 }}>
+            <p style={{ margin: "0 0 4px", fontSize: 13, fontWeight: 700, color: "#92400e" }}>Destinataire introuvable</p>
+            <p style={{ margin: 0, fontSize: 12, color: "#78350f", lineHeight: 1.6 }}>
+              Le destinataire précédent n'existe plus dans le système Due (il a peut-être été créé avec d'anciens identifiants).
+              Sélectionnez ou créez un nouveau destinataire ci-dessous.
+            </p>
+          </div>
+          <button
+            onClick={() => setStaleRecipientWarning(false)}
+            style={{ background: "none", border: "none", cursor: "pointer", padding: 2, color: "#b45309", flexShrink: 0, fontSize: 16, lineHeight: 1 }}
+          >×</button>
         </div>
       )}
 
