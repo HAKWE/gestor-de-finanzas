@@ -311,12 +311,32 @@ router.get(
 
     const result = await dueClient.listRecipients(limit);
     if (!result.ok) {
-      req.log.warn({ status: result.status }, "Due recipients list failed");
+      req.log.warn({ status: result.status, error: result.error }, "Due recipients list failed");
       res.status(502).json({ error: clientError(result.error), code: "upstream_error" });
       return;
     }
 
-    res.json(result.data);
+    // Normalize Due's response — the API may return an array directly, a paginated
+    // envelope ({ data: [...] }, { items: [...] }, etc.), or a single object.
+    const raw = result.data as unknown;
+    let items: unknown[] = [];
+    if (Array.isArray(raw)) {
+      items = raw;
+    } else if (raw !== null && typeof raw === "object") {
+      const obj = raw as Record<string, unknown>;
+      for (const key of ["data", "items", "results", "recipients", "content"]) {
+        if (Array.isArray(obj[key])) { items = obj[key] as unknown[]; break; }
+      }
+      // Single-object fallback (Due returns one recipient, not a list)
+      if (items.length === 0 && "id" in obj) items = [obj];
+    }
+
+    req.log.info(
+      { count: items.length, topLevelKeys: raw !== null && typeof raw === "object" ? Object.keys(raw as object) : typeof raw },
+      "Due recipients fetched",
+    );
+
+    res.json({ recipients: items, total: items.length });
   },
 );
 

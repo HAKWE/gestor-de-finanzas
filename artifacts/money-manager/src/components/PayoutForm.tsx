@@ -189,6 +189,7 @@ function PayoutFormInner({ onSuccess }: PayoutFormProps) {
 
   // ── Recipients ───────────────────────────────────────────────────────────────
   const [recipients, setRecipients] = useState<DueRecipient[] | null>(null);
+  const [recipientsError, setRecipientsError] = useState<string | null>(null);
   const [selectedRecipientId, setSelectedRecipientId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -200,15 +201,25 @@ function PayoutFormInner({ onSuccess }: PayoutFormProps) {
           credentials: "include",
           headers: token ? { Authorization: `Bearer ${token}` } : {},
         });
-        if (!res.ok) { setRecipients([]); return; }
+        if (!res.ok) {
+          const body = await res.json().catch(() => ({}));
+          if (!cancelled) {
+            setRecipients([]);
+            setRecipientsError(body.error ?? `Erreur ${res.status}`);
+          }
+          return;
+        }
         const data = await res.json();
         if (cancelled) return;
-        const list: DueRecipient[] = Array.isArray(data)
-          ? data
-          : (Array.isArray(data.data) ? data.data : Array.isArray(data.recipients) ? data.recipients : []);
+        // Backend normalizes to { recipients: [...], total: N }
+        const list: DueRecipient[] = Array.isArray(data.recipients) ? data.recipients : [];
         setRecipients(list);
+        setRecipientsError(null);
       } catch {
-        if (!cancelled) setRecipients([]);
+        if (!cancelled) {
+          setRecipients([]);
+          setRecipientsError("Impossible de charger les destinataires");
+        }
       }
     }
     load();
@@ -619,10 +630,18 @@ function PayoutFormInner({ onSuccess }: PayoutFormProps) {
             <Loader2 style={{ width: 14, height: 14, animation: "spin 1s linear infinite" }} />
             <span style={{ fontSize: 13 }}>Chargement…</span>
           </div>
+        ) : recipientsError ? (
+          <div style={{ padding: "8px 10px", background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 10, display: "flex", alignItems: "flex-start", gap: 8 }}>
+            <AlertCircle style={{ width: 14, height: 14, color: "#dc2626", flexShrink: 0, marginTop: 1 }} />
+            <div>
+              <span style={{ fontSize: 12, color: "#b91c1c", fontWeight: 600, display: "block" }}>Impossible de charger les destinataires</span>
+              <span style={{ fontSize: 11, color: "#9ca3af" }}>{recipientsError}</span>
+            </div>
+          </div>
         ) : recipients.length === 0 ? (
           <div style={{ padding: "8px 0 2px", display: "flex", alignItems: "center", gap: 8, color: "#9ca3af" }}>
             <User style={{ width: 14, height: 14 }} />
-            <span style={{ fontSize: 13 }}>Aucun destinataire trouvé dans Due</span>
+            <span style={{ fontSize: 13 }}>Aucun destinataire enregistré dans Due — <a href="https://app.due.com/recipients" target="_blank" rel="noopener noreferrer" style={{ color: ORANGE, textDecoration: "none", fontWeight: 700 }}>Ajouter ↗</a></span>
           </div>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
