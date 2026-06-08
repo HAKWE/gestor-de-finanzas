@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, Component } from "react";
+import type { ReactNode, ErrorInfo } from "react";
 import { useAuth } from "@clerk/react";
 import {
   Send, CheckCircle2, AlertCircle, Loader2, ArrowLeft,
@@ -6,6 +7,52 @@ import {
   Copy, Check, TriangleAlert, Users, ExternalLink, User,
   Zap,
 } from "lucide-react";
+
+// ── Error boundary ─────────────────────────────────────────────────────────────
+
+interface EBState { hasError: boolean; message: string }
+
+class PayoutErrorBoundary extends Component<{ children: ReactNode }, EBState> {
+  constructor(props: { children: ReactNode }) {
+    super(props);
+    this.state = { hasError: false, message: "" };
+  }
+  static getDerivedStateFromError(err: unknown): EBState {
+    const message = err instanceof Error ? err.message : "Erreur inattendue";
+    return { hasError: true, message };
+  }
+  componentDidCatch(err: unknown, info: ErrorInfo) {
+    console.error("[PayoutForm]", err, info.componentStack);
+  }
+  render() {
+    if (!this.state.hasError) return this.props.children;
+    return (
+      <div style={{ maxWidth: 480, margin: "0 auto", padding: "0 4px" }}>
+        <div style={{ background: "#fff", borderRadius: 22, border: "1px solid #fecaca", boxShadow: "0 4px 20px rgba(220,38,38,0.08)", overflow: "hidden" }}>
+          <div style={{ background: "linear-gradient(135deg, #fef2f2, #fee2e2)", padding: "28px 24px 20px", textAlign: "center" }}>
+            <div style={{ width: 64, height: 64, borderRadius: 20, background: "#dc2626", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px" }}>
+              <AlertCircle style={{ width: 32, height: 32, color: "#fff" }} />
+            </div>
+            <h2 style={{ fontSize: 20, fontWeight: 800, color: "#7f1d1d", margin: "0 0 8px" }}>
+              Formulaire indisponible
+            </h2>
+            <p style={{ fontSize: 13, color: "#b91c1c", background: "#fff", borderRadius: 10, padding: "10px 14px", margin: 0, textAlign: "left", lineHeight: 1.5 }}>
+              {this.state.message}
+            </p>
+          </div>
+          <div style={{ padding: "20px 24px 24px" }}>
+            <button
+              onClick={() => this.setState({ hasError: false, message: "" })}
+              style={{ width: "100%", background: "#f97316", color: "#fff", border: "none", borderRadius: 14, padding: "14px 0", fontWeight: 700, fontSize: 14, cursor: "pointer" }}
+            >
+              Réessayer
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+}
 
 const BASE_PATH = import.meta.env.BASE_URL.replace(/\/$/, "");
 const ORANGE = "#f97316";
@@ -116,8 +163,14 @@ interface PayoutFormProps {
   onSuccess?: (result: PayoutResult) => void;
 }
 
-export default function PayoutForm({ onSuccess }: PayoutFormProps) {
+function PayoutFormInner({ onSuccess }: PayoutFormProps) {
   const { getToken } = useAuth();
+
+  /** Safe wrapper — returns null if Clerk isn't ready instead of throwing. */
+  async function safeGetToken(): Promise<string | null> {
+    try { return await getToken(); }
+    catch { return null; }
+  }
 
   const [form, setForm] = useState<FormState>({
     amountUsd: "",
@@ -142,7 +195,7 @@ export default function PayoutForm({ onSuccess }: PayoutFormProps) {
     let cancelled = false;
     async function load() {
       try {
-        const token = await getToken();
+        const token = await safeGetToken();
         const res = await fetch(`${BASE_PATH}/api/due/recipients`, {
           credentials: "include",
           headers: token ? { Authorization: `Bearer ${token}` } : {},
