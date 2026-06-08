@@ -53,10 +53,19 @@ function fmtDate(iso: string | undefined): string {
     + " · " + d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
 }
 
+// ISO 4217 currencies that Intl.NumberFormat accepts
+const ISO_CURRENCIES = new Set([
+  "USD","EUR","XOF","XAF","GHS","NGN","KES","GBP","CHF","CAD","JPY","AUD","MAD","TND","EGP","ZAR",
+]);
+
 function fmtAmount(n: number | undefined, currency: string | undefined): string {
-  if (!n) return "—";
-  const c = currency ?? "USD";
-  return new Intl.NumberFormat("fr-FR", { style: "currency", currency: c, maximumFractionDigits: 0 }).format(n);
+  if (n == null || n === 0) return "—";
+  const c = (currency ?? "USD").toUpperCase();
+  if (ISO_CURRENCIES.has(c)) {
+    return new Intl.NumberFormat("fr-FR", { style: "currency", currency: c, maximumFractionDigits: 0 }).format(n);
+  }
+  // Non-ISO codes (USDC, USDT, etc.) — plain number + symbol
+  return `${new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 2 }).format(n)} ${c}`;
 }
 
 // ── Status badge ──────────────────────────────────────────────────────────────
