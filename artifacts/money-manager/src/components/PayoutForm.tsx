@@ -79,6 +79,8 @@ const COUNTRIES: Country[] = [
   { name: "Niger",          flag: "🇳🇪", dialCode: "+227", currency: "XOF", rail: "xof_local", providers: ["Orange Money", "Airtel Money"] },
   { name: "Cameroun",       flag: "🇨🇲", dialCode: "+237", currency: "XAF", rail: "xaf_local", providers: ["MTN MoMo", "Orange Money"] },
   { name: "Guinée",         flag: "🇬🇳", dialCode: "+224", currency: "XOF", rail: "xof_local", providers: ["Orange Money", "MTN MoMo"] },
+  { name: "Bénin",          flag: "🇧🇯", dialCode: "+229", currency: "XOF", rail: "xof_local", providers: ["MTN MoMo", "Moov Money"] },
+  { name: "Togo",           flag: "🇹🇬", dialCode: "+228", currency: "XOF", rail: "xof_local", providers: ["Flooz (Moov)", "T-Money"] },
   { name: "Kenya",          flag: "🇰🇪", dialCode: "+254", currency: "KES", rail: "kes_local", providers: ["M-Pesa"] },
   { name: "Nigeria",        flag: "🇳🇬", dialCode: "+234", currency: "NGN", rail: "ngn_local", providers: ["MTN MoMo", "Airtel Money"] },
   { name: "Ghana",          flag: "🇬🇭", dialCode: "+233", currency: "GHS", rail: "ghs_local", providers: ["MTN MoMo", "Vodafone Cash", "AirtelTigo Money"] },
