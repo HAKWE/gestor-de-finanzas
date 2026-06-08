@@ -144,8 +144,10 @@ router.get(
       "Due quote requested",
     );
 
+    // Multiply EUR→USDC (1.08) so Due returns the XOF amount correct for the EUR input
+    const usdcAmount = parseFloat((amount * 1.08).toFixed(2));
     const result = await dueClient.createQuote({
-      source: { amount, currency: "USDC", rail: "base-sepolia" },
+      source: { amount: usdcAmount, currency: "USDC", rail: "base-sepolia" },
       destination: { currency: to_currency, rail: to_rail },
     });
 

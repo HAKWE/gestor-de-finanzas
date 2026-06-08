@@ -88,7 +88,7 @@ const COUNTRIES: Country[] = [
 
 // Static EUR fallback rates (XOF/XAF are legally pegged to EUR at 655.957)
 const FX_RATES: Record<string, number> = {
-  XOF: 656, XAF: 656, NGN: 1700, KES: 140, GHS: 17,
+  XOF: 655, XAF: 655, NGN: 1700, KES: 140, GHS: 17,
 };
 
 // Due sandbox only accepts USDC/base-sepolia as source.
@@ -339,16 +339,19 @@ function PayoutFormInner({ onSuccess }: PayoutFormProps) {
             ? qDest.amount / qSrc.amount
             : undefined;
         const fxRate = usdcFxRate != null ? parseFloat((usdcFxRate * EUR_USD_RATE).toFixed(2)) : undefined;
-        const rawDestAmt = typeof dest?.amount === "number" ? dest.amount : null;
-        const adjustedDestAmt = rawDestAmt !== null ? Math.round(rawDestAmt * EUR_USD_RATE) : null;
-        const fee: number | undefined = (typeof src?.amount === "number" && adjustedDestAmt !== null && fxRate)
-          ? Math.max(0, src.amount * EUR_USD_RATE - adjustedDestAmt / fxRate) : undefined;
+        // Backend already sent amount×1.08 USDC to Due, so destAmount is already
+        // calibrated for EUR — use it directly without another ×EUR_USD_RATE.
+        const rawDestAmt = typeof dest?.amount === "number" ? Math.round(dest.amount) : null;
+        const eurSrcAmt = amountNum; // original EUR input
+        const fee: number | undefined =
+          (rawDestAmt !== null && fxRate && fxRate > 0)
+            ? Math.max(0, eurSrcAmt - rawDestAmt / fxRate) : undefined;
         setLiveQuote({
-          destAmount: adjustedDestAmt !== null ? adjustedDestAmt : approxLocal,
-          srcAmount: src?.amount != null ? +(src.amount * EUR_USD_RATE).toFixed(2) : undefined,
+          destAmount: rawDestAmt !== null ? rawDestAmt : approxLocal,
+          srcAmount: eurSrcAmt,
           fxRate: fxRate ?? FX_RATES[country.currency],
           fee,
-          isLive: adjustedDestAmt !== null,
+          isLive: rawDestAmt !== null,
         });
       } catch {
         // API unreachable or channel not supported — fall back to static EUR rates
