@@ -1,6 +1,5 @@
 import app from "./app";
 import { logger } from "./lib/logger";
-import { buildProxyUrl } from "./middlewares/clerkProxyMiddleware";
 import { runMigrations } from "stripe-replit-sync";
 import { getStripeSync } from "./stripeClient";
 import { backfillTrialDates, startTrialCron } from "./trial-cron";
@@ -48,7 +47,6 @@ if (Number.isNaN(port) || port <= 0) {
   throw new Error(`Invalid PORT value: "${rawPort}"`);
 }
 
-logger.info({ clerkProxyUrl: buildProxyUrl() ?? "(none — dev mode)" }, "Clerk proxyUrl");
 
 await initStripe();
 await backfillTrialDates();

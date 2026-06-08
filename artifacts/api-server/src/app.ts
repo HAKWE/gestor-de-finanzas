@@ -3,7 +3,8 @@ import cors from "cors";
 import pinoHttp from "pino-http";
 import cookieParser from "cookie-parser";
 import { clerkMiddleware } from "@clerk/express";
-import { CLERK_PROXY_PATH, clerkProxyMiddleware, buildProxyUrl } from "./middlewares/clerkProxyMiddleware";
+import { publishableKeyFromHost } from "@clerk/shared/keys";
+import { CLERK_PROXY_PATH, clerkProxyMiddleware, getClerkProxyHost, buildProxyUrl } from "./middlewares/clerkProxyMiddleware";
 import { WebhookHandlers } from "./webhookHandlers";
 import { handleStripeWebhook } from "./routes/stripe-webhook-handler";
 import { handleDueWebhook } from "./routes/due";
@@ -67,14 +68,28 @@ app.use(
   }),
 );
 
-app.use(CLERK_PROXY_PATH, clerkProxyMiddleware());
-
 app.use(cors({ credentials: true, origin: true }));
+
+app.use(CLERK_PROXY_PATH, clerkProxyMiddleware());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-app.use(clerkMiddleware({ proxyUrl: buildProxyUrl() }));
+// Resolve the publishable key from the incoming request host so the same
+// server can serve multiple Clerk custom domains. Falls back to
+// CLERK_PUBLISHABLE_KEY (or VITE_CLERK_PUBLISHABLE_KEY if the integration
+// sets it under that name) when the host doesn't map to a custom domain.
+// proxyUrl tells clerkMiddleware which JWT `iss` to expect (the proxy URL).
+// In production: derived from REPLIT_DOMAINS. In dev: derived from APP_DOMAIN.
+app.use(
+  clerkMiddleware((req) => ({
+    publishableKey: publishableKeyFromHost(
+      getClerkProxyHost(req) ?? "",
+      process.env.CLERK_PUBLISHABLE_KEY ?? process.env.VITE_CLERK_PUBLISHABLE_KEY,
+    ),
+    proxyUrl: buildProxyUrl(),
+  })),
+);
 
 app.use("/api", router);
 

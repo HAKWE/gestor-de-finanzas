@@ -27,6 +27,10 @@ if (!basePath) {
   );
 }
 
+// In production VITE_CLERK_PROXY_URL is auto-populated by Replit.
+// In dev the Clerk FAPI host has SSL issues from the Replit preview browser, so
+// we route through our local proxy server using the REPLIT_DEV_DOMAIN.
+// The proxy middleware then sends the registered APP_DOMAIN proxy URL to FAPI.
 const clerkProxyUrl =
   process.env.VITE_CLERK_PROXY_URL ??
   (process.env.REPLIT_DEV_DOMAIN

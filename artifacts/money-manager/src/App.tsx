@@ -29,6 +29,7 @@ import Terms from "./pages/terms";
 import Legal from "./pages/legal";
 import AdminPage from "./pages/admin";
 import ReferralRedirectPage from "./pages/referral-redirect";
+import Payout from "./pages/payout";
 import NotFound from "@/pages/not-found";
 
 const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
@@ -82,16 +83,12 @@ const clerkAppearance = {
 };
 
 function HomeRedirect() {
-  return (
-    <>
-      <Show when="signed-in">
-        <Redirect to="/dashboard" />
-      </Show>
-      <Show when="signed-out">
-        <Home />
-      </Show>
-    </>
-  );
+  const { isLoaded, isSignedIn } = useAuth();
+  // While Clerk is initialising (or fails to reach FAPI in dev), show the
+  // landing page so there is never a blank screen. Once loaded, redirect
+  // signed-in users to the dashboard.
+  if (!isLoaded || !isSignedIn) return <Home />;
+  return <Redirect to="/dashboard" />;
 }
 
 async function fetchProfile() {
@@ -600,6 +597,7 @@ function ClerkProviderWithRoutes() {
           <Route path="/pricing" component={Pricing} />
           <Route path="/success" component={Success} />
           <Route path="/subscription"><ProtectedRoute component={Subscription} /></Route>
+          <Route path="/payout"><ProtectedRoute component={Payout} /></Route>
           <Route path="/confidentialite" component={Privacy} />
           <Route path="/conditions" component={Terms} />
           <Route path="/mentions-legales" component={Legal} />

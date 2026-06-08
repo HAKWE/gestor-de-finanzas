@@ -1,1 +1,2 @@
 - [Due API rails and constraints](due-api-rails.md) — correct rails for USDC→XOF payout, memo rules, amount convention.
+- [Clerk dev proxy quirk](clerk-dev-proxy-quirk.md) — live keys in dev cause SSL/401 issues; middleware serves CDN server-side, omits proxy headers in dev so FAPI returns 501 (graceful degradation).
