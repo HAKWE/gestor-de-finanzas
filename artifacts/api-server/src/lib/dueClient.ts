@@ -51,9 +51,9 @@ export interface DueTransferData {
 
 type DueOk<T> = { ok: true; data: T };
 type DueFail = { ok: false; error: string; status?: number };
-type DueResult<T> = DueOk<T> | DueFail;
+export type DueResult<T> = DueOk<T> | DueFail;
 
-type DuePayoutResult =
+export type DuePayoutResult =
   | { ok: true; quote: DueQuoteData; transfer: DueTransferData }
   | { ok: false; step: "quote" | "transfer"; error: string };
 
@@ -128,6 +128,17 @@ class DueClient {
     if (memo) payload.memo = memo;
     if (Object.keys(metadata).length) payload.metadata = metadata;
     return this.request<DueTransferData>("POST", "/transfers", payload);
+  }
+
+  async getTransfer(transferId: string): Promise<DueResult<DueTransferData>> {
+    return this.request<DueTransferData>(
+      "GET",
+      `/transfers/${encodeURIComponent(transferId)}`,
+    );
+  }
+
+  async listTransfers(limit = 20): Promise<DueResult<unknown>> {
+    return this.request<unknown>("GET", `/transfers?limit=${limit}`);
   }
 
   async sendPayout(params: DuePayoutParams): Promise<DuePayoutResult> {

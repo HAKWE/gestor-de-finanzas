@@ -1,40 +1,77 @@
-import { Router, type IRouter } from "express";
+import { Router, type IRouter, type Request, type Response, type NextFunction } from "express";
 import { createVerify } from "crypto";
 import { getAuth, createClerkClient } from "@clerk/express";
+import { z } from "zod/v4";
 import { logger } from "../lib/logger";
 import { dueClient } from "../lib/dueClient";
+import { payoutRateLimiter, dueReadRateLimiter } from "../middlewares/rateLimiter";
 
 const router: IRouter = Router();
 
+// ── Constants ─────────────────────────────────────────────────────────────────
+
+// Whether we're pointing at a sandbox/dev Due environment
+const IS_DUE_SANDBOX = (process.env.DUE_BASE_URL ?? "").includes("sandbox");
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-function requireAuth(req: any, res: any, next: any) {
+/** Redact all but last 6 chars of a Clerk userId for safe logging. */
+function anonId(userId: string): string {
+  return `***${userId.slice(-6)}`;
+}
+
+/**
+ * In production (live Due), hide raw API error strings from clients.
+ * In sandbox, surface full details to speed up development.
+ */
+function clientError(msg: string): string {
+  if (IS_DUE_SANDBOX) return msg;
+  return "Payout service error. Please contact support.";
+}
+
+/**
+ * Due memos only allow [a-zA-Z0-9 - . /] — strip everything else and
+ * collapse multiple spaces into a single hyphen so the string stays readable.
+ */
+function sanitizeMemo(raw: string): string {
+  return raw
+    .replace(/\s+/g, "-")
+    .replace(/[^a-zA-Z0-9\-.\/]/g, "")
+    .replace(/-{2,}/g, "-")
+    .slice(0, 200);
+}
+
+// ── Auth middleware ───────────────────────────────────────────────────────────
+
+function requireAuth(req: Request, res: Response, next: NextFunction): void {
   const auth = getAuth(req);
   if (!auth?.userId) {
-    res.status(401).json({ error: "Unauthorized" });
+    res.status(401).json({ error: "Unauthorized", code: "unauthorized" });
     return;
   }
-  req.userId = auth.userId;
+  (req as any).userId = auth.userId;
   next();
 }
 
-async function requireAdmin(req: any, res: any, next: any): Promise<void> {
+async function requireAdmin(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> {
   const auth = getAuth(req);
   if (!auth?.userId) {
-    res.status(401).json({ error: "Unauthorized" });
+    res.status(401).json({ error: "Unauthorized", code: "unauthorized" });
     return;
   }
 
   const adminEmail = process.env.ADMIN_EMAIL;
   if (!adminEmail) {
-    res.status(403).json({ error: "ADMIN_EMAIL not configured" });
+    res.status(403).json({ error: "ADMIN_EMAIL not configured", code: "forbidden" });
     return;
   }
 
   try {
-    const clerk = createClerkClient({
-      secretKey: process.env.CLERK_SECRET_KEY,
-    });
+    const clerk = createClerkClient({ secretKey: process.env.CLERK_SECRET_KEY });
     const user = await clerk.users.getUser(auth.userId);
     const email =
       user.emailAddresses.find((e) => e.id === user.primaryEmailAddressId)
@@ -44,17 +81,208 @@ async function requireAdmin(req: any, res: any, next: any): Promise<void> {
 
     const allowed = adminEmail.split(",").map((e) => e.trim().toLowerCase());
     if (!allowed.includes(email.toLowerCase())) {
-      res.status(403).json({ error: "Admin access required" });
+      res.status(403).json({ error: "Admin access required", code: "forbidden" });
       return;
     }
 
-    req.userId = auth.userId;
+    (req as any).userId = auth.userId;
     next();
   } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : "Unknown error";
-    res.status(500).json({ error: "Admin verification failed: " + msg });
+    logger.error({ err }, "Admin verification error");
+    res.status(500).json({ error: "Admin verification failed", code: "server_error" });
   }
 }
+
+// ── Validation schemas ────────────────────────────────────────────────────────
+
+const PayoutBodySchema = z.object({
+  recipientId: z
+    .string()
+    .min(1, "recipientId is required")
+    .regex(/^rcp_/, "recipientId must start with 'rcp_'"),
+  source: z.object({
+    amount: z
+      .number({ error: "source.amount must be a number" })
+      .min(2, "Minimum payout amount is 2 USDC")
+      .max(10_000, "Maximum payout amount is 10,000 USDC"),
+    currency: z.string().min(1, "source.currency is required"),
+    rail: z.string().min(1, "source.rail is required"),
+  }),
+  destination: z.object({
+    currency: z.string().min(1, "destination.currency is required"),
+    rail: z.string().min(1, "destination.rail is required"),
+  }),
+  memo: z.string().max(200).optional(),
+  metadata: z.record(z.string(), z.string()).optional(),
+});
+
+// ── GET /api/due/account ──────────────────────────────────────────────────────
+
+router.get(
+  "/due/account",
+  dueReadRateLimiter,
+  requireAdmin,
+  async (req: any, res): Promise<void> => {
+    req.log.info({ userId: anonId(req.userId) }, "Due account info requested");
+    const result = await dueClient.getAccountInfo();
+    if (!result.ok) {
+      req.log.error({ status: result.status }, "Due account fetch failed");
+      res.status(502).json({ error: clientError(result.error), code: "upstream_error" });
+      return;
+    }
+    res.json(result.data);
+  },
+);
+
+// ── POST /api/due/payout ──────────────────────────────────────────────────────
+// Admin-only: create a Due payout (quote → transfer).
+
+router.post(
+  "/due/payout",
+  payoutRateLimiter,
+  requireAdmin,
+  async (req: any, res): Promise<void> => {
+    // Validate body
+    const parsed = PayoutBodySchema.safeParse(req.body);
+    if (!parsed.success) {
+      const issues = parsed.error.issues.map((i: z.core.$ZodIssue) => ({
+        field: i.path.join("."),
+        message: i.message,
+      }));
+      req.log.warn({ issues, userId: anonId(req.userId) }, "Payout validation failed");
+      res.status(400).json({
+        error: "Validation failed",
+        code: "validation_error",
+        details: issues,
+      });
+      return;
+    }
+
+    const { recipientId, source, destination, memo: rawMemo, metadata } = parsed.data;
+    const memo = rawMemo ? sanitizeMemo(rawMemo) : undefined;
+
+    req.log.info(
+      {
+        userId: anonId(req.userId),
+        recipientId,
+        source: { amount: source.amount, currency: source.currency, rail: source.rail },
+        destination,
+      },
+      "Due payout initiated",
+    );
+
+    const result = await dueClient.sendPayout({
+      source,
+      destination,
+      recipientId,
+      memo,
+      metadata,
+    });
+
+    if (!result.ok) {
+      const code = result.step === "quote" ? "quote_failed" : "transfer_failed";
+      req.log.error(
+        { userId: anonId(req.userId), step: result.step, rawError: result.error },
+        "Due payout failed",
+      );
+      res.status(502).json({
+        error: clientError(result.error),
+        code,
+        step: result.step,
+      });
+      return;
+    }
+
+    req.log.info(
+      {
+        userId: anonId(req.userId),
+        transferId: result.transfer.id,
+        status: result.transfer.status,
+        destinationAmount: (result.quote.destination as any)?.amount,
+        destinationCurrency: (result.quote.destination as any)?.currency,
+      },
+      "Due payout created",
+    );
+
+    res.status(201).json({
+      ok: true,
+      transferId: result.transfer.id,
+      status: result.transfer.status,
+      quote: {
+        source: result.quote.source,
+        destination: result.quote.destination,
+        fxRate: result.quote.fxRate,
+        expiresAt: result.quote.expiresAt,
+      },
+      transfer: result.transfer,
+    });
+  },
+);
+
+// ── GET /api/due/transfers/:transferId ────────────────────────────────────────
+
+router.get(
+  "/due/transfers/:transferId",
+  dueReadRateLimiter,
+  requireAdmin,
+  async (req: any, res): Promise<void> => {
+    const { transferId } = req.params as { transferId: string };
+
+    if (!transferId || !/^tf_[a-zA-Z0-9]+$/.test(transferId)) {
+      res.status(400).json({
+        error: "Invalid transferId format. Expected: tf_<alphanumeric>",
+        code: "validation_error",
+      });
+      return;
+    }
+
+    req.log.info({ userId: anonId(req.userId), transferId }, "Due transfer status requested");
+
+    const result = await dueClient.getTransfer(transferId);
+    if (!result.ok) {
+      const httpStatus = result.status === 404 ? 404 : 502;
+      req.log.warn({ transferId, status: result.status }, "Due transfer fetch failed");
+      res.status(httpStatus).json({
+        error: httpStatus === 404 ? "Transfer not found" : clientError(result.error),
+        code: httpStatus === 404 ? "not_found" : "upstream_error",
+      });
+      return;
+    }
+
+    res.json(result.data);
+  },
+);
+
+// ── GET /api/due/transfers ────────────────────────────────────────────────────
+
+router.get(
+  "/due/transfers",
+  dueReadRateLimiter,
+  requireAdmin,
+  async (req: any, res): Promise<void> => {
+    const rawLimit = req.query.limit;
+    const limit = Math.min(
+      100,
+      Math.max(1, Number.isFinite(Number(rawLimit)) ? Number(rawLimit) : 20),
+    );
+
+    req.log.info({ userId: anonId(req.userId), limit }, "Due transfers list requested");
+
+    const result = await dueClient.listTransfers(limit);
+    if (!result.ok) {
+      req.log.warn({ status: result.status }, "Due transfers list failed");
+      res.status(502).json({
+        error: clientError(result.error),
+        code: "upstream_error",
+      });
+      return;
+    }
+
+    res.json(result.data);
+  },
+);
+
+// ── POST /api/due/webhook ─────────────────────────────────────────────────────
 
 function verifyDueWebhookSignature(
   rawBody: Buffer,
@@ -71,7 +299,6 @@ function verifyDueWebhookSignature(
   }
 
   try {
-    // Due sends the Ed25519 signature as a base64-encoded string
     const signatureBuffer = Buffer.from(signatureHeader, "base64");
     const verify = createVerify("ed25519");
     verify.update(rawBody);
@@ -82,109 +309,12 @@ function verifyDueWebhookSignature(
   }
 }
 
-// ── GET /api/due/account ──────────────────────────────────────────────────────
-// Admin-only: returns Due KYC / account info.
-
-router.get(
-  "/due/account",
-  requireAdmin,
-  async (_req, res): Promise<void> => {
-    const result = await dueClient.getAccountInfo();
-    if (!result.ok) {
-      res.status(502).json({ error: result.error });
-      return;
-    }
-    res.json(result.data);
-  },
-);
-
-// ── Helpers ───────────────────────────────────────────────────────────────────
-
-// Due memos only allow [a-zA-Z0-9 - . /] — strip everything else and
-// collapse multiple spaces into a single hyphen so the string stays readable.
-function sanitizeMemo(raw: string): string {
-  return raw
-    .replace(/\s+/g, "-")            // spaces → hyphens
-    .replace(/[^a-zA-Z0-9\-.\/]/g, "")  // strip remaining disallowed chars
-    .replace(/-{2,}/g, "-")          // collapse double-hyphens
-    .slice(0, 200);                   // respect Due's 200-char max
-}
-
-// ── POST /api/due/payout ──────────────────────────────────────────────────────
-// Admin-only: create a Due payout (quote → transfer).
-//
-// Body:
-//   source      { amount: number, currency: string, rail: string }
-//   destination { currency: string, rail: string }
-//   recipientId string
-//   memo?       string
-//   metadata?   Record<string, string>
-
-router.post(
-  "/due/payout",
-  requireAdmin,
-  async (req: any, res): Promise<void> => {
-    const { source, destination, recipientId, memo: rawMemo, metadata } = req.body ?? {};
-    const memo = rawMemo ? sanitizeMemo(String(rawMemo)) : undefined;
-
-    if (!source || !destination || !recipientId) {
-      res.status(400).json({
-        error: "Missing required fields: source, destination, recipientId",
-      });
-      return;
-    }
-
-    if (typeof source.amount !== "number" || source.amount <= 0) {
-      res.status(400).json({ error: "source.amount must be a positive number" });
-      return;
-    }
-
-    for (const field of ["currency", "rail"] as const) {
-      if (!source[field] || !destination[field === "rail" ? "rail" : field]) {
-        res.status(400).json({ error: `Missing source.${field} or destination field` });
-        return;
-      }
-    }
-
-    logger.info(
-      { source, destination, recipientId, adminId: req.userId },
-      "Due payout initiated",
-    );
-
-    const result = await dueClient.sendPayout({
-      source,
-      destination,
-      recipientId,
-      memo,
-      metadata,
-    });
-
-    if (!result.ok) {
-      res.status(502).json({
-        error: result.error,
-        step: result.step,
-      });
-      return;
-    }
-
-    res.status(201).json({
-      ok: true,
-      quote: result.quote,
-      transfer: result.transfer,
-    });
-  },
-);
-
-// ── POST /api/due/webhook ─────────────────────────────────────────────────────
-// Exported as a standalone handler and registered in app.ts BEFORE
-// express.json() so the raw Buffer body is intact for HMAC verification.
-
 export function handleDueWebhook(req: any, res: any): void {
   const sig = req.headers["x-due-signature"] as string | undefined;
 
   if (!verifyDueWebhookSignature(req.body as Buffer, sig)) {
     logger.warn({ sig }, "Due webhook: invalid signature");
-    res.status(400).json({ error: "Invalid signature" });
+    res.status(400).json({ error: "Invalid signature", code: "invalid_signature" });
     return;
   }
 
@@ -192,12 +322,12 @@ export function handleDueWebhook(req: any, res: any): void {
   try {
     event = JSON.parse((req.body as Buffer).toString("utf8"));
   } catch {
-    res.status(400).json({ error: "Invalid JSON body" });
+    res.status(400).json({ error: "Invalid JSON body", code: "invalid_body" });
     return;
   }
 
   const eventType = event.type as string | undefined;
-  logger.info({ eventType, event }, "Due webhook received");
+  logger.info({ eventType }, "Due webhook received");
 
   switch (eventType) {
     case "transfer.completed": {
