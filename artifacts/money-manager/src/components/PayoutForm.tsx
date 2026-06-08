@@ -1,8 +1,9 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useAuth } from "@clerk/react";
 import {
   Send, CheckCircle2, AlertCircle, Loader2, ArrowLeft,
   Info, Phone, FileText, DollarSign, ShieldCheck, RefreshCw,
+  Copy, Check, TriangleAlert,
 } from "lucide-react";
 
 const BASE_PATH = import.meta.env.BASE_URL.replace(/\/$/, "");
@@ -90,16 +91,61 @@ export default function PayoutForm({ onSuccess }: PayoutFormProps) {
   const [result, setResult] = useState<PayoutResult | null>(null);
   const [serverError, setServerError] = useState("");
   const [fieldErrors, setFieldErrors] = useState<Partial<Record<keyof FormState, string>>>({});
+  const [copied, setCopied] = useState(false);
+
+  // Live quote from /api/due/quote
+  const [liveQuote, setLiveQuote] = useState<{ destAmount: number; fxRate?: number; isLive: boolean } | null>(null);
+  const [quoteLoading, setQuoteLoading] = useState(false);
+  const quoteTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const country = COUNTRIES[form.countryIdx];
   const provider = country.providers[form.providerIdx];
   const amountNum = parseFloat(form.amountUsd) || 0;
-  const estimatedLocal = Math.round(amountNum * (FX_RATES[country.currency] ?? 1));
+  const approxLocal = Math.round(amountNum * (FX_RATES[country.currency] ?? 1));
+  const estimatedLocal = liveQuote?.destAmount ?? approxLocal;
+  const estimatedIsLive = liveQuote?.isLive ?? false;
 
-  // Reset provider if country changes
+  // Reset provider + live quote if country changes
   useEffect(() => {
     setForm(f => ({ ...f, providerIdx: 0 }));
+    setLiveQuote(null);
   }, [form.countryIdx]);
+
+  // Debounced live quote fetch
+  useEffect(() => {
+    const amt = parseFloat(form.amountUsd);
+    if (!amt || amt < 2) {
+      setLiveQuote(null);
+      setQuoteLoading(false);
+      return;
+    }
+    setQuoteLoading(true);
+    if (quoteTimer.current) clearTimeout(quoteTimer.current);
+    quoteTimer.current = setTimeout(async () => {
+      try {
+        const token = await getToken();
+        const url = `${BASE_PATH}/api/due/quote?amount=${amt}&to_currency=${country.currency}&to_rail=${country.rail}`;
+        const res = await fetch(url, {
+          credentials: "include",
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+        if (!res.ok) throw new Error("quote failed");
+        const data = await res.json();
+        const destAmt = (data.quote?.destination as any)?.amount;
+        const fxRate = typeof data.quote?.fxRate === "number" ? data.quote.fxRate : undefined;
+        setLiveQuote({
+          destAmount: typeof destAmt === "number" ? Math.round(destAmt) : approxLocal,
+          fxRate,
+          isLive: typeof destAmt === "number",
+        });
+      } catch {
+        setLiveQuote(null);
+      } finally {
+        setQuoteLoading(false);
+      }
+    }, 700);
+    return () => { if (quoteTimer.current) clearTimeout(quoteTimer.current); };
+  }, [form.amountUsd, form.countryIdx]);
 
   // ── Validation ──────────────────────────────────────────────────────────────
 
@@ -201,7 +247,20 @@ export default function PayoutForm({ onSuccess }: PayoutFormProps) {
           <div style={{ padding: "20px 24px 24px" }}>
             <div style={{ background: "#f9fafb", borderRadius: 14, padding: "16px 18px", display: "flex", flexDirection: "column", gap: 12 }}>
               <Row label="Identifiant" value={
-                <code style={{ fontSize: 11, background: "#e5e7eb", borderRadius: 6, padding: "2px 7px", fontFamily: "monospace" }}>{result.transferId}</code>
+                <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  <code style={{ fontSize: 11, background: "#e5e7eb", borderRadius: 6, padding: "2px 7px", fontFamily: "monospace", wordBreak: "break-all" }}>{result.transferId}</code>
+                  <button
+                    onClick={async () => {
+                      await navigator.clipboard.writeText(result!.transferId);
+                      setCopied(true);
+                      setTimeout(() => setCopied(false), 2000);
+                    }}
+                    title="Copier l'ID"
+                    style={{ background: "none", border: "none", cursor: "pointer", padding: 3, color: copied ? GREEN : "#9ca3af", flexShrink: 0, transition: "color 0.2s" }}
+                  >
+                    {copied ? <Check style={{ width: 14, height: 14 }} /> : <Copy style={{ width: 14, height: 14 }} />}
+                  </button>
+                </span>
               } />
               <Row label="Statut" value={
                 <span style={{ fontSize: 12, fontWeight: 700, color: "#f97316", background: "#fff7ed", borderRadius: 999, padding: "3px 10px", border: "1px solid #fed7aa" }}>
@@ -274,13 +333,28 @@ export default function PayoutForm({ onSuccess }: PayoutFormProps) {
           <div style={{ padding: "20px 24px" }}>
             <div style={{ background: "#f9fafb", borderRadius: 14, padding: "16px 18px", display: "flex", flexDirection: "column", gap: 12, marginBottom: 16 }}>
               <Row label="Montant envoyé" value={<span style={{ fontWeight: 800, fontSize: 17, color: "#111" }}>${parseFloat(form.amountUsd).toFixed(2)} USD</span>} />
-              <Row label="Estimation reçue" value={<span style={{ fontWeight: 700, color: ORANGE }}>{fmtCurrency(estimatedLocal, country.currency)} <span style={{ fontSize: 11, color: "#9ca3af", fontWeight: 400 }}>(approx.)</span></span>} />
+              <Row label="Estimation reçue" value={
+                <span style={{ fontWeight: 700, color: ORANGE }}>
+                  {fmtCurrency(estimatedLocal, country.currency)}
+                  {" "}<span style={{ fontSize: 11, color: estimatedIsLive ? "#16a34a" : "#9ca3af", fontWeight: 600 }}>
+                    {estimatedIsLive ? "✓ en direct" : "(approx.)"}
+                  </span>
+                </span>
+              } />
               <Row label="Réseau" value={`${country.flag} ${provider} · ${country.name}`} />
               <Row label="Téléphone" value={form.phone} />
               <Row label="ID destinataire" value={<code style={{ fontSize: 11, background: "#e5e7eb", borderRadius: 6, padding: "2px 7px" }}>{form.recipientId}</code>} />
               {form.memo && <Row label="Mémo" value={form.memo} />}
             </div>
 
+            {amountNum > 50 && (
+              <div style={{ background: "#fffbeb", border: "1px solid #fde68a", borderRadius: 12, padding: "12px 14px", display: "flex", gap: 10, alignItems: "flex-start" }}>
+                <TriangleAlert style={{ width: 16, height: 16, color: "#b45309", flexShrink: 0, marginTop: 1 }} />
+                <p style={{ margin: 0, fontSize: 12, color: "#92400e", lineHeight: 1.6 }}>
+                  <strong>Montant élevé :</strong> {parseFloat(form.amountUsd).toFixed(2)} USD dépasse 50 $. Vérifiez bien le numéro de téléphone et l'ID destinataire avant de valider.
+                </p>
+              </div>
+            )}
             <InfoBox icon={<ShieldCheck />} color="#9333ea" bg="#faf5ff" border="#e9d5ff">
               Une fois confirmé, le transfert sera soumis à Due. Assurez-vous que l'ID destinataire correspond bien au numéro {form.phone}.
             </InfoBox>
@@ -400,14 +474,29 @@ export default function PayoutForm({ onSuccess }: PayoutFormProps) {
 
         {/* Live estimate */}
         {amountNum >= 2 && (
-          <div style={{ marginTop: 10, background: "#fff7ed", border: "1px solid #fed7aa", borderRadius: 12, padding: "12px 16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <span style={{ fontSize: 12, color: "#92400e", fontWeight: 600 }}>Estimation {country.currency}</span>
-            <span style={{ fontSize: 16, fontWeight: 800, color: ORANGE }}>
-              ≈ {fmtCurrency(estimatedLocal, country.currency)}
-            </span>
+          <div style={{ marginTop: 10, background: "#fff7ed", border: "1px solid #fed7aa", borderRadius: 12, padding: "12px 16px", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
+            <div>
+              <span style={{ fontSize: 11, color: "#92400e", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", display: "block", marginBottom: 2 }}>
+                {quoteLoading ? "Calcul…" : estimatedIsLive ? `Taux en direct · ${country.currency}` : `Estimation · ${country.currency}`}
+              </span>
+              <span style={{ fontSize: 18, fontWeight: 800, color: ORANGE, display: "flex", alignItems: "center", gap: 6 }}>
+                {quoteLoading
+                  ? <Loader2 style={{ width: 16, height: 16, animation: "spin 1s linear infinite" }} />
+                  : `≈ ${fmtCurrency(estimatedLocal, country.currency)}`}
+              </span>
+            </div>
+            {!quoteLoading && liveQuote?.fxRate && (
+              <span style={{ fontSize: 11, color: "#92400e", textAlign: "right", lineHeight: 1.4 }}>
+                1 USD<br />= {liveQuote.fxRate.toFixed(2)} {country.currency}
+              </span>
+            )}
+            {!quoteLoading && !estimatedIsLive && (
+              <span style={{ fontSize: 11, color: "#9ca3af", textAlign: "right" }}>~approx.</span>
+            )}
           </div>
         )}
-        <p style={{ fontSize: 11, color: "#9ca3af", margin: "6px 0 0" }}>Min 2 USD · Max 10 000 USD · Taux indicatif, confirmé au moment du transfert</p>
+        <p style={{ fontSize: 11, color: "#9ca3af", margin: "6px 0 0" }}>Min 2 USD · Max 10 000 USD · Taux confirmé au moment du transfert</p>
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       </Card>
 
       {/* Card: Recipient */}

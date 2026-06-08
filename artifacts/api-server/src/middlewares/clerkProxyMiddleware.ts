@@ -168,7 +168,8 @@ export function clerkProxyMiddleware(): RequestHandler {
           );
           res.setHeader("Cache-Control", "public, max-age=86400");
           const buf = await r.arrayBuffer();
-          return res.send(Buffer.from(buf));
+          res.send(Buffer.from(buf));
+          return;
         }
       } catch {
         // Fall through to FAPI proxy on fetch error

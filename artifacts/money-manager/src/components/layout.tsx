@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useLanguage } from "../lib/language-context";
 import { Link, useLocation } from "wouter";
 import { UserButton } from "@clerk/react";
-import { LayoutDashboard, Receipt, BarChart3, Package, Settings, Menu, Crown, Star, CreditCard } from "lucide-react";
+import { LayoutDashboard, Receipt, BarChart3, Package, Settings, Menu, Crown, Star, CreditCard, Send } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "./ui/sheet";
 import { Button } from "./ui/button";
 
@@ -61,7 +61,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
   ];
 
   const subLink = { href: "/subscription", label: "Mon abonnement", icon: CreditCard };
-  const links = isPaid ? [...baseLinks, subLink] : baseLinks;
+  const payoutLink = { href: "/payout", label: "Virement Mobile Money", icon: Send };
+  const links = isPaid ? [...baseLinks, subLink, payoutLink] : [...baseLinks, payoutLink];
 
   return (
     <div className="flex min-h-[100dvh] flex-col bg-background">

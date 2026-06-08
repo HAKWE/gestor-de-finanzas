@@ -116,6 +116,47 @@ const PayoutBodySchema = z.object({
   metadata: z.record(z.string(), z.string()).optional(),
 });
 
+// ── GET /api/due/quote ────────────────────────────────────────────────────────
+// Returns a live exchange quote for a given USDC amount and destination.
+// Used by the frontend for real-time XOF/XAF/KES/NGN/GHS estimates.
+
+router.get(
+  "/due/quote",
+  dueReadRateLimiter,
+  requireAdmin,
+  async (req: any, res): Promise<void> => {
+    const { amount: amountStr, to_currency, to_rail } =
+      req.query as Record<string, string>;
+
+    const amount = parseFloat(amountStr);
+    if (!Number.isFinite(amount) || amount < 2 || !to_currency || !to_rail) {
+      res.status(400).json({
+        error: "amount (≥2), to_currency, and to_rail are required",
+        code: "validation_error",
+      });
+      return;
+    }
+
+    req.log.info(
+      { userId: anonId(req.userId), amount, to_currency, to_rail },
+      "Due quote requested",
+    );
+
+    const result = await dueClient.createQuote({
+      source: { amount, currency: "USDC", rail: "base-sepolia" },
+      destination: { currency: to_currency, rail: to_rail },
+    });
+
+    if (!result.ok) {
+      req.log.warn({ status: result.status }, "Due quote failed");
+      res.status(502).json({ error: clientError(result.error), code: "quote_failed" });
+      return;
+    }
+
+    res.json({ ok: true, quote: result.data });
+  },
+);
+
 // ── GET /api/due/account ──────────────────────────────────────────────────────
 
 router.get(
