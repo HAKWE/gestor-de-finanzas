@@ -141,6 +141,10 @@ class DueClient {
     return this.request<unknown>("GET", `/transfers?limit=${limit}`);
   }
 
+  async listRecipients(limit = 50): Promise<DueResult<unknown>> {
+    return this.request<unknown>("GET", `/recipients?limit=${limit}`);
+  }
+
   async sendPayout(params: DuePayoutParams): Promise<DuePayoutResult> {
     const { source, destination, recipientId, memo, metadata } = params;
     logger.info(

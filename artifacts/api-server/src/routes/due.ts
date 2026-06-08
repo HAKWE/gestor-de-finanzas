@@ -294,6 +294,32 @@ router.get(
   },
 );
 
+// ── GET /api/due/recipients ───────────────────────────────────────────────────
+
+router.get(
+  "/due/recipients",
+  dueReadRateLimiter,
+  requireAdmin,
+  async (req: any, res): Promise<void> => {
+    const rawLimit = req.query.limit;
+    const limit = Math.min(
+      100,
+      Math.max(1, Number.isFinite(Number(rawLimit)) ? Number(rawLimit) : 50),
+    );
+
+    req.log.info({ userId: anonId(req.userId), limit }, "Due recipients list requested");
+
+    const result = await dueClient.listRecipients(limit);
+    if (!result.ok) {
+      req.log.warn({ status: result.status }, "Due recipients list failed");
+      res.status(502).json({ error: clientError(result.error), code: "upstream_error" });
+      return;
+    }
+
+    res.json(result.data);
+  },
+);
+
 // ── GET /api/due/transfers ────────────────────────────────────────────────────
 
 router.get(
