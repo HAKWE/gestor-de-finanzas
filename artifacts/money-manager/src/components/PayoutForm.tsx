@@ -92,8 +92,8 @@ const FX_RATES: Record<string, number> = {
 };
 
 // Due sandbox only accepts USDC/base-sepolia as source.
-// Convert the returned USDC→dest rate to EUR→dest: 1 EUR ≈ 1.07 USDC.
-const EUR_USD_RATE = 1.07;
+// Convert the returned USDC→dest rate to EUR→dest: 1 EUR ≈ 1.08 USDC.
+const EUR_USD_RATE = 1.08;
 
 const QUICK_AMOUNTS = [5, 10, 20, 50];
 
@@ -329,9 +329,16 @@ function PayoutFormInner({ onSuccess }: PayoutFormProps) {
         const dest = data.quote?.destination as { amount?: number; currency?: string } | undefined;
         const src  = data.quote?.source     as { amount?: number } | undefined;
 
-        // Due sandbox quotes USDC→dest; adjust to EUR→dest by applying EUR/USD ratio
-        const usdcFxRate = typeof data.quote?.fxRate === "number" ? data.quote.fxRate : undefined;
-        const fxRate = usdcFxRate ? parseFloat((usdcFxRate * EUR_USD_RATE).toFixed(2)) : undefined;
+        // Due sandbox quotes USDC→dest; adjust to EUR→dest by applying EUR/USD ratio.
+        // Due API may not return fxRate directly — compute from source/destination amounts.
+        const qSrc  = data.quote?.source      as { amount?: number } | undefined;
+        const qDest = data.quote?.destination as { amount?: number } | undefined;
+        const usdcFxRate: number | undefined =
+          typeof data.quote?.fxRate === "number" ? data.quote.fxRate :
+          (typeof qSrc?.amount === "number" && typeof qDest?.amount === "number" && qSrc.amount > 0)
+            ? qDest.amount / qSrc.amount
+            : undefined;
+        const fxRate = usdcFxRate != null ? parseFloat((usdcFxRate * EUR_USD_RATE).toFixed(2)) : undefined;
         const rawDestAmt = typeof dest?.amount === "number" ? dest.amount : null;
         const adjustedDestAmt = rawDestAmt !== null ? Math.round(rawDestAmt * EUR_USD_RATE) : null;
         const fee: number | undefined = (typeof src?.amount === "number" && adjustedDestAmt !== null && fxRate)

@@ -155,7 +155,13 @@ router.get(
       return;
     }
 
-    res.json({ ok: true, quote: result.data });
+    // Due does not return a fxRate field — compute it from source/destination amounts
+    const rawQuote = result.data as Record<string, unknown>;
+    const srcAmt  = (rawQuote.source      as Record<string, unknown> | undefined)?.amount as number | undefined;
+    const destAmt = (rawQuote.destination as Record<string, unknown> | undefined)?.amount as number | undefined;
+    const computedFxRate = srcAmt && destAmt ? parseFloat((destAmt / srcAmt).toFixed(4)) : null;
+
+    res.json({ ok: true, quote: { ...rawQuote, fxRate: computedFxRate } });
   },
 );
 
@@ -214,8 +220,17 @@ router.post(
       "Due payout initiated",
     );
 
+    // Due sandbox only supports USDC/base-sepolia as source channel.
+    // Convert the user-facing EUR amount to USDC (1 EUR ≈ 1.08 USDC) for the quote+transfer.
+    const EUR_USD_RATE = 1.08;
+    const sandboxSource = {
+      amount: parseFloat((source.amount * EUR_USD_RATE).toFixed(2)),
+      currency: "USDC",
+      rail: "base-sepolia",
+    };
+
     const result = await dueClient.sendPayout({
-      source,
+      source: sandboxSource,
       destination,
       recipientId,
       memo,
