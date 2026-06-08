@@ -144,10 +144,8 @@ router.get(
       "Due quote requested",
     );
 
-    // Multiply EUR→USDC (1.08) so Due returns the XOF amount correct for the EUR input
-    const usdcAmount = parseFloat((amount * 1.08).toFixed(2));
     const result = await dueClient.createQuote({
-      source: { amount: usdcAmount, currency: "USDC", rail: "base-sepolia" },
+      source: { amount, currency: "EUR", rail: "sepa" },
       destination: { currency: to_currency, rail: to_rail },
     });
 
@@ -157,13 +155,32 @@ router.get(
       return;
     }
 
-    // Due does not return a fxRate field — compute it from source/destination amounts
+    // Due returns amounts as strings and fxRate as XOF-per-EUR (inverse).
+    // Normalize to numbers and return fxRate as EUR→XOF for the frontend.
     const rawQuote = result.data as Record<string, unknown>;
-    const srcAmt  = (rawQuote.source      as Record<string, unknown> | undefined)?.amount as number | undefined;
-    const destAmt = (rawQuote.destination as Record<string, unknown> | undefined)?.amount as number | undefined;
-    const computedFxRate = srcAmt && destAmt ? parseFloat((destAmt / srcAmt).toFixed(4)) : null;
+    const rawSrc  = rawQuote.source      as Record<string, unknown> | undefined;
+    const rawDest = rawQuote.destination as Record<string, unknown> | undefined;
 
-    res.json({ ok: true, quote: { ...rawQuote, fxRate: computedFxRate } });
+    const srcAmt  = rawSrc?.amount  != null ? parseFloat(String(rawSrc.amount))  : undefined;
+    const destAmt = rawDest?.amount != null ? parseFloat(String(rawDest.amount)) : undefined;
+
+    // Prefer gross rate (1 / due_fxRate) so display shows pre-fee rate;
+    // fall back to destAmt/srcAmt (net) if Due's fxRate field is absent.
+    const dueRawFxRate = typeof rawQuote.fxRate === "number" && rawQuote.fxRate > 0
+      ? rawQuote.fxRate : null;
+    const eurToDestRate = dueRawFxRate
+      ? parseFloat((1 / dueRawFxRate).toFixed(4))
+      : srcAmt && destAmt ? parseFloat((destAmt / srcAmt).toFixed(4)) : null;
+
+    res.json({
+      ok: true,
+      quote: {
+        ...rawQuote,
+        fxRate: eurToDestRate,
+        source:      rawSrc  ? { ...rawSrc,  amount: srcAmt  } : rawSrc,
+        destination: rawDest ? { ...rawDest, amount: destAmt } : rawDest,
+      },
+    });
   },
 );
 
@@ -222,17 +239,15 @@ router.post(
       "Due payout initiated",
     );
 
-    // Due sandbox only supports USDC/base-sepolia as source channel.
-    // Convert the user-facing EUR amount to USDC (1 EUR ≈ 1.08 USDC) for the quote+transfer.
-    const EUR_USD_RATE = 1.08;
-    const sandboxSource = {
-      amount: parseFloat((source.amount * EUR_USD_RATE).toFixed(2)),
-      currency: "USDC",
-      rail: "base-sepolia",
+    // Use EUR/sepa directly — this account has sepa EUR withdrawal enabled.
+    const sepaSource = {
+      amount: source.amount,
+      currency: "EUR",
+      rail: "sepa",
     };
 
     const result = await dueClient.sendPayout({
-      source: sandboxSource,
+      source: sepaSource,
       destination,
       recipientId,
       memo,

@@ -91,9 +91,9 @@ const FX_RATES: Record<string, number> = {
   XOF: 655, XAF: 655, NGN: 1700, KES: 140, GHS: 17,
 };
 
-// Due sandbox only accepts USDC/base-sepolia as source.
-// Convert the returned USDC→dest rate to EUR→dest: 1 EUR ≈ 1.08 USDC.
-const EUR_USD_RATE = 1.08;
+// Quote uses EUR/sepa directly — fxRate returned is already EUR→dest, no conversion needed.
+// EUR_USD_RATE kept at 1.0 so existing math is a no-op.
+const EUR_USD_RATE = 1.0;
 
 const QUICK_AMOUNTS = [5, 10, 20, 50];
 
