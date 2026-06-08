@@ -3,7 +3,7 @@ import { Link, useLocation } from "wouter";
 import { useAuth } from "@clerk/react";
 import {
   Check, Loader2, ArrowLeft, Zap, Star, ShieldCheck, Crown,
-  Clock, CreditCard, Sparkles, X,
+  Clock, CreditCard, Sparkles, X, Smartphone,
 } from "lucide-react";
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
@@ -574,6 +574,25 @@ export default function Pricing() {
                           </>
                         )}
                       </button>
+
+                      {/* Mobile Money button */}
+                      <Link href="/payout">
+                        <button
+                          style={{
+                            width: "100%", height: 48, borderRadius: 13, border: "1.5px solid #fed7aa",
+                            background: "linear-gradient(135deg,#fff7ed,#ffedd5)",
+                            cursor: "pointer",
+                            display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+                            boxShadow: "0 2px 10px rgba(249,115,22,0.12)",
+                            transition: "opacity 0.15s",
+                          }}
+                          onMouseEnter={e => (e.currentTarget.style.opacity = "0.82")}
+                          onMouseLeave={e => (e.currentTarget.style.opacity = "1")}
+                        >
+                          <Smartphone style={{ width: 15, height: 15, color: "#f97316" }} />
+                          <span style={{ fontSize: 14, fontWeight: 800, color: "#c2410c" }}>Payer avec Mobile Money</span>
+                        </button>
+                      </Link>
                     </div>
                   )}
                 </div>
