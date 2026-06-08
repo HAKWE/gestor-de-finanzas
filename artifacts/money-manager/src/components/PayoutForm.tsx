@@ -5,7 +5,7 @@ import {
   Send, CheckCircle2, AlertCircle, Loader2, ArrowLeft,
   Info, Phone, FileText, DollarSign, ShieldCheck, RefreshCw,
   Copy, Check, TriangleAlert, Users, ExternalLink, User,
-  Zap,
+  Zap, CreditCard, Calendar, Crown,
 } from "lucide-react";
 
 // ── Error boundary ─────────────────────────────────────────────────────────────
@@ -131,6 +131,25 @@ function recipientLabel(r: DueRecipient): string {
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
+interface SubInfo {
+  plan: string;
+  planLabel: string;
+  effectivePlan?: string;
+  currentPeriodEnd?: string | null;
+  trialDaysLeft?: number;
+}
+
+const PLAN_DEFAULT_AMOUNT: Record<string, string> = {
+  pro: "10",
+  starter: "5",
+  trial: "5",
+  limited_free: "5",
+};
+
+function fmtDate(iso: string): string {
+  return new Date(iso).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
+}
+
 interface FormState {
   amountUsd: string;
   countryIdx: number;
@@ -173,6 +192,35 @@ function PayoutFormInner({ onSuccess }: PayoutFormProps) {
     try { return await getToken(); }
     catch { return null; }
   }
+
+  // ── Subscription info ────────────────────────────────────────────────────────
+  const [subInfo, setSubInfo] = useState<SubInfo | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function loadSub() {
+      try {
+        const token = await safeGetToken();
+        const res = await fetch(`${BASE_PATH}/api/stripe/subscription-status`, {
+          credentials: "include",
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (!cancelled) setSubInfo(data);
+      } catch {}
+    }
+    loadSub();
+    return () => { cancelled = true; };
+  }, []);
+
+  // Pre-select amount once subscription plan is known
+  useEffect(() => {
+    if (!subInfo) return;
+    const key = subInfo.effectivePlan ?? subInfo.plan ?? "starter";
+    const defaultAmt = PLAN_DEFAULT_AMOUNT[key] ?? "5";
+    setForm(f => f.amountUsd ? f : { ...f, amountUsd: defaultAmt });
+  }, [subInfo]);
 
   const [form, setForm] = useState<FormState>({
     amountUsd: "",
@@ -409,8 +457,8 @@ function PayoutFormInner({ onSuccess }: PayoutFormProps) {
             <div style={{ width: 72, height: 72, borderRadius: 22, background: GREEN, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px", animation: "bounceIn 0.5s cubic-bezier(.36,.07,.19,.97) both" }}>
               <CheckCircle2 style={{ width: 36, height: 36, color: "#fff" }} />
             </div>
-            <h2 style={{ fontSize: 22, fontWeight: 800, color: "#14532d", margin: "0 0 6px" }}>Virement initié ✓</h2>
-            <p style={{ fontSize: 13, color: "#15803d", margin: 0 }}>Le transfert a été soumis avec succès</p>
+            <h2 style={{ fontSize: 22, fontWeight: 800, color: "#14532d", margin: "0 0 6px" }}>Paiement envoyé ✓</h2>
+            <p style={{ fontSize: 13, color: "#15803d", margin: 0 }}>Votre abonnement sera renouvelé dès réception du paiement</p>
           </div>
 
           <div style={{ padding: "20px 24px 24px" }}>
@@ -454,7 +502,8 @@ function PayoutFormInner({ onSuccess }: PayoutFormProps) {
             </div>
 
             <InfoBox icon={<Info />} color="#2563eb" bg="#eff6ff" border="#bfdbfe">
-              <strong>awaiting_funds</strong> signifie que les USDC doivent encore être déposés sur le compte Due pour finaliser le transfert.
+              Le paiement sera crédité sur votre compte MobileMoney Manager une fois reçu et confirmé par notre équipe (généralement sous 24h ouvrées).{" "}
+              <strong>Conservez l'identifiant de transfert</strong> comme preuve de paiement.
             </InfoBox>
 
             <button
@@ -612,9 +661,33 @@ function PayoutFormInner({ onSuccess }: PayoutFormProps) {
     <div style={{ maxWidth: 520, margin: "0 auto", padding: "0 4px", display: "flex", flexDirection: "column", gap: 14 }}>
       <style>{KEYFRAMES}</style>
 
+      {/* ── Subscription banner ─────────────────────────────────────────────── */}
+      {subInfo && (
+        <div style={{ background: "linear-gradient(135deg, #fff7ed, #ffedd5)", border: "1.5px solid #fed7aa", borderRadius: 18, padding: "16px 20px", display: "flex", alignItems: "center", gap: 14 }}>
+          <div style={{ width: 42, height: 42, borderRadius: 13, background: ORANGE, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <Crown style={{ width: 20, height: 20, color: "#fff" }} />
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+              <span style={{ fontSize: 13, fontWeight: 800, color: "#111" }}>Abonnement {subInfo.planLabel}</span>
+              <span style={{ fontSize: 11, fontWeight: 700, color: ORANGE, background: "#fff", borderRadius: 999, padding: "2px 8px", border: "1px solid #fed7aa" }}>
+                {PLAN_DEFAULT_AMOUNT[subInfo.effectivePlan ?? subInfo.plan] ?? "5"} USD / mois
+              </span>
+            </div>
+            {subInfo.currentPeriodEnd && (
+              <div style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 4 }}>
+                <Calendar style={{ width: 12, height: 12, color: "#9a3412" }} />
+                <span style={{ fontSize: 12, color: "#9a3412" }}>Renouvellement le {fmtDate(subInfo.currentPeriodEnd)}</span>
+              </div>
+            )}
+          </div>
+          <CreditCard style={{ width: 20, height: 20, color: "#f97316", flexShrink: 0 }} />
+        </div>
+      )}
+
       {/* ── Saved recipients ─────────────────────────────────────────────────── */}
       <Card
-        title="Mes destinataires sauvegardés"
+        title="Mes numéros Mobile Money"
         icon={<Users style={{ width: 14, height: 14 }} />}
         action={
           <a
@@ -869,12 +942,9 @@ function PayoutFormInner({ onSuccess }: PayoutFormProps) {
         </div>
       </Card>
 
-      {/* ── Admin info ──────────────────────────────────────────────────────── */}
-      <InfoBox icon={<ShieldCheck />} color="#9333ea" bg="#faf5ff" border="#e9d5ff">
-        Fonctionnalité admin uniquement. L'ID destinataire (<code>rcp_…</code>) doit être pré-enregistré dans Due.{" "}
-        <a href="https://app.due.com/recipients" target="_blank" rel="noopener noreferrer" style={{ color: "#9333ea", fontWeight: 700 }}>
-          Gérer les destinataires dans Due ↗
-        </a>
+      {/* ── Credit note ─────────────────────────────────────────────────────── */}
+      <InfoBox icon={<Info />} color="#2563eb" bg="#eff6ff" border="#bfdbfe">
+        Le paiement sera crédité sur votre compte MobileMoney Manager une fois reçu et confirmé par notre équipe (généralement sous 24h ouvrées).
       </InfoBox>
 
       {/* ── Submit ──────────────────────────────────────────────────────────── */}
