@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useLanguage } from "../lib/language-context";
 import { Link, useLocation } from "wouter";
 import { UserButton } from "@clerk/react";
-import { LayoutDashboard, Receipt, BarChart3, Package, Settings, Menu, Crown, Star, CreditCard, Send, History } from "lucide-react";
+import { LayoutDashboard, Receipt, BarChart3, Package, Settings, Menu, Crown, Star, CreditCard } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "./ui/sheet";
 import { Button } from "./ui/button";
 
@@ -60,12 +60,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
     { href: "/settings", label: t("nav.settings"), icon: Settings },
   ];
 
-  const subLink     = { href: "/subscription", label: "Mon abonnement",        icon: CreditCard };
-  const payoutLink  = { href: "/payout",       label: "Payer avec Mobile Money", icon: Send };
-  const historyLink = { href: "/payouts",      label: "Mes Virements",           icon: History };
+  const subLink     = { href: "/subscription", label: "Mon abonnement", icon: CreditCard };
+  // payoutLink & historyLink hidden — Due KYC pending
   const links = isPaid
-    ? [...baseLinks, subLink, payoutLink, historyLink]
-    : [...baseLinks, payoutLink, historyLink];
+    ? [...baseLinks, subLink]
+    : [...baseLinks];
 
   return (
     <div className="flex min-h-[100dvh] flex-col bg-background">
