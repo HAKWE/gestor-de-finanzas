@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo } from "react";
 import {
   Users, Crown, Activity, RefreshCw,
-  Search, Download, ArrowLeft, ChevronUp, ChevronDown, X, Filter,
+  Search, Download, ArrowLeft, ChevronUp, ChevronDown, X, Filter, RotateCw,
 } from "lucide-react";
 
 const IS_ADMIN_SUBDOMAIN =
@@ -37,6 +37,7 @@ interface AdminUser {
   plan: "free" | "starter" | "pro";
   subscriptionStatus: "active" | "cancelled" | "expired" | "free";
   stripeSubscriptionId: string | null;
+  stripeCustomerId: string | null;
   periodEnd: string | null;
   createdAt: string;
   lastSignIn: string | null;
@@ -189,6 +190,26 @@ export default function AdminPage() {
   const [planFilter, setPlanFilter]   = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const [sort, setSort] = useState<{ key: SortKey; dir: SortDir }>({ key: "createdAt", dir: "desc" });
+  const [syncingUsers, setSyncingUsers] = useState<Record<string, "loading" | "ok" | "err">>({});
+
+  const syncUser = async (stripeCustomerId: string) => {
+    setSyncingUsers(s => ({ ...s, [stripeCustomerId]: "loading" }));
+    try {
+      const res = await fetch(`${basePath}/api/admin/sync-subscription`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ stripeCustomerId }),
+      });
+      const j = await res.json();
+      if (!res.ok) throw new Error(j.error ?? "Erreur");
+      setSyncingUsers(s => ({ ...s, [stripeCustomerId]: "ok" }));
+      setTimeout(() => load(true), 800);
+    } catch {
+      setSyncingUsers(s => ({ ...s, [stripeCustomerId]: "err" }));
+      setTimeout(() => setSyncingUsers(s => { const n = { ...s }; delete n[stripeCustomerId]; return n; }), 3000);
+    }
+  };
 
   const load = (silent = false) => {
     if (!silent) setLoading(true); else setRefreshing(true);
@@ -401,12 +422,13 @@ export default function AdminPage() {
                   <SortTh sortKey="plan" active={false} dir={sort.dir}>Statut abonnement</SortTh>
                   <SortTh sortKey="plan" active={false} dir={sort.dir}>Fin abonnement</SortTh>
                   <SortTh sortKey="lastSignIn" active={sort.key === "lastSignIn"} dir={sort.dir} onClick={() => toggleSort("lastSignIn")}>Dernière connexion</SortTh>
+                  <SortTh active={false} dir={sort.dir}></SortTh>
                 </tr>
               </thead>
               <tbody>
                 {filtered.length === 0 ? (
                   <tr>
-                    <td colSpan={6} style={{ textAlign: "center", padding: "56px 24px", color: T.dim }}>
+                    <td colSpan={7} style={{ textAlign: "center", padding: "56px 24px", color: T.dim }}>
                       <div style={{ fontSize: 32, marginBottom: 10, opacity: 0.4 }}>🔍</div>
                       <p style={{ margin: 0, fontSize: 14, color: T.muted }}>Aucun utilisateur correspondant</p>
                       {hasFilters && (
@@ -459,6 +481,32 @@ export default function AdminPage() {
                     {/* Last sign-in */}
                     <td style={{ padding: "13px 16px", color: T.muted, fontSize: 12, whiteSpace: "nowrap" }}>
                       {fmtAgo(u.lastSignIn)}
+                    </td>
+
+                    {/* Stripe sync */}
+                    <td style={{ padding: "13px 16px", textAlign: "right" }}>
+                      {u.stripeCustomerId && (() => {
+                        const st = syncingUsers[u.stripeCustomerId];
+                        return (
+                          <button
+                            onClick={() => syncUser(u.stripeCustomerId!)}
+                            disabled={st === "loading"}
+                            title="Synchroniser depuis Stripe"
+                            style={{
+                              display: "inline-flex", alignItems: "center", gap: 4,
+                              background: st === "ok" ? "#051a0a" : st === "err" ? "#1a0808" : "transparent",
+                              border: `1px solid ${st === "ok" ? "#196c2e" : st === "err" ? "#7f1d1d" : T.border2}`,
+                              borderRadius: 7, padding: "4px 9px", fontSize: 11,
+                              color: st === "ok" ? T.green : st === "err" ? T.red : T.dim,
+                              cursor: st === "loading" ? "default" : "pointer",
+                              fontWeight: 500, whiteSpace: "nowrap",
+                            }}
+                          >
+                            <RotateCw style={{ width: 10, height: 10, animation: st === "loading" ? "spin 0.8s linear infinite" : "none" }} />
+                            {st === "ok" ? "Synced" : st === "err" ? "Erreur" : "Sync"}
+                          </button>
+                        );
+                      })()}
                     </td>
                   </tr>
                 ))}
