@@ -226,6 +226,25 @@ export async function handleStripeWebhook(req: Request, res: Response): Promise<
         break;
       }
 
+      case "customer.subscription.created": {
+        const sub = event.data.object as Stripe.Subscription;
+        logger.info(
+          { subscriptionId: sub.id, customerId: sub.customer, status: sub.status },
+          "[stripe-webhook] customer.subscription.created"
+        );
+        const item = sub.items.data[0];
+        if (item) {
+          await updateUserSubscription(
+            sub.customer as string,
+            sub.id,
+            item.price.id,
+            sub.status,
+            (sub as any).current_period_end ?? (sub as any).billing_cycle_anchor ?? null
+          );
+        }
+        break;
+      }
+
       case "customer.subscription.updated": {
         const sub = event.data.object as Stripe.Subscription;
         logger.info(

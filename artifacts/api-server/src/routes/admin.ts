@@ -1,6 +1,9 @@
 import { Router, type IRouter } from "express";
 import { getAuth, createClerkClient } from "@clerk/express";
+import { eq } from "drizzle-orm";
 import { db, userProfilesTable } from "@workspace/db";
+import { getUncachableStripeClient } from "../stripeClient";
+import Stripe from "stripe";
 
 const router: IRouter = Router();
 
@@ -159,6 +162,85 @@ router.get("/admin/stats", requireAdmin, async (_req, res): Promise<void> => {
       stats: { total, trial, free, starter, pro, paid, active, convRate, trialConv },
       users,
       generatedAt: new Date().toISOString(),
+    });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── POST /api/admin/sync-subscription ────────────────────────────────────────
+// Re-syncs a user's subscription from Stripe into the DB using their Stripe customer ID.
+router.post("/admin/sync-subscription", requireAdmin, async (req: any, res: any): Promise<void> => {
+  const { stripeCustomerId } = req.body as { stripeCustomerId?: string };
+  if (!stripeCustomerId) {
+    res.status(400).json({ error: "stripeCustomerId is required" });
+    return;
+  }
+
+  try {
+    const stripe = await getUncachableStripeClient();
+
+    // Find the profile by customer ID
+    const profiles = await db
+      .select()
+      .from(userProfilesTable)
+      .where(eq(userProfilesTable.stripeCustomerId, stripeCustomerId))
+      .limit(1);
+
+    if (!profiles[0]) {
+      res.status(404).json({ error: "No user profile found for this Stripe customer ID" });
+      return;
+    }
+
+    // Fetch active subscriptions from Stripe
+    const subscriptions = await stripe.subscriptions.list({
+      customer: stripeCustomerId,
+      status: "active",
+      limit: 1,
+    });
+
+    if (!subscriptions.data.length) {
+      res.status(404).json({ error: "No active Stripe subscription found for this customer" });
+      return;
+    }
+
+    const sub = subscriptions.data[0];
+    const item = sub.items.data[0];
+    if (!item) {
+      res.status(400).json({ error: "Subscription has no price items" });
+      return;
+    }
+
+    // Resolve plan name from product
+    let planName: "starter" | "pro" | "paid" = "paid";
+    try {
+      const price = await stripe.prices.retrieve(item.price.id, { expand: ["product"] });
+      const productName = ((price.product as Stripe.Product).name ?? "").toLowerCase();
+      if (productName.includes("pro")) planName = "pro";
+      else if (productName.includes("starter")) planName = "starter";
+    } catch { /* keep "paid" fallback */ }
+
+    const periodEndRaw = (sub as any).current_period_end ?? (sub as any).billing_cycle_anchor ?? null;
+    const periodEnd = periodEndRaw
+      ? new Date(periodEndRaw * 1000)
+      : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+
+    await db
+      .update(userProfilesTable)
+      .set({
+        stripeSubscriptionId: sub.id,
+        stripePriceId: item.price.id,
+        subscriptionPlan: planName,
+        subscriptionPeriodEnd: periodEnd,
+      })
+      .where(eq(userProfilesTable.stripeCustomerId, stripeCustomerId));
+
+    res.json({
+      ok: true,
+      userId: profiles[0].userId,
+      subscriptionId: sub.id,
+      plan: planName,
+      periodEnd: periodEnd.toISOString(),
     });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
