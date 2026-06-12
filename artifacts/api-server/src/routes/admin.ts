@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import { getAuth, createClerkClient } from "@clerk/express";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { db, userProfilesTable } from "@workspace/db";
 import { getUncachableStripeClient } from "../stripeClient";
 import Stripe from "stripe";
@@ -68,36 +68,88 @@ router.get("/admin/stats", requireAdmin, async (_req, res): Promise<void> => {
   try {
     const clerk = createClerkClient({ secretKey: process.env.CLERK_SECRET_KEY });
 
-    // 1. Tous les profils en base
-    const profiles = await db.select().from(userProfilesTable);
-
-    // 2. Tous les utilisateurs Clerk (max 500)
-    const [page1, page2] = await Promise.all([
+    // 1. Load all profiles + live Stripe subscription data in one query
+    //    Uses the stripe schema (kept current by stripe-replit-sync) so no webhook dependency.
+    const [profiles, stripeRows, clerkPage1, clerkPage2] = await Promise.all([
+      db.select().from(userProfilesTable),
+      db.execute(sql`
+        SELECT
+          up.user_id,
+          up.stripe_customer_id,
+          s.id            AS subscription_id,
+          s.status        AS sub_status,
+          s.billing_cycle_anchor AS period_anchor,
+          s.current_period_end   AS period_end,
+          LOWER(pr._raw_data->>'name') AS product_name
+        FROM user_profiles up
+        JOIN stripe.subscriptions s ON s.customer = up.stripe_customer_id
+        LEFT JOIN stripe.prices pi2 ON pi2.id = (s._raw_data->'items'->'data'->0->'price'->>'id')
+        LEFT JOIN stripe.products pr ON pr.id = (pi2._raw_data->>'product')
+        WHERE up.stripe_customer_id IS NOT NULL
+          AND s.status IN ('active', 'trialing', 'past_due')
+        ORDER BY s.created DESC
+      `),
       clerk.users.getUserList({ limit: 500, offset: 0, orderBy: "-created_at" }),
       clerk.users.getUserList({ limit: 500, offset: 500, orderBy: "-created_at" }),
     ]);
-    const clerkUsers = [...page1.data, ...page2.data];
 
-    // Map userId → clerk user pour jointure rapide
+    // Map stripe_customer_id → best active subscription
+    const stripeSubMap = new Map<string, {
+      subscriptionId: string; status: string; plan: string; periodEnd: string | null;
+    }>();
+    for (const row of stripeRows.rows as any[]) {
+      if (stripeSubMap.has(row.stripe_customer_id)) continue; // keep first (most recent)
+      const productName: string = row.product_name ?? "";
+      const plan = productName.includes("pro") ? "pro"
+        : productName.includes("starter") ? "starter"
+        : "paid";
+      const rawEnd = row.period_end ?? row.period_anchor;
+      const periodEnd = rawEnd ? new Date(Number(rawEnd) * 1000).toISOString() : null;
+      stripeSubMap.set(row.stripe_customer_id, {
+        subscriptionId: row.subscription_id,
+        status: row.sub_status,
+        plan,
+        periodEnd,
+      });
+    }
+
+    const clerkUsers = [...clerkPage1.data, ...clerkPage2.data];
     const clerkMap = new Map(clerkUsers.map(u => [u.id, u]));
 
-    // 3. Construire la liste enrichie depuis les profils DB
+    // 2. Build enriched user list — subscription truth comes from Stripe schema
     const userMap = new Map<string, any>();
 
     for (const p of profiles) {
       const cu = clerkMap.get(p.userId);
       const email =
         cu?.emailAddresses.find(e => e.id === cu.primaryEmailAddressId)?.emailAddress
-        ?? cu?.emailAddresses[0]?.emailAddress
-        ?? "—";
-      const name =
-        [cu?.firstName, cu?.lastName].filter(Boolean).join(" ").trim()
-        || email.split("@")[0];
+        ?? cu?.emailAddresses[0]?.emailAddress ?? "—";
+      const name = [cu?.firstName, cu?.lastName].filter(Boolean).join(" ").trim() || email.split("@")[0];
 
-      const plan = p.subscriptionPlan ?? "free";
-      const periodEnd = p.subscriptionPeriodEnd ?? null;
+      // Prefer live Stripe data; fall back to DB fields for cancelled/expired
+      const stripeSub = p.stripeCustomerId ? stripeSubMap.get(p.stripeCustomerId) : null;
       const trialEndsAt = p.trialEndsAt ?? null;
-      const subscriptionStatus = deriveSubscriptionStatus(plan, p.stripeSubscriptionId ?? null, periodEnd, trialEndsAt);
+
+      let plan: string;
+      let subscriptionStatus: string;
+      let periodEnd: string | null;
+      let stripeSubscriptionId: string | null;
+
+      if (stripeSub) {
+        plan = stripeSub.plan;
+        subscriptionStatus = stripeSub.status === "active" || stripeSub.status === "trialing" ? "active" : "expired";
+        periodEnd = stripeSub.periodEnd;
+        stripeSubscriptionId = stripeSub.subscriptionId;
+      } else {
+        // No live Stripe sub — use DB fields (handles cancelled/expired correctly)
+        plan = p.subscriptionPlan ?? "free";
+        stripeSubscriptionId = p.stripeSubscriptionId ?? null;
+        const dbPeriodEnd = p.subscriptionPeriodEnd ?? null;
+        periodEnd = dbPeriodEnd?.toISOString() ?? null;
+        subscriptionStatus = deriveSubscriptionStatus(
+          plan, stripeSubscriptionId, dbPeriodEnd, trialEndsAt
+        );
+      }
 
       userMap.set(p.userId, {
         userId: p.userId,
@@ -106,10 +158,10 @@ router.get("/admin/stats", requireAdmin, async (_req, res): Promise<void> => {
         plan,
         subscriptionStatus,
         trialEndsAt: trialEndsAt?.toISOString() ?? null,
-        trialDaysLeft: trialEndsAt ? Math.max(0, Math.ceil((trialEndsAt.getTime() - Date.now()) / (1000 * 60 * 60 * 24))) : 0,
+        trialDaysLeft: trialEndsAt ? Math.max(0, Math.ceil((trialEndsAt.getTime() - Date.now()) / 86400000)) : 0,
         stripeCustomerId: p.stripeCustomerId ?? null,
-        stripeSubscriptionId: p.stripeSubscriptionId ?? null,
-        periodEnd: periodEnd?.toISOString() ?? null,
+        stripeSubscriptionId,
+        periodEnd,
         currency: p.currency ?? "XOF",
         onboardingCompleted: p.onboardingCompleted,
         createdAt: p.createdAt.toISOString(),
@@ -117,46 +169,37 @@ router.get("/admin/stats", requireAdmin, async (_req, res): Promise<void> => {
       });
     }
 
-    // 4. Utilisateurs Clerk sans profil DB
+    // 3. Clerk users without a DB profile
     for (const cu of clerkUsers) {
-      if (!userMap.has(cu.id)) {
-        const email =
-          cu.emailAddresses.find(e => e.id === cu.primaryEmailAddressId)?.emailAddress
-          ?? cu.emailAddresses[0]?.emailAddress
-          ?? "—";
-        const name = [cu.firstName, cu.lastName].filter(Boolean).join(" ").trim() || email.split("@")[0];
-        userMap.set(cu.id, {
-          userId: cu.id,
-          email,
-          name,
-          plan: "free",
-          subscriptionStatus: "free",
-          trialEndsAt: null,
-          trialDaysLeft: 0,
-          stripeCustomerId: null,
-          stripeSubscriptionId: null,
-          periodEnd: null,
-          currency: "XOF",
-          onboardingCompleted: false,
-          createdAt: new Date(cu.createdAt).toISOString(),
-          lastSignIn: cu.lastSignInAt ? new Date(cu.lastSignInAt).toISOString() : null,
-        });
-      }
+      if (userMap.has(cu.id)) continue;
+      const email =
+        cu.emailAddresses.find(e => e.id === cu.primaryEmailAddressId)?.emailAddress
+        ?? cu.emailAddresses[0]?.emailAddress ?? "—";
+      const name = [cu.firstName, cu.lastName].filter(Boolean).join(" ").trim() || email.split("@")[0];
+      userMap.set(cu.id, {
+        userId: cu.id, email, name,
+        plan: "free", subscriptionStatus: "free",
+        trialEndsAt: null, trialDaysLeft: 0,
+        stripeCustomerId: null, stripeSubscriptionId: null, periodEnd: null,
+        currency: "XOF", onboardingCompleted: false,
+        createdAt: new Date(cu.createdAt).toISOString(),
+        lastSignIn: cu.lastSignInAt ? new Date(cu.lastSignInAt).toISOString() : null,
+      });
     }
 
     const users = [...userMap.values()].sort(
       (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     );
 
-    const total       = users.length;
-    const trial       = users.filter(u => u.subscriptionStatus === "trial").length;
-    const free        = users.filter(u => u.subscriptionStatus === "free").length;
-    const starter     = users.filter(u => u.plan === "starter").length;
-    const pro         = users.filter(u => u.plan === "pro").length;
-    const paid        = starter + pro;
-    const active      = users.filter(u => u.subscriptionStatus === "active").length;
-    const convRate    = total > 0 ? ((paid / total) * 100).toFixed(1) : "0.0";
-    const trialConv   = trial > 0 ? ((paid / trial) * 100).toFixed(1) : "0.0";
+    const total    = users.length;
+    const trial    = users.filter(u => u.subscriptionStatus === "trial").length;
+    const free     = users.filter(u => u.subscriptionStatus === "free").length;
+    const starter  = users.filter(u => u.plan === "starter").length;
+    const pro      = users.filter(u => u.plan === "pro").length;
+    const paid     = users.filter(u => u.plan !== "free" && u.subscriptionStatus === "active").length;
+    const active   = users.filter(u => u.subscriptionStatus === "active").length;
+    const convRate = total > 0 ? ((paid / total) * 100).toFixed(1) : "0.0";
+    const trialConv = trial > 0 ? ((paid / trial) * 100).toFixed(1) : "0.0";
 
     res.json({
       stats: { total, trial, free, starter, pro, paid, active, convRate, trialConv },
