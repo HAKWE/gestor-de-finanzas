@@ -115,9 +115,32 @@ export function clerkProxyMiddleware(): RequestHandler {
   const isProduction = process.env.NODE_ENV === "production";
 
   // In dev with test keys (sk_test_), Clerk connects to its own dev FAPI
-  // directly — no proxy needed. Only proxy for live keys.
+  // directly — no FAPI proxy needed. But we still must serve the /npm/ CDN
+  // paths so Clerk JS can load in the Replit dev sandbox (the browser cannot
+  // follow FAPI redirects to the npm CDN due to SSL issues).
   if (!isProduction && secretKey.startsWith("sk_test_")) {
-    return (_req, _res, next) => next();
+    return async (req, res, next) => {
+      if (req.path.startsWith("/npm/")) {
+        const cdnPath = req.path.replace(/^\/npm/, "");
+        const fapiUrl = `${CLERK_FAPI}/npm${cdnPath}`;
+        try {
+          const r = await fetch(fapiUrl, { redirect: "follow" });
+          if (r.ok) {
+            res.setHeader(
+              "Content-Type",
+              r.headers.get("content-type") || "application/javascript",
+            );
+            res.setHeader("Cache-Control", "public, max-age=86400");
+            const buf = await r.arrayBuffer();
+            res.send(Buffer.from(buf));
+            return;
+          }
+        } catch {
+          // fall through to next
+        }
+      }
+      next();
+    };
   }
 
   const fapiProxy = createProxyMiddleware({
