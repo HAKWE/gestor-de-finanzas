@@ -1,7 +1,8 @@
 import express, { type Express } from "express";
 import type { IncomingMessage, ServerResponse } from "http";
 import cors from "cors";
-import { pinoHttp } from "pino-http";
+import type { Options as PinoHttpOptions, HttpLogger } from "pino-http";
+import { pinoHttp as _pinoHttp } from "pino-http";
 import cookieParser from "cookie-parser";
 import { clerkMiddleware } from "@clerk/express";
 import { CLERK_PROXY_PATH, clerkProxyMiddleware, buildProxyUrl } from "./middlewares/clerkProxyMiddleware";
@@ -10,6 +11,11 @@ import { handleStripeWebhook } from "./routes/stripe-webhook-handler";
 import { handleDueWebhook } from "./routes/due";
 import router from "./routes";
 import { logger } from "./lib/logger";
+
+// pino-http ships CJS but its type file uses ES export syntax; some TypeScript
+// resolvers (e.g. Vercel's default moduleResolution) see the whole module
+// namespace instead of the callable export. This cast is safe at runtime.
+const pinoHttp = _pinoHttp as unknown as (opts?: PinoHttpOptions) => HttpLogger;
 
 const app: Express = express();
 
