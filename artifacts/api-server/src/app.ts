@@ -1,7 +1,7 @@
 import express, { type Express } from "express";
 import type { IncomingMessage, ServerResponse } from "http";
 import cors from "cors";
-import pinoHttp from "pino-http";
+import { pinoHttp } from "pino-http";
 import cookieParser from "cookie-parser";
 import { clerkMiddleware } from "@clerk/express";
 import { CLERK_PROXY_PATH, clerkProxyMiddleware, buildProxyUrl } from "./middlewares/clerkProxyMiddleware";
