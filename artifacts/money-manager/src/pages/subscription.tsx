@@ -51,7 +51,7 @@ function TrialSection({ sub }: { sub: SubStatus }) {
               </p>
             </div>
             <span style={{ marginLeft: "auto", background: badgeBg, border: `1.5px solid ${cardBorder}`, borderRadius: 999, padding: "4px 12px", fontSize: 12, fontWeight: 700, color: badgeColor }}>
-              {isCritical ? "⚠ Urgent" : "✓ Actif"}
+              {isCritical ? "⚠ Urgente" : "✓ Activo"}
             </span>
           </div>
 
@@ -139,7 +139,7 @@ interface SubStatus {
 }
 
 function formatDate(iso: string) {
-  return new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "long", year: "numeric" }).format(new Date(iso));
+  return new Intl.DateTimeFormat("es-CO", { day: "numeric", month: "long", year: "numeric" }).format(new Date(iso));
 }
 
 export default function Subscription() {
@@ -158,7 +158,7 @@ export default function Subscription() {
     fetch(`${basePath}/api/stripe/subscription-status`, { credentials: "include" })
       .then(r => r.json())
       .then(d => { setSub(d); setLoading(false); })
-      .catch(() => { setSub({ plan: "free", planLabel: "Gratuit" }); setLoading(false); });
+      .catch(() => { setSub({ plan: "free", planLabel: "Gratis" }); setLoading(false); });
   };
 
   useEffect(() => { loadStatus(); }, []);
@@ -180,7 +180,7 @@ export default function Subscription() {
     try {
       const res = await fetch(`${basePath}/api/stripe/portal`, { method: "POST", credentials: "include" });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Erreur");
+      if (!res.ok) throw new Error(data.error || "Error");
       window.location.href = data.url;
       setTimeout(() => setPortalLoading(false), 10_000);
     } catch (err: any) {
@@ -195,7 +195,7 @@ export default function Subscription() {
     try {
       const res = await fetch(`${basePath}/api/stripe/cancel-subscription`, { method: "POST", credentials: "include" });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Erreur");
+      if (!res.ok) throw new Error(data.error || "Error");
       setCancelSuccess(true);
       setShowCancelModal(false);
       // Merge returned date so the UI shows the exact end date immediately
@@ -416,7 +416,7 @@ export default function Subscription() {
                     border: "1.5px solid rgba(74,222,128,0.40)", borderRadius: 999,
                     padding: "4px 12px", fontSize: 12, fontWeight: 700, color: "#4ade80",
                   }}>
-                    ✓ Actif
+                    ✓ Activo
                   </span>
                 )}
               </div>
@@ -596,19 +596,19 @@ export default function Subscription() {
                     <span style={{ fontSize: 26 }}>🔒</span>
                   </div>
                   <div>
-                    <p style={{ color: "#b91c1c", fontSize: 12, fontWeight: 700, margin: 0, textTransform: "uppercase", letterSpacing: "0.08em" }}>Essai terminé</p>
-                    <p style={{ color: "#991b1b", fontSize: 20, fontWeight: 800, margin: "2px 0 0" }}>Plan Limité</p>
+                    <p style={{ color: "#b91c1c", fontSize: 12, fontWeight: 700, margin: 0, textTransform: "uppercase", letterSpacing: "0.08em" }}>Prueba terminada</p>
+                    <p style={{ color: "#991b1b", fontSize: 20, fontWeight: 800, margin: "2px 0 0" }}>Plan Limitado</p>
                   </div>
                   <span style={{ marginLeft: "auto", background: "rgba(220,38,38,0.12)", border: "1.5px solid rgba(220,38,38,0.25)", borderRadius: 999, padding: "4px 12px", fontSize: 12, fontWeight: 700, color: "#dc2626" }}>
-                    Limité
+                    Limitado
                   </span>
                 </div>
                 <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                   {[
-                    { icon: "📅", text: "Accès aux 14 derniers jours de transactions uniquement" },
-                    { icon: "🔢", text: "Maximum 10 transactions par mois" },
-                    { icon: "🚫", text: "Export PDF désactivé" },
-                    { icon: "🚫", text: "Rapports avancés désactivés" },
+                    { icon: "📅", text: "Acceso solo a los últimos 14 días de transacciones" },
+                    { icon: "🔢", text: "Máximo 10 transacciones por mes" },
+                    { icon: "🚫", text: "Exportar PDF desactivado" },
+                    { icon: "🚫", text: "Reportes avanzados desactivados" },
                   ].map(({ icon, text }) => (
                     <div key={text} style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
                       <span style={{ fontSize: 14, flexShrink: 0 }}>{icon}</span>
@@ -631,9 +631,9 @@ export default function Subscription() {
               </div>
               <div style={{ background: "#fff", padding: "16px 22px", display: "flex", flexDirection: "column", gap: 8 }}>
                 {[
-                  { icon: "📊", label: "Historique complet de transactions" },
-                  { icon: "📄", label: "Export PDF & rapports avancés" },
-                  { icon: "♾️", label: "Transactions illimitées" },
+                  { icon: "📊", label: "Historial completo de transacciones" },
+                  { icon: "📄", label: "Exportar PDF e informes avanzados" },
+                  { icon: "♾️", label: "Transacciones ilimitadas" },
                 ].map(({ icon, label }) => (
                   <div key={label} style={{ display: "flex", alignItems: "center", gap: 8 }}>
                     <Check style={{ width: 13, height: 13, color: ORANGE, flexShrink: 0 }} />

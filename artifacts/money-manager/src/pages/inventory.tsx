@@ -32,20 +32,20 @@ export default function Inventory() {
       onSuccess: () => {
         setNewName("");
         setNewQty("");
-        toast({ title: "Article ajouté" });
+        toast({ title: "Artículo agregado" });
         queryClient.invalidateQueries({ queryKey: getListInventoryItemsQueryKey() });
       },
       onError: () => {
-        toast({ title: "Erreur", variant: "destructive" });
+        toast({ title: "Error", variant: "destructive" });
       }
     });
   };
 
   const handleDelete = (id: number) => {
-    if(confirm("Confirmer la suppression ?")) {
+    if(confirm("¿Confirmar eliminación?")) {
       deleteItem.mutate({ id }, {
         onSuccess: () => {
-          toast({ title: "Article supprimé" });
+          toast({ title: "Artículo eliminado" });
           queryClient.invalidateQueries({ queryKey: getListInventoryItemsQueryKey() });
         }
       });
@@ -68,12 +68,12 @@ export default function Inventory() {
     if (!editName || !editQty) return;
     updateItem.mutate({ id, data: { name: editName, quantity: Number(editQty) } }, {
       onSuccess: () => {
-        toast({ title: "Article modifié" });
+        toast({ title: "Artículo actualizado" });
         queryClient.invalidateQueries({ queryKey: getListInventoryItemsQueryKey() });
         setEditingId(null);
       },
       onError: () => {
-        toast({ title: "Erreur", variant: "destructive" });
+        toast({ title: "Error", variant: "destructive" });
       }
     });
   };
@@ -89,8 +89,8 @@ export default function Inventory() {
         <div className="bg-card rounded-2xl border shadow-sm overflow-hidden">
           <div className="p-4 border-b bg-muted/20">
             <form onSubmit={handleAdd} className="flex gap-2">
-              <Input placeholder="Nom de l'article" value={newName} onChange={(e) => setNewName(e.target.value)} className="flex-1" />
-              <Input type="number" placeholder="Qté" value={newQty} onChange={(e) => setNewQty(e.target.value)} className="w-24" />
+              <Input placeholder="Nombre del artículo" value={newName} onChange={(e) => setNewName(e.target.value)} className="flex-1" />
+              <Input type="number" placeholder="Cant." value={newQty} onChange={(e) => setNewQty(e.target.value)} className="w-24" />
               <Button type="submit" disabled={createItem.isPending}>
                 {createItem.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
               </Button>
@@ -114,7 +114,7 @@ export default function Inventory() {
                   ) : (
                     <div>
                       <p className="font-semibold text-foreground">{item.name}</p>
-                      <p className="text-sm text-muted-foreground">Ajouté le {new Date(item.createdAt).toLocaleDateString()}</p>
+                      <p className="text-sm text-muted-foreground">Agregado el {new Date(item.createdAt).toLocaleDateString("es-CO")}</p>
                     </div>
                   )}
                   

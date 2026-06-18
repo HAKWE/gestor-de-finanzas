@@ -65,16 +65,16 @@ type SortDir = "asc" | "desc";
 // ── Utilities ─────────────────────────────────────────────────────────────────
 function fmtDate(iso: string | null) {
   if (!iso) return "—";
-  return new Date(iso).toLocaleDateString("fr-FR", { day: "2-digit", month: "short", year: "numeric" });
+  return new Date(iso).toLocaleDateString("es-CO", { day: "2-digit", month: "short", year: "numeric" });
 }
 
 function fmtAgo(iso: string | null) {
   if (!iso) return "—";
   const s = (Date.now() - new Date(iso).getTime()) / 1000;
-  if (s < 60)     return "À l'instant";
-  if (s < 3600)   return `Il y a ${Math.round(s / 60)} min`;
-  if (s < 86400)  return `Il y a ${Math.round(s / 3600)} h`;
-  if (s < 604800) return `Il y a ${Math.round(s / 86400)} j`;
+  if (s < 60)     return "Ahora mismo";
+  if (s < 3600)   return `Hace ${Math.round(s / 60)} min`;
+  if (s < 86400)  return `Hace ${Math.round(s / 3600)} h`;
+  if (s < 604800) return `Hace ${Math.round(s / 86400)} d`;
   return fmtDate(iso);
 }
 
@@ -202,7 +202,7 @@ export default function AdminPage() {
         body: JSON.stringify({ stripeCustomerId }),
       });
       const j = await res.json();
-      if (!res.ok) throw new Error(j.error ?? "Erreur");
+      if (!res.ok) throw new Error(j.error ?? "Error");
       setSyncingUsers(s => ({ ...s, [stripeCustomerId]: "ok" }));
       setTimeout(() => load(true), 800);
     } catch {
@@ -214,7 +214,7 @@ export default function AdminPage() {
   const load = (silent = false) => {
     if (!silent) setLoading(true); else setRefreshing(true);
     fetch(`${basePath}/api/admin/stats`, { credentials: "include" })
-      .then(async r => { const j = await r.json(); if (!r.ok) throw new Error(j.error ?? "Erreur"); return j; })
+      .then(async r => { const j = await r.json(); if (!r.ok) throw new Error(j.error ?? "Error"); return j; })
       .then(d => { setData(d); setLoading(false); setRefreshing(false); setError(null); })
       .catch(e => { setError(e.message); setLoading(false); setRefreshing(false); });
   };
@@ -256,7 +256,7 @@ export default function AdminPage() {
       <div style={{ minHeight: "100dvh", display: "flex", alignItems: "center", justifyContent: "center", background: T.bg }}>
         <div style={{ textAlign: "center" }}>
           <div style={{ width: 44, height: 44, border: `3px solid ${T.border2}`, borderTopColor: T.orange, borderRadius: "50%", animation: "spin 0.8s linear infinite", margin: "0 auto 14px" }} />
-          <p style={{ color: T.muted, fontSize: 14, fontFamily: "system-ui" }}>Chargement des données…</p>
+          <p style={{ color: T.muted, fontSize: 14, fontFamily: "system-ui" }}>Cargando datos…</p>
         </div>
         <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
       </div>
@@ -312,7 +312,7 @@ export default function AdminPage() {
             style={{ display: "flex", alignItems: "center", gap: 5, background: "transparent", border: `1px solid ${T.border2}`, borderRadius: 9, padding: "6px 13px", fontSize: 12, color: T.muted, cursor: refreshing ? "default" : "pointer", opacity: refreshing ? 0.6 : 1, fontWeight: 500 }}
           >
             <RefreshCw style={{ width: 12, height: 12, animation: refreshing ? "spin 1s linear infinite" : "none" }} />
-            Actualiser
+            Actualizar
           </button>
           <a href={APP_HOME} style={{ textDecoration: "none" }}>
             <button style={{ display: "flex", alignItems: "center", gap: 5, background: "transparent", border: `1px solid ${T.border2}`, borderRadius: 9, padding: "6px 13px", fontSize: 12, color: T.muted, cursor: "pointer", fontWeight: 500 }}>
@@ -335,23 +335,23 @@ export default function AdminPage() {
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 14, marginBottom: 28 }}>
           <StatCard
             icon={<Users style={{ width: 16, height: 16 }} />}
-            label="Utilisateurs inscrits"
+            label="Usuarios registrados"
             value={stats.total}
-            sub={`dont ${stats.paid} payants (${stats.convRate}%)`}
+            sub={`de los cuales ${stats.paid} de pago (${stats.convRate}%)`}
             accent={T.blue}
           />
           <StatCard
             icon={<Crown style={{ width: 16, height: 16 }} />}
-            label="Utilisateurs Pro"
+            label="Usuarios Pro"
             value={stats.pro}
             sub={`${stats.starter} Starter · ${stats.free} Gratis`}
             accent={T.orange}
           />
           <StatCard
             icon={<Activity style={{ width: 16, height: 16 }} />}
-            label="Abonnements actifs"
+            label="Suscripciones activas"
             value={stats.active}
-            sub={`Taux de conversion ${stats.convRate}%`}
+            sub={`Tasa de conversión ${stats.convRate}%`}
             accent={T.green}
           />
         </div>
@@ -363,7 +363,7 @@ export default function AdminPage() {
             <Search style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", width: 13, height: 13, color: T.dim, pointerEvents: "none" }} />
             <input
               type="text"
-              placeholder="Rechercher par email, nom…"
+              placeholder="Buscar por email, nombre…"
               value={search}
               onChange={e => setSearch(e.target.value)}
               style={{ width: "100%", background: "#0d1117", border: `1px solid ${T.border2}`, borderRadius: 9, padding: "8px 32px 8px 32px", fontSize: 13, color: T.text, outline: "none", boxSizing: "border-box" }}
@@ -378,23 +378,23 @@ export default function AdminPage() {
           <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
             <Filter style={{ width: 12, height: 12, color: T.dim }} />
             <select value={planFilter} onChange={e => setPlanFilter(e.target.value)} style={{ background: "#0d1117", border: `1px solid ${T.border2}`, borderRadius: 9, padding: "7px 12px", fontSize: 13, color: T.text, cursor: "pointer", outline: "none" }}>
-              <option value="all">Tous les plans</option>
-              <option value="free">Gratuit</option>
+              <option value="all">Todos los planes</option>
+              <option value="free">Gratis</option>
               <option value="starter">Starter</option>
               <option value="pro">Pro</option>
             </select>
           </div>
 
           <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} style={{ background: "#0d1117", border: `1px solid ${T.border2}`, borderRadius: 9, padding: "7px 12px", fontSize: 13, color: T.text, cursor: "pointer", outline: "none" }}>
-            <option value="all">Tous les statuts</option>
-            <option value="active">Actif</option>
-            <option value="expired">Expiré</option>
-            <option value="free">Gratuit</option>
+            <option value="all">Todos los estados</option>
+            <option value="active">Activo</option>
+            <option value="expired">Vencido</option>
+            <option value="free">Gratis</option>
           </select>
 
           {hasFilters && (
             <button onClick={() => { setSearch(""); setPlanFilter("all"); setStatusFilter("all"); }} style={{ display: "flex", alignItems: "center", gap: 5, background: "transparent", border: `1px solid ${T.border2}`, borderRadius: 9, padding: "7px 12px", fontSize: 12, color: T.muted, cursor: "pointer" }}>
-              <X style={{ width: 11, height: 11 }} /> Réinitialiser
+              <X style={{ width: 11, height: 11 }} /> Restablecer
             </button>
           )}
 
@@ -422,7 +422,7 @@ export default function AdminPage() {
                   <SortTh sortKey="plan" active={false} dir={sort.dir}>Estado suscripción</SortTh>
                   <SortTh sortKey="plan" active={false} dir={sort.dir}>Fin suscripción</SortTh>
                   <SortTh sortKey="lastSignIn" active={sort.key === "lastSignIn"} dir={sort.dir} onClick={() => toggleSort("lastSignIn")}>Última conexión</SortTh>
-                  <SortTh active={false} dir={sort.dir}></SortTh>
+                  <SortTh active={false} dir={sort.dir}>{""}</SortTh>
                 </tr>
               </thead>
               <tbody>
@@ -430,10 +430,10 @@ export default function AdminPage() {
                   <tr>
                     <td colSpan={7} style={{ textAlign: "center", padding: "56px 24px", color: T.dim }}>
                       <div style={{ fontSize: 32, marginBottom: 10, opacity: 0.4 }}>🔍</div>
-                      <p style={{ margin: 0, fontSize: 14, color: T.muted }}>Aucun utilisateur correspondant</p>
+                      <p style={{ margin: 0, fontSize: 14, color: T.muted }}>Ningún usuario coincide</p>
                       {hasFilters && (
                         <button onClick={() => { setSearch(""); setPlanFilter("all"); setStatusFilter("all"); }} style={{ marginTop: 12, background: "none", border: `1px solid ${T.border2}`, borderRadius: 8, padding: "6px 16px", color: T.muted, cursor: "pointer", fontSize: 12 }}>
-                          Réinitialiser les filtres
+                          Restablecer filtros
                         </button>
                       )}
                     </td>
@@ -503,7 +503,7 @@ export default function AdminPage() {
                             }}
                           >
                             <RotateCw style={{ width: 10, height: 10, animation: st === "loading" ? "spin 0.8s linear infinite" : "none" }} />
-                            {st === "ok" ? "Synced" : st === "err" ? "Erreur" : "Sync"}
+                            {st === "ok" ? "Sincronizado" : st === "err" ? "Error" : "Sync"}
                           </button>
                         );
                       })()}
@@ -518,7 +518,7 @@ export default function AdminPage() {
           {filtered.length > 0 && (
             <div style={{ padding: "9px 18px", borderTop: `1px solid ${T.border}`, background: "#0d1117", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
               <span style={{ fontSize: 11, color: T.dim }}>
-                {filtered.length} résultat{filtered.length !== 1 ? "s" : ""}{hasFilters ? ` · filtré sur ${stats.total}` : ""}
+                {filtered.length} resultado{filtered.length !== 1 ? "s" : ""}{hasFilters ? ` · filtrado de ${stats.total}` : ""}
               </span>
               <button onClick={() => downloadCsv(filtered)} style={{ display: "flex", alignItems: "center", gap: 4, background: "none", border: "none", color: T.dim, cursor: "pointer", fontSize: 11, fontWeight: 500 }}>
                 <Download style={{ width: 10, height: 10 }} /> CSV

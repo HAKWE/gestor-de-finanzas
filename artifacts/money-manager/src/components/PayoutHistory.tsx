@@ -49,8 +49,8 @@ function normalizeTransfers(raw: unknown): Transfer[] {
 function fmtDate(iso: string | undefined): string {
   if (!iso) return "—";
   const d = new Date(iso);
-  return d.toLocaleDateString("fr-FR", { day: "2-digit", month: "short", year: "numeric" })
-    + " · " + d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+  return d.toLocaleDateString("es-CO", { day: "2-digit", month: "short", year: "numeric" })
+    + " · " + d.toLocaleTimeString("es-CO", { hour: "2-digit", minute: "2-digit" });
 }
 
 // ISO 4217 currencies that Intl.NumberFormat accepts
@@ -62,10 +62,10 @@ function fmtAmount(n: number | undefined, currency: string | undefined): string 
   if (n == null || n === 0) return "—";
   const c = (currency ?? "USD").toUpperCase();
   if (ISO_CURRENCIES.has(c)) {
-    return new Intl.NumberFormat("fr-FR", { style: "currency", currency: c, maximumFractionDigits: 0 }).format(n);
+    return new Intl.NumberFormat("es-CO", { style: "currency", currency: c, maximumFractionDigits: 0 }).format(n);
   }
   // Non-ISO codes (USDC, USDT, etc.) — plain number + symbol
-  return `${new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 2 }).format(n)} ${c}`;
+  return `${new Intl.NumberFormat("es-CO", { maximumFractionDigits: 2 }).format(n)} ${c}`;
 }
 
 // ── Status badge ──────────────────────────────────────────────────────────────
@@ -185,19 +185,19 @@ function TransferCard({ t }: { t: Transfer }) {
         {/* Row 2: amounts + recipient */}
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
           <div style={{ background: "#f9fafb", borderRadius: 12, padding: "10px 12px" }}>
-            <p style={{ margin: 0, fontSize: 10, fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 }}>Envoyé</p>
+            <p style={{ margin: 0, fontSize: 10, fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 }}>Enviado</p>
             <p style={{ margin: 0, fontSize: 15, fontWeight: 800, color: "#111" }}>
               {srcAmt != null ? fmtAmount(srcAmt, srcCur) : "—"}
             </p>
           </div>
           <div style={{ background: "#f9fafb", borderRadius: 12, padding: "10px 12px" }}>
-            <p style={{ margin: 0, fontSize: 10, fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 }}>Reçu</p>
+            <p style={{ margin: 0, fontSize: 10, fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 }}>Recibido</p>
             <p style={{ margin: 0, fontSize: 15, fontWeight: 800, color: isCompleted ? GREEN : "#111" }}>
               {dstAmt != null ? fmtAmount(dstAmt, dstCur) : "—"}
             </p>
           </div>
           <div style={{ background: "#f9fafb", borderRadius: 12, padding: "10px 12px" }}>
-            <p style={{ margin: 0, fontSize: 10, fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 }}>Téléphone</p>
+            <p style={{ margin: 0, fontSize: 10, fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 }}>Teléfono</p>
             <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: "#374151", lineHeight: 1.3 }}>
               {phone}
               {provider !== "—" && <span style={{ display: "block", fontSize: 10, color: "#9ca3af", fontWeight: 500, marginTop: 1 }}>{provider}</span>}
@@ -241,7 +241,7 @@ export default function PayoutHistory() {
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        throw new Error((data as any).error ?? `Erreur ${res.status}`);
+        throw new Error((data as any).error ?? `Error ${res.status}`);
       }
       const raw = await res.json();
       const list = normalizeTransfers(raw);
@@ -328,11 +328,11 @@ export default function PayoutHistory() {
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <span style={{ fontSize: 13, fontWeight: 700, color: "#374151" }}>
-            {transfers.length} virement{transfers.length > 1 ? "s" : ""}
+            {transfers.length} transferencia{transfers.length > 1 ? "s" : ""}
           </span>
           {lastRefresh && (
             <span style={{ fontSize: 11, color: "#9ca3af" }}>
-              · Mis à jour {lastRefresh.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}
+              · Actualizado {lastRefresh.toLocaleTimeString("es-CO", { hour: "2-digit", minute: "2-digit" })}
             </span>
           )}
         </div>
@@ -350,7 +350,7 @@ export default function PayoutHistory() {
       <div style={{ display: "flex", alignItems: "center", gap: 6, background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 12, padding: "8px 14px" }}>
         <Clock style={{ width: 13, height: 13, color: GREEN, flexShrink: 0 }} />
         <span style={{ fontSize: 12, color: "#15803d" }}>
-          Actualisation automatique toutes les 20 secondes
+          Actualización automática cada 20 segundos
         </span>
       </div>
 
@@ -363,7 +363,7 @@ export default function PayoutHistory() {
         </div>
       ))}
 
-      {/* Voir plus */}
+      {/* Ver más */}
       {hasMore && (
         <button
           onClick={() => setVisible(v => v + PAGE_SIZE)}
@@ -375,7 +375,7 @@ export default function PayoutHistory() {
           onMouseEnter={e => (e.currentTarget.style.background = "#f9fafb")}
           onMouseLeave={e => (e.currentTarget.style.background = "#fff")}
         >
-          Voir plus ({transfers.length - visible} restants)
+          Ver más ({transfers.length - visible} restantes)
         </button>
       )}
 

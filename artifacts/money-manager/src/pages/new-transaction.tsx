@@ -91,14 +91,14 @@ export default function NewTransaction() {
       },
       {
         onSuccess: () => {
-          toast({ title: "✓ Transaction enregistrée" });
+          toast({ title: "✓ Transacción guardada" });
           queryClient.invalidateQueries({ queryKey: getListTransactionsQueryKey() });
           queryClient.invalidateQueries({ queryKey: getGetDashboardSummaryQueryKey() });
           queryClient.invalidateQueries({ queryKey: getGetWeeklySummaryQueryKey() });
           setLocation("/transactions");
         },
         onError: () =>
-          toast({ title: "Erreur", description: "Impossible d'enregistrer", variant: "destructive" }),
+          toast({ title: "Error", description: "No se pudo guardar", variant: "destructive" }),
       }
     );
   };

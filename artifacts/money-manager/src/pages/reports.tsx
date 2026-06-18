@@ -185,7 +185,7 @@ function StarterTeaser({ isStarter }: { isStarter: boolean }) {
           }}>
             <Crown style={{ width: 16, height: 16, color: ORANGE }} />
             <span style={{ fontWeight: 700, fontSize: 13, color: "#111" }}>
-              Réservé aux abonnés Pro
+              Exclusivo para suscriptores Pro
             </span>
           </div>
         </div>

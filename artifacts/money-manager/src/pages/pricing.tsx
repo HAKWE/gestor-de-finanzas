@@ -12,11 +12,11 @@ const EUR_TO_XOF = 655.957;
 function xof(cents: number) {
   const eur = cents / 100;
   const val = Math.ceil((eur * EUR_TO_XOF) / 100) * 100;
-  return new Intl.NumberFormat("fr-FR").format(val);
+  return new Intl.NumberFormat("es-CO").format(val);
 }
 
 function eur(cents: number, decimals = 0) {
-  return new Intl.NumberFormat("fr-FR", {
+  return new Intl.NumberFormat("es-CO", {
     style: "currency", currency: "EUR",
     minimumFractionDigits: decimals,
     maximumFractionDigits: decimals,
@@ -87,7 +87,7 @@ async function startCheckout(planKey: string, paymentMethod: "card" | "paypal" =
     body: JSON.stringify({ planName: planKey, paymentMethod, billing }),
   });
   const data = await res.json();
-  if (!res.ok) throw new Error(data.error || "Erreur de paiement");
+  if (!res.ok) throw new Error(data.error || "Error de pago");
   return data.url;
 }
 
@@ -177,7 +177,7 @@ export default function Pricing() {
           )}
           {isLoaded && isSignedIn && (
             <Link href="/dashboard" style={{ fontSize: 13, color: "#f97316", fontWeight: 600, textDecoration: "none" }}>
-              Mon tableau de bord
+              Mi panel
             </Link>
           )}
         </div>
@@ -193,18 +193,18 @@ export default function Pricing() {
         }}>
           <div style={{ background: "rgba(251,191,36,0.15)", padding: "5px 18px", display: "flex", alignItems: "center", gap: 8, justifyContent: "center" }}>
             <span style={{ fontSize: 11, fontWeight: 800, color: "#fde68a", letterSpacing: "0.5px", textTransform: "uppercase" }}>
-              ⏰ Offre limitée — se termine le 31 mai 2026
+              ⏰ Oferta limitada — termina el 31 de mayo de 2026
             </span>
           </div>
           <div style={{ padding: "12px 18px 16px", display: "flex", alignItems: "center", gap: 12 }}>
             <span style={{ fontSize: 26, flexShrink: 0 }}>🚀</span>
             <div style={{ flex: 1 }}>
               <p style={{ margin: 0, fontWeight: 900, fontSize: 15, color: "#fff", lineHeight: 1.3 }}>
-                OFFRE DE LANCEMENT LIMITÉE — Starter à 3,99 €/mois pendant 3 mois
+                OFERTA DE LANZAMIENTO LIMITADA — Starter a 3,99 €/mes durante 3 meses
               </p>
               <p style={{ margin: "4px 0 0", fontSize: 12.5, color: "#ddd6fe", lineHeight: 1.4 }}>
-                Au lieu de 5 €/mois.{" "}
-                <strong style={{ color: "#fbbf24" }}>Offre se termine le 31 mai 2026 — ne manquez pas cette opportunité !</strong>
+                En vez de 5 €/mes.{" "}
+                <strong style={{ color: "#fbbf24" }}>Oferta válida hasta el 31 de mayo de 2026 — ¡no te la pierdas!</strong>
               </p>
             </div>
           </div>
@@ -246,9 +246,9 @@ export default function Pricing() {
                   <div style={{ height: "100%", width: `${pct}%`, borderRadius: 99, background: grad, transition: "width 0.6s ease" }} />
                 </div>
                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "#9ca3af" }}>
-                  <span>Début de l'essai</span>
-                  <span style={{ color: txtColor, fontWeight: 700 }}>{trialDaysLeft} jours restants</span>
-                  <span>Fin (45 j)</span>
+                  <span>Inicio de prueba</span>
+                  <span style={{ color: txtColor, fontWeight: 700 }}>{trialDaysLeft} días restantes</span>
+                  <span>Fin (45 d)</span>
                 </div>
               </div>
             </div>
@@ -342,7 +342,7 @@ export default function Pricing() {
                 transition: "all 0.15s",
               }}
             >
-              Mensuel
+              Mensual
             </button>
             <button
               onClick={() => setBilling("annual")}
@@ -415,7 +415,7 @@ export default function Pricing() {
                       display: "inline-flex", alignItems: "center", gap: 4,
                     }}>
                       <Star style={{ width: 9, height: 9, fill: "white" }} />
-                      Recommandé
+                      Recomendado
                     </span>
                   </div>
                 )}
@@ -423,7 +423,7 @@ export default function Pricing() {
                   <div style={{ position: "absolute", top: 16, right: 16 }}>
                     <span style={{ background: "#f97316", color: "#fff", fontSize: 10, fontWeight: 800, padding: "4px 10px", borderRadius: 99, display: "inline-flex", alignItems: "center", gap: 4 }}>
                       <Check style={{ width: 9, height: 9 }} />
-                      Plan actif
+                      Plan activo
                     </span>
                   </div>
                 )}
@@ -459,7 +459,7 @@ export default function Pricing() {
                       <span style={{ fontSize: 40, fontWeight: 900, color: "#111" }}>
                         {eur(displayPrice, displayPrice % 100 === 0 ? 0 : 2)}
                       </span>
-                      <span style={{ fontSize: 14, color: "#9ca3af", fontWeight: 500 }}>/mois</span>
+                      <span style={{ fontSize: 14, color: "#9ca3af", fontWeight: 500 }}>/mes</span>
                       {billing === "annual" && (
                         <span style={{ fontSize: 12, color: "#9ca3af", textDecoration: "line-through", marginLeft: 4 }}>
                           {eur(originalMonthly)}
@@ -477,7 +477,7 @@ export default function Pricing() {
                       </div>
                     ) : (
                       <div style={{ marginTop: 4, display: "inline-flex", alignItems: "center", gap: 5, background: "#fff7ed", border: "1px solid #fed7aa", borderRadius: 7, padding: "3px 8px" }}>
-                        <span style={{ fontSize: 12, fontWeight: 700, color: "#c2410c" }}>≈ {xof(displayPrice)} FCFA/mois</span>
+                        <span style={{ fontSize: 12, fontWeight: 700, color: "#c2410c" }}>≈ {xof(displayPrice)} COP/mes</span>
                       </div>
                     )}
                   </div>
@@ -496,11 +496,11 @@ export default function Pricing() {
                   {isCurrentPlan ? (
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 46, borderRadius: 12, background: "#fff7ed", border: "2px solid #f97316", gap: 7, fontWeight: 700, fontSize: 13, color: "#c2410c" }}>
                       <Check style={{ width: 15, height: 15 }} />
-                      Plan actif
+                      Plan activo
                     </div>
                   ) : isDowngrade ? (
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 46, borderRadius: 12, background: "#f3f4f6", border: "1.5px solid #e5e7eb", fontWeight: 600, fontSize: 13, color: "#9ca3af", cursor: "not-allowed" }}>
-                      Plan inférieur
+                      Plan inferior
                     </div>
                   ) : !isLoaded ? (
                     <div style={{ height: 48, borderRadius: 13, background: "#f3f4f6", display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -594,7 +594,7 @@ export default function Pricing() {
           }}>
             <span style={{ fontSize: 18 }}>👥</span>
             <span style={{ fontSize: 13, fontWeight: 700, color: "#374151" }}>
-              Rejoignez <strong style={{ color: "#f97316" }}>+500 entrepreneurs</strong> qui gèrent déjà leur argent mobile avec nous
+              Únete a <strong style={{ color: "#f97316" }}>+500 emprendedores</strong> que ya gestionan su dinero móvil con nosotros
             </span>
           </div>
         </div>

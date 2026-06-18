@@ -491,7 +491,7 @@ function AdminGuard() {
               Esta cuenta no tiene autorización para acceder al panel de administración.
             </p>
             <p style={{ fontFamily: "monospace", fontSize: 12, color: "#484f58", background: "#161b22", border: "1px solid #21262d", borderRadius: 8, padding: "7px 14px", display: "inline-block", margin: "8px 0 24px" }}>
-              {email || "compte inconnu"}
+              {email || "cuenta desconocida"}
             </p>
             <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
               <button

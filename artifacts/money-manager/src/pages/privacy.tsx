@@ -29,8 +29,8 @@ function renderItem(item: SectionItem, idx: number) {
 }
 
 export default function Privacy() {
-  const { lang } = useLanguage();
-  const fr = lang === "fr";
+  const { language } = useLanguage();
+  const fr = language !== "en";
 
   const sections: Section[] = fr
     ? [
@@ -170,7 +170,7 @@ export default function Privacy() {
         <div style={{ maxWidth: 760, margin: "0 auto", height: 56, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <Link href="/" style={{ display: "flex", alignItems: "center", gap: 8, textDecoration: "none", color: "#374151", fontWeight: 600, fontSize: 14 }}>
             <ArrowLeft style={{ width: 16, height: 16 }} />
-            {fr ? "Retour à l'accueil" : "Back to home"}
+            {fr ? "Volver al inicio" : "Back to home"}
           </Link>
           <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
             <div style={{

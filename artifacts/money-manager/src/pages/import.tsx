@@ -139,7 +139,7 @@ export default function Import() {
       setCsvProgress(0);
       setMappedCsvRows([]);
     } catch (error) {
-      toast({ title: "Erreur", description: "Impossible de lire le fichier CSV", variant: "destructive" });
+      toast({ title: "Error", description: "No se pudo leer el archivo CSV", variant: "destructive" });
     }
   };
 

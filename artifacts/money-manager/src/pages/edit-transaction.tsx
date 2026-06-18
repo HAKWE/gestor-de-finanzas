@@ -74,14 +74,14 @@ export default function EditTransaction() {
   function onSubmit(values: z.infer<typeof formSchema>) {
     updateTx.mutate({ id: txId, data: values }, {
       onSuccess: () => {
-        toast({ title: "Transaction modifiée" });
+        toast({ title: "Transacción actualizada" });
         queryClient.invalidateQueries({ queryKey: getListTransactionsQueryKey() });
         queryClient.invalidateQueries({ queryKey: getGetDashboardSummaryQueryKey() });
         queryClient.invalidateQueries({ queryKey: getGetWeeklySummaryQueryKey() });
         setLocation("/transactions");
       },
       onError: () => {
-        toast({ title: "Erreur", description: "Impossible de modifier", variant: "destructive" });
+        toast({ title: "Error", description: "No se pudo modificar", variant: "destructive" });
       }
     });
   }
@@ -240,9 +240,9 @@ export default function EditTransaction() {
                 name="referenceNote"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Note / Référence (Optionnel)</FormLabel>
+                    <FormLabel>Nota / Referencia (Opcional)</FormLabel>
                     <FormControl>
-                      <Input placeholder="Client, motif..." {...field} value={field.value || ""} />
+                      <Input placeholder="Cliente, motivo..." {...field} value={field.value || ""} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -251,7 +251,7 @@ export default function EditTransaction() {
 
               <Button type="submit" className="w-full text-lg h-12 rounded-xl" disabled={updateTx.isPending}>
                 {updateTx.isPending && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
-                Enregistrer les modifications
+                Guardar cambios
               </Button>
             </form>
           </Form>

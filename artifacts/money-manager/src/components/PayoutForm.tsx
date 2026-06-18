@@ -18,7 +18,7 @@ class PayoutErrorBoundary extends Component<{ children: ReactNode }, EBState> {
     this.state = { hasError: false, message: "" };
   }
   static getDerivedStateFromError(err: unknown): EBState {
-    const message = err instanceof Error ? err.message : "Erreur inattendue";
+    const message = err instanceof Error ? err.message : "Error inesperado";
     return { hasError: true, message };
   }
   componentDidCatch(err: unknown, info: ErrorInfo) {
@@ -98,7 +98,7 @@ const EUR_USD_RATE = 1.0;
 const QUICK_AMOUNTS = [5, 10, 20, 50];
 
 function fmtCurrency(amount: number, currency: string) {
-  return new Intl.NumberFormat("fr-FR", {
+  return new Intl.NumberFormat("es-CO", {
     style: "currency", currency,
     maximumFractionDigits: 0,
   }).format(amount);
@@ -152,7 +152,7 @@ const PLAN_DEFAULT_AMOUNT: Record<string, string> = {
 };
 
 function fmtDate(iso: string): string {
-  return new Date(iso).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
+  return new Date(iso).toLocaleDateString("es-CO", { day: "numeric", month: "long", year: "numeric" });
 }
 
 interface FormState {
@@ -261,7 +261,7 @@ function PayoutFormInner({ onSuccess }: PayoutFormProps) {
           const body = await res.json().catch(() => ({}));
           if (!cancelled) {
             setRecipients([]);
-            setRecipientsError(body.error ?? `Erreur ${res.status}`);
+            setRecipientsError(body.error ?? `Error ${res.status}`);
           }
           return;
         }
@@ -443,7 +443,7 @@ function PayoutFormInner({ onSuccess }: PayoutFormProps) {
           setStep("error");
           return;
         }
-        throw new Error(data.error ?? `Erreur ${res.status}`);
+        throw new Error(data.error ?? `Error ${res.status}`);
       }
       const r: PayoutResult = {
         transferId: data.transferId,
@@ -457,7 +457,7 @@ function PayoutFormInner({ onSuccess }: PayoutFormProps) {
       setStep("success");
       onSuccess?.(r);
     } catch (e: unknown) {
-      setServerError(e instanceof Error ? e.message : "Erreur inconnue");
+      setServerError(e instanceof Error ? e.message : "Error desconocido");
       setStep("error");
     }
   }
@@ -531,10 +531,10 @@ function PayoutFormInner({ onSuccess }: PayoutFormProps) {
                 </span>
               } />
               {result.sourceAmount != null && (
-                <Row label="Envoyé" value={<span style={{ fontWeight: 700 }}>{fmtCurrency(Number(result.sourceAmount), "EUR")}</span>} />
+                <Row label="Enviado" value={<span style={{ fontWeight: 700 }}>{fmtCurrency(Number(result.sourceAmount), "EUR")}</span>} />
               )}
               {result.destinationAmount != null && (
-                <Row label="Reçu" value={
+                <Row label="Recibido" value={
                   <span style={{ fontWeight: 800, color: GREEN, fontSize: 16 }}>
                     {fmtCurrency(result.destinationAmount, result.destinationCurrency ?? country.currency)}
                   </span>
@@ -557,7 +557,7 @@ function PayoutFormInner({ onSuccess }: PayoutFormProps) {
               style={{ marginTop: 20, width: "100%", background: ORANGE, color: "#fff", border: "none", borderRadius: 14, padding: "15px 0", fontWeight: 700, fontSize: 15, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: "0 4px 14px rgba(249,115,22,0.3)" }}
             >
               <RefreshCw style={{ width: 16, height: 16 }} />
-              Nouveau virement
+              Nueva transferencia
             </button>
           </div>
         </div>
@@ -587,16 +587,16 @@ function PayoutFormInner({ onSuccess }: PayoutFormProps) {
                 : <AlertCircle style={{ width: 32, height: 32, color: "#fff" }} />}
             </div>
             <h2 style={{ fontSize: 20, fontWeight: 800, color: isKyc ? "#78350f" : "#7f1d1d", margin: "0 0 8px" }}>
-              {isKyc ? "Vérification d'identité requise" : "Virement échoué"}
+              {isKyc ? "Verificación de identidad requerida" : "Transferencia fallida"}
             </h2>
             {isKyc ? (
               <div style={{ textAlign: "left" }}>
                 <p style={{ fontSize: 13, color: "#92400e", background: "#fff", borderRadius: 10, padding: "12px 14px", margin: "0 0 10px", lineHeight: 1.7 }}>
-                  Le compte Due utilisé pour les virements n'a pas encore été vérifié (KYC en cours de révision).
-                  Les transferts sont bloqués jusqu'à l'approbation complète.
+                  La cuenta Due utilizada para transferencias aún no ha sido verificada (KYC en revisión).
+                  Las transferencias están bloqueadas hasta la aprobación completa.
                 </p>
                 <p style={{ fontSize: 13, color: "#92400e", background: "#fff", borderRadius: 10, padding: "12px 14px", margin: 0, lineHeight: 1.7 }}>
-                  <strong>Action requise :</strong> complétez la vérification d'identité sur le tableau de bord Due, puis réessayez.
+                  <strong>Acción requerida:</strong> completa la verificación de identidad en el panel de Due e inténtalo de nuevo.
                 </p>
               </div>
             ) : (
@@ -695,7 +695,7 @@ function PayoutFormInner({ onSuccess }: PayoutFormProps) {
             )}
 
             <InfoBox icon={<ShieldCheck />} color="#9333ea" bg="#faf5ff" border="#e9d5ff">
-              Une fois confirmé, le transfert sera soumis à Due pour exécution.
+              Una vez confirmado, la transferencia será enviada a Due para su ejecución.
             </InfoBox>
 
             <div style={{ display: "flex", gap: 10, marginTop: 18 }}>
@@ -756,15 +756,15 @@ function PayoutFormInner({ onSuccess }: PayoutFormProps) {
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-              <span style={{ fontSize: 13, fontWeight: 800, color: "#111" }}>Abonnement {subInfo.planLabel}</span>
+              <span style={{ fontSize: 13, fontWeight: 800, color: "#111" }}>Suscripción {subInfo.planLabel}</span>
               <span style={{ fontSize: 11, fontWeight: 700, color: ORANGE, background: "#fff", borderRadius: 999, padding: "2px 8px", border: "1px solid #fed7aa" }}>
-                {PLAN_DEFAULT_AMOUNT[subInfo.effectivePlan ?? subInfo.plan] ?? "5"} €/mois
+                {PLAN_DEFAULT_AMOUNT[subInfo.effectivePlan ?? subInfo.plan] ?? "5"} €/mes
               </span>
             </div>
             {subInfo.currentPeriodEnd && (
               <div style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 4 }}>
                 <Calendar style={{ width: 12, height: 12, color: "#9a3412" }} />
-                <span style={{ fontSize: 12, color: "#9a3412" }}>Renouvellement le {fmtDate(subInfo.currentPeriodEnd)}</span>
+                <span style={{ fontSize: 12, color: "#9a3412" }}>Renovación el {fmtDate(subInfo.currentPeriodEnd)}</span>
               </div>
             )}
           </div>
@@ -792,7 +792,7 @@ function PayoutFormInner({ onSuccess }: PayoutFormProps) {
 
       {/* ── Saved recipients ─────────────────────────────────────────────────── */}
       <Card
-        title="Mes numéros Mobile Money"
+        title="Mis números de pago móvil"
         icon={<Users style={{ width: 14, height: 14 }} />}
         action={
           <a
@@ -862,7 +862,7 @@ function PayoutFormInner({ onSuccess }: PayoutFormProps) {
       </Card>
 
       {/* ── Country ─────────────────────────────────────────────────────────── */}
-      <Card title="Pays destinataire">
+      <Card title="País destinatario">
         <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 8 }}>
           {COUNTRIES.map((c, i) => (
             <button
@@ -928,7 +928,7 @@ function PayoutFormInner({ onSuccess }: PayoutFormProps) {
           ))}
         </div>
 
-        <FieldLabel label="Montant personnalisé en EUR" required />
+        <FieldLabel label="Monto personalizado en EUR" required />
         <div style={{ position: "relative" }}>
           <span style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: "#9ca3af", pointerEvents: "none" }}>
             <Euro style={{ width: 16, height: 16 }} />
@@ -1025,9 +1025,9 @@ function PayoutFormInner({ onSuccess }: PayoutFormProps) {
       </Card>
 
       {/* ── Memo ────────────────────────────────────────────────────────────── */}
-      <Card title="Référence (optionnelle)" icon={<FileText style={{ width: 14, height: 14 }} />}>
+      <Card title="Referencia (opcional)" icon={<FileText style={{ width: 14, height: 14 }} />}>
         <textarea
-          placeholder="Ex: Paiement prestation juin…"
+          placeholder="Ej: Pago servicio junio…"
           value={form.memo}
           onChange={e => handleField("memo", e.target.value)}
           maxLength={200}
@@ -1042,7 +1042,7 @@ function PayoutFormInner({ onSuccess }: PayoutFormProps) {
           }}
         />
         <div style={{ display: "flex", justifyContent: "space-between", marginTop: 4 }}>
-          {fieldErrors.memo ? <ErrMsg msg={fieldErrors.memo} /> : <span style={{ fontSize: 11, color: "#9ca3af" }}>Uniquement [A-Z a-z 0-9 - . /] — les autres caractères seront retirés</span>}
+          {fieldErrors.memo ? <ErrMsg msg={fieldErrors.memo} /> : <span style={{ fontSize: 11, color: "#9ca3af" }}>Solo [A-Z a-z 0-9 - . /] — otros caracteres serán eliminados</span>}
           <span style={{ fontSize: 11, color: form.memo.length > 180 ? ORANGE : "#9ca3af", flexShrink: 0, marginLeft: 8 }}>{form.memo.length}/200</span>
         </div>
       </Card>

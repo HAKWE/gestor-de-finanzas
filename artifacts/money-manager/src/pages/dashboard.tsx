@@ -51,7 +51,7 @@ function getGreetingEmoji() {
 }
 
 function getTodayLabel() {
-  return new Date().toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" });
+  return new Date().toLocaleDateString("es-CO", { weekday: "long", day: "numeric", month: "long" });
 }
 
 // ── Category icons ─────────────────────────────────────────────────────────────
@@ -197,7 +197,7 @@ function TrendBadge({ current, prev, invert = false }: { current: number; prev: 
 // ── Chart tooltip ─────────────────────────────────────────────────────────────
 function CustomTooltip({ active, payload, label, currency }: any) {
   if (!active || !payload?.length) return null;
-  const fmt = (v: number) => new Intl.NumberFormat("fr-FR", {
+  const fmt = (v: number) => new Intl.NumberFormat("es-CO", {
     style: "currency", currency: currency || "XOF", maximumFractionDigits: 0,
   }).format(v);
   return (
@@ -400,7 +400,7 @@ function WelcomeTour({ onClose }: { onClose: () => void }) {
     <div style={{ position: "fixed", inset: 0, zIndex: 200, background: "rgba(0,0,0,0.55)", backdropFilter: "blur(4px)", display: "flex", alignItems: "flex-end", justifyContent: "center", padding: "0 16px 32px" }}>
       <div style={{ background: "#fff", borderRadius: 24, padding: "28px 24px", maxWidth: 420, width: "100%", boxShadow: "0 24px 64px rgba(0,0,0,0.22)" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-          <span style={{ fontSize: 12, color: "#9ca3af", fontWeight: 600 }}>Étape {step + 1} / {steps.length}</span>
+          <span style={{ fontSize: 12, color: "#9ca3af", fontWeight: 600 }}>Paso {step + 1} / {steps.length}</span>
           <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: "#9ca3af", display: "flex", alignItems: "center" }}>
             <X style={{ width: 18, height: 18 }} />
           </button>
@@ -496,7 +496,7 @@ export default function Dashboard() {
     fetch(`${basePath}/api/stripe/subscription-status`, { credentials: "include" })
       .then(r => r.json())
       .then(d => setSubStatus(d))
-      .catch(() => setSubStatus({ plan: "free", planLabel: "Gratuit" }));
+      .catch(() => setSubStatus({ plan: "free", planLabel: "Gratis" }));
   }, []);
 
   useEffect(() => {
@@ -523,7 +523,7 @@ export default function Dashboard() {
   };
 
   const fmt = (amount: number) =>
-    new Intl.NumberFormat("fr-FR", {
+    new Intl.NumberFormat("es-CO", {
       style: "currency", currency: summary?.currency || "XOF", maximumFractionDigits: 0,
     }).format(amount);
 
@@ -541,7 +541,7 @@ export default function Dashboard() {
 
   const chartData = (weekly ?? []).map(d => ({
     ...d,
-    label: new Date(d.date + "T00:00:00").toLocaleDateString("fr-FR", { weekday: "short" }).replace(".", ""),
+    label: new Date(d.date + "T00:00:00").toLocaleDateString("es-CO", { weekday: "short" }).replace(".", ""),
   }));
   const hasChartData = chartData.some(d => (d.income || 0) + (d.expenses || 0) > 0);
 
@@ -622,7 +622,7 @@ export default function Dashboard() {
                 </div>
                 <div>
                   <span style={{ fontSize: 11, color: "#9ca3af", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", display: "block" }}>
-                    Solde d'aujourd'hui
+                    Saldo de hoy
                   </span>
                   <span style={{ fontSize: 11, color: "#d1d5db", fontWeight: 600 }}>
                     {summary?.currency ?? "XOF"}
@@ -630,7 +630,7 @@ export default function Dashboard() {
                 </div>
               </div>
               <div style={{ background: "#f9fafb", borderRadius: 999, padding: "4px 12px", border: "1px solid #e5e7eb" }}>
-                <span style={{ fontSize: 11, color: "#6b7280", fontWeight: 600 }}>Aujourd'hui</span>
+                <span style={{ fontSize: 11, color: "#6b7280", fontWeight: 600 }}>Hoy</span>
               </div>
             </div>
 
@@ -674,7 +674,7 @@ export default function Dashboard() {
                 : <TrendingDown style={{ width: 16, height: 16, color: RED }} />
               }
             </div>
-            <p style={{ margin: 0, fontSize: 10, color: "#9ca3af", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: 4 }}>Bénéfice net</p>
+            <p style={{ margin: 0, fontSize: 10, color: "#9ca3af", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: 4 }}>Beneficio neto</p>
             {isLoadingSummary
               ? <Skeleton h={20} radius={6} />
               : <p style={{ margin: 0, fontSize: 15, fontWeight: 800, color: weekNet >= 0 ? GREEN : RED, lineHeight: 1 }}>
@@ -688,7 +688,7 @@ export default function Dashboard() {
             <div style={{ width: 32, height: 32, borderRadius: 10, background: "#fff7ed", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 8 }}>
               <ArrowUpRight style={{ width: 16, height: 16, color: ORANGE }} />
             </div>
-            <p style={{ margin: 0, fontSize: 10, color: "#9ca3af", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: 4 }}>Mois (revenus)</p>
+            <p style={{ margin: 0, fontSize: 10, color: "#9ca3af", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: 4 }}>Mes (ingresos)</p>
             {isLoadingSummary
               ? <Skeleton h={20} radius={6} />
               : <p style={{ margin: 0, fontSize: 15, fontWeight: 800, color: "#111", lineHeight: 1 }}>{fmtShort(summary?.monthIncome ?? 0)}</p>
@@ -808,16 +808,16 @@ export default function Dashboard() {
         {/* ── Recent transactions ───────────────────────────────────────────── */}
         <div style={{ background: "#fff", borderRadius: 20, border: "1px solid #f0ede9", boxShadow: "0 1px 4px rgba(0,0,0,0.05)", overflow: "hidden" }}>
           <div style={{ padding: "16px 20px", borderBottom: "1px solid #f5f3f0", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <h2 style={{ fontSize: 15, fontWeight: 700, margin: 0, color: "#111" }}>Transactions récentes</h2>
+            <h2 style={{ fontSize: 15, fontWeight: 700, margin: 0, color: "#111" }}>Transacciones recientes</h2>
             <Link href="/transactions">
-              <span style={{ fontSize: 13, color: ORANGE, fontWeight: 600, cursor: "pointer" }}>Voir tout →</span>
+              <span style={{ fontSize: 13, color: ORANGE, fontWeight: 600, cursor: "pointer" }}>Ver todo →</span>
             </Link>
           </div>
 
           {isLimitedFree && (
             <div style={{ padding: "8px 16px", background: "#fef9f0", borderBottom: "1px solid #fed7aa", display: "flex", alignItems: "center", gap: 6 }}>
               <span style={{ fontSize: 12 }}>⚠️</span>
-              <span style={{ fontSize: 11, color: "#92400e", fontWeight: 600 }}>Affichage limité aux 14 derniers jours</span>
+              <span style={{ fontSize: 11, color: "#92400e", fontWeight: 600 }}>Vista limitada a los últimos 14 días</span>
             </div>
           )}
           {isLoadingTxs ? (
@@ -872,7 +872,7 @@ export default function Dashboard() {
                       {/* Amount */}
                       <span style={{ fontSize: 14, fontWeight: 800, flexShrink: 0, color: isIncome ? GREEN : RED }}>
                         {isIncome ? "+" : "−"}
-                        {new Intl.NumberFormat("fr-FR", { style: "currency", currency: tx.currency || "XOF", maximumFractionDigits: 0 }).format(amount)}
+                        {new Intl.NumberFormat("es-CO", { style: "currency", currency: tx.currency || "COP", maximumFractionDigits: 0 }).format(amount)}
                       </span>
                     </li>
                   );

@@ -125,14 +125,14 @@ function AddTransactionModal({ onClose }: { onClose: () => void }) {
                 referenceNote: form.referenceNote || undefined, date: form.date } },
       {
         onSuccess: () => {
-          toast({ title: "✓ Transaction enregistrée" });
+          toast({ title: "✓ Transacción guardada" });
           queryClient.invalidateQueries({ queryKey: getListTransactionsQueryKey() });
           queryClient.invalidateQueries({ queryKey: getGetDashboardSummaryQueryKey() });
           queryClient.invalidateQueries({ queryKey: getGetWeeklySummaryQueryKey() });
           onClose();
         },
         onError: () => {
-          toast({ title: "Erreur", description: "Impossible d'enregistrer", variant: "destructive" });
+          toast({ title: "Error", description: "No se pudo guardar", variant: "destructive" });
         },
       }
     );
@@ -412,15 +412,14 @@ export default function Transactions() {
     });
 
   const handleDelete = (id: number) => {
-    if (!confirm("Supprimer cette transaction ?")) return;
+    if (!confirm("¿Eliminar esta transacción?")) return;
     deleteTx.mutate({ id }, {
       onSuccess: () => {
-        toast({ title: "Transaction supprimée" });
         queryClient.invalidateQueries({ queryKey: getListTransactionsQueryKey() });
         queryClient.invalidateQueries({ queryKey: getGetDashboardSummaryQueryKey() });
         queryClient.invalidateQueries({ queryKey: getGetWeeklySummaryQueryKey() });
       },
-      onError: () => toast({ title: "Erreur", variant: "destructive" }),
+      onError: () => toast({ title: "Error", variant: "destructive" }),
     });
   };
 
@@ -463,15 +462,15 @@ export default function Transactions() {
           return (
             <div className="grid grid-cols-3 gap-3">
               <div className="bg-green-50 border border-green-200 rounded-2xl p-4 text-center">
-                <p className="text-xs text-green-700 font-medium mb-1">Total revenus</p>
+                <p className="text-xs text-green-700 font-medium mb-1">Total ingresos</p>
                 <p className="text-lg font-bold text-green-600">+{formatCurrency(totalIn, currency)}</p>
               </div>
               <div className="bg-red-50 border border-red-200 rounded-2xl p-4 text-center">
-                <p className="text-xs text-red-700 font-medium mb-1">Total dépenses</p>
+                <p className="text-xs text-red-700 font-medium mb-1">Total gastos</p>
                 <p className="text-lg font-bold text-red-500">−{formatCurrency(totalOut, currency)}</p>
               </div>
               <div className={`rounded-2xl p-4 text-center border ${net >= 0 ? "bg-green-50 border-green-200" : "bg-red-50 border-red-200"}`}>
-                <p className={`text-xs font-medium mb-1 ${net >= 0 ? "text-green-700" : "text-red-700"}`}>Solde net</p>
+                <p className={`text-xs font-medium mb-1 ${net >= 0 ? "text-green-700" : "text-red-700"}`}>Saldo neto</p>
                 <p className={`text-lg font-bold ${net >= 0 ? "text-green-600" : "text-red-500"}`}>
                   {net >= 0 ? "+" : "−"}{formatCurrency(Math.abs(net), currency)}
                 </p>
