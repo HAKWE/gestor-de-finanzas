@@ -2,7 +2,7 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import path from "path";
-import runtimeErrorOverlay from "@replit/vite-plugin-runtime-error-modal";
+
 import { VitePWA } from "vite-plugin-pwa";
 
 const rawPort = process.env.PORT;
@@ -45,7 +45,6 @@ export default defineConfig({
   plugins: [
     react(),
     tailwindcss(),
-    runtimeErrorOverlay(),
     VitePWA({
       registerType: "autoUpdate",
       includeAssets: ["favicon.svg", "logo.svg", "icon-192.png", "icon-512.png", "icon-180.png"],
