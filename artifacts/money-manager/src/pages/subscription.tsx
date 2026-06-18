@@ -25,13 +25,13 @@ function TrialSection({ sub }: { sub: SubStatus }) {
   const badgeColor = isCritical ? "#dc2626" : isStrong ? "#ea580c" : "#1d4ed8";
   const badgeBg    = isCritical ? "rgba(220,38,38,0.12)" : isStrong ? "rgba(249,115,22,0.12)" : "rgba(37,99,235,0.15)";
   const icon       = isCritical ? "⏰" : isStrong ? "📅" : "🎁";
-  const statusLabel = isCritical ? "Action requise" : isStrong ? "Essai bientôt terminé" : "Essai gratuit en cours";
-  const ctaLabel   = isCritical ? "Upgrade maintenant →" : isStrong ? "Choisir mon plan →" : "Voir les offres →";
+  const statusLabel = isCritical ? "Acción requerida" : isStrong ? "Prueba próxima a terminar" : "Prueba gratuita en curso";
+  const ctaLabel   = isCritical ? "Actualizar ahora →" : isStrong ? "Elegir mi plan →" : "Ver los planes →";
   const ctaBg      = isCritical ? "linear-gradient(135deg,#dc2626,#b91c1c)" : ORANGE;
   const ctaShadow  = isCritical ? "0 4px 14px rgba(220,38,38,0.35)" : "0 2px 12px rgba(249,115,22,0.30)";
   const headerBg   = isCritical ? "linear-gradient(135deg,#7f1d1d,#b91c1c)" : "linear-gradient(135deg,#431407,#9a3412)";
-  const headerTitle = isCritical ? "Ne perdez pas vos données !" : isStrong ? "Continuez sans interruption" : "Continuez après votre essai";
-  const headerSub  = isCritical ? "Passez à Starter maintenant — dès 3,99 €/mois" : "À partir de 3,99 €/mois · Annulable à tout moment";
+  const headerTitle = isCritical ? "¡No pierdas tus datos!" : isStrong ? "Continúa sin interrupciones" : "Continúa después de tu prueba";
+  const headerSub  = isCritical ? "Pásate a Starter ahora — desde 3,99 €/mes" : "Desde 3,99 €/mes · Cancelable en cualquier momento";
 
   return (
     <>
@@ -46,8 +46,8 @@ function TrialSection({ sub }: { sub: SubStatus }) {
               <p style={{ color: labelColor, fontSize: 12, fontWeight: 700, margin: 0, textTransform: "uppercase", letterSpacing: "0.08em" }}>{statusLabel}</p>
               <p style={{ color: headColor, fontSize: 20, fontWeight: 800, margin: "2px 0 0" }}>
                 {dLeft > 0
-                  ? `${dLeft} jour${dLeft > 1 ? "s" : ""} restant${dLeft > 1 ? "s" : ""}`
-                  : "Accès complet"}
+                  ? `${dLeft} día${dLeft > 1 ? "s" : ""} restante${dLeft > 1 ? "s" : ""}`
+                  : "Acceso completo"}
               </p>
             </div>
             <span style={{ marginLeft: "auto", background: badgeBg, border: `1.5px solid ${cardBorder}`, borderRadius: 999, padding: "4px 12px", fontSize: 12, fontWeight: 700, color: badgeColor }}>
@@ -59,8 +59,8 @@ function TrialSection({ sub }: { sub: SubStatus }) {
             <div style={{ height: "100%", width: `${pctUsed}%`, borderRadius: 99, background: barGrad }} />
           </div>
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16 }}>
-            <span style={{ fontSize: 11, color: "#9ca3af", fontWeight: 600 }}>Début de l'essai</span>
-            <span style={{ fontSize: 11, fontWeight: 700, color: labelColor }}>{pctUsed}% écoulé</span>
+            <span style={{ fontSize: 11, color: "#9ca3af", fontWeight: 600 }}>Inicio prueba</span>
+            <span style={{ fontSize: 11, fontWeight: 700, color: labelColor }}>{pctUsed}% usado</span>
             <span style={{ fontSize: 11, color: "#9ca3af", fontWeight: 600 }}>Fin</span>
           </div>
 
@@ -69,8 +69,9 @@ function TrialSection({ sub }: { sub: SubStatus }) {
               <CalendarDays style={{ width: 16, height: 16, color: badgeColor, flexShrink: 0 }} />
               <p style={{ color: headColor, fontSize: 13, margin: 0, lineHeight: 1.5 }}>
                 {isCritical
-                  ? <><strong style={{ color: badgeColor }}>⚠ Expire le {formatDate(sub.trialEndsAt)}</strong> — Passez à un plan payant pour conserver vos données.</>
-                  : <>Essai se termine le <strong style={{ color: badgeColor }}>{formatDate(sub.trialEndsAt)}</strong></>
+                  ? <><strong style={{ color: badgeColor }}>⚠ Expira el {formatDate(sub.trialEndsAt)}</strong> — Pásate a un plan de pago para conservar tus datos.</>
+
+                  : <>La prueba termina el <strong style={{ color: badgeColor }}>{formatDate(sub.trialEndsAt)}</strong></>
                 }
               </p>
             </div>
@@ -80,9 +81,9 @@ function TrialSection({ sub }: { sub: SubStatus }) {
 
       {!isCritical && (
         <div style={{ border: "1.5px solid #e5e7eb", borderRadius: 14, padding: "16px 18px", background: "#fafafa" }}>
-          <p style={{ fontSize: 13, fontWeight: 700, color: "#374151", margin: "0 0 10px" }}>Accès complet pendant votre essai :</p>
+          <p style={{ fontSize: 13, fontWeight: 700, color: "#374151", margin: "0 0 10px" }}>Acceso completo durante tu prueba:</p>
           <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-            {["Transactions illimitées", "Rapports & graphiques avancés", "Export PDF", "Import SMS & relevés"].map(f => (
+            {["Transacciones ilimitadas", "Reportes y gráficos avanzados", "Exportar PDF", "Importar SMS y estados de cuenta"].map(f => (
               <div key={f} style={{ display: "flex", alignItems: "center", gap: 8 }}>
                 <Check style={{ width: 13, height: 13, color: "#2563eb", flexShrink: 0 }} />
                 <span style={{ fontSize: 13, color: "#374151" }}>{f}</span>
@@ -105,7 +106,7 @@ function TrialSection({ sub }: { sub: SubStatus }) {
         <div style={{ background: "#fff", padding: "16px 22px" }}>
           {isCritical && (
             <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 14 }}>
-              {["Accès complet à tout votre historique", "Transactions illimitées", "Export PDF & rapports avancés"].map(f => (
+              {["Acceso completo a todo tu historial", "Transacciones ilimitadas", "Exportar PDF y reportes avanzados"].map(f => (
                 <div key={f} style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <Check style={{ width: 13, height: 13, color: RED, flexShrink: 0 }} />
                   <span style={{ fontSize: 13, color: "#374151" }}>{f}</span>
@@ -237,10 +238,10 @@ export default function Subscription() {
               </div>
               <div>
                 <h2 style={{ fontSize: 17, fontWeight: 800, color: "#111", margin: "0 0 4px" }}>
-                  Annuler mon abonnement ?
+                  ¿Cancelar mi suscripción?
                 </h2>
                 <p style={{ fontSize: 13, color: "#6b7280", margin: 0, lineHeight: 1.5 }}>
-                  Votre accès restera disponible jusqu'à la fin de la période.
+                  Tu acceso permanecerá disponible hasta el final del período.
                 </p>
               </div>
               <button
@@ -259,19 +260,19 @@ export default function Subscription() {
               <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
                 <CalendarDays style={{ width: 15, height: 15, color: ORANGE, flexShrink: 0, marginTop: 1 }} />
                 <p style={{ fontSize: 13, color: "#92400e", margin: 0, lineHeight: 1.6 }}>
-                  Votre abonnement <strong>{sub?.planLabel}</strong> restera actif jusqu'à la fin de la période en cours
+                  Tu suscripción <strong>{sub?.planLabel}</strong> permanecerá activa hasta el final del período actual
                   {sub?.currentPeriodEnd ? <> (<strong>{formatDate(sub.currentPeriodEnd)}</strong>)</> : null}.{" "}
-                  Aucun remboursement ne sera effectué.
+                  No se realizará ningún reembolso.
                 </p>
               </div>
             </div>
 
             {/* What you lose */}
             <p style={{ fontSize: 12, fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.05em", margin: "0 0 10px" }}>
-              Vous perdrez l'accès à :
+              Perderás acceso a:
             </p>
             <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 24 }}>
-              {["Export PDF & rapports avancés", "Graphiques et statistiques Pro", "Transactions illimitées"].map(f => (
+              {["Exportar PDF y reportes avanzados", "Gráficos y estadísticas Pro", "Transacciones ilimitadas"].map(f => (
                 <div key={f} style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <X style={{ width: 12, height: 12, color: RED, flexShrink: 0 }} />
                   <span style={{ fontSize: 13, color: "#374151" }}>{f}</span>
@@ -303,8 +304,8 @@ export default function Subscription() {
                 }}
               >
                 {cancelLoading
-                  ? <><Loader2 style={{ width: 15, height: 15, animation: "spin 1s linear infinite" }} />Annulation en cours…</>
-                  : "Confirmer l'annulation"
+                  ? <><Loader2 style={{ width: 15, height: 15, animation: "spin 1s linear infinite" }} />Cancelando…</>
+                  : "Confirmar cancelación"
                 }
                 <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
               </button>
@@ -316,7 +317,7 @@ export default function Subscription() {
                   border: "1.5px solid #e5e7eb", fontWeight: 600, fontSize: 14, cursor: "pointer",
                 }}
               >
-                Annuler
+                Volver
               </button>
             </div>
           </div>
@@ -335,16 +336,16 @@ export default function Subscription() {
               padding: "6px 0",
             }}>
               <ArrowLeft style={{ width: 15, height: 15 }} />
-              Tableau de bord
+              Panel de control
             </button>
           </Link>
         </div>
 
         {/* Title */}
         <div>
-          <h1 style={{ fontSize: 26, fontWeight: 800, margin: 0, letterSpacing: "-0.02em" }}>Mon abonnement</h1>
+          <h1 style={{ fontSize: 26, fontWeight: 800, margin: 0, letterSpacing: "-0.02em" }}>Mi suscripción</h1>
           <p style={{ color: "hsl(var(--muted-foreground))", marginTop: 4, fontSize: 14 }}>
-            Consultez votre statut et gérez votre plan.
+            Consulta tu estado y gestiona tu plan.
           </p>
         </div>
 
@@ -357,10 +358,10 @@ export default function Subscription() {
             <Check style={{ width: 16, height: 16, color: "#16a34a", flexShrink: 0, marginTop: 1 }} />
             <div>
               <p style={{ fontSize: 14, fontWeight: 700, color: "#15803d", margin: "0 0 2px" }}>
-                Annulation confirmée
+                Cancelación confirmada
               </p>
               <p style={{ fontSize: 13, color: "#166534", margin: 0, lineHeight: 1.5 }}>
-                Votre abonnement reste actif jusqu'au <strong>{sub?.currentPeriodEnd ? formatDate(sub.currentPeriodEnd) : "—"}</strong>. Aucun renouvellement ne sera effectué.
+                Tu suscripción permanece activa hasta el <strong>{sub?.currentPeriodEnd ? formatDate(sub.currentPeriodEnd) : "—"}</strong>. No habrá renovación.
               </p>
             </div>
           </div>
@@ -397,7 +398,7 @@ export default function Subscription() {
                 </div>
                 <div>
                   <p style={{ color: "#fed7aa", fontSize: 12, fontWeight: 600, margin: 0, textTransform: "uppercase", letterSpacing: "0.08em" }}>
-                    {isCancelled ? "Abonnement annulé" : "Plan actif"}
+                    {isCancelled ? "Suscripción cancelada" : "Plan activo"}
                   </p>
                   <p style={{ color: "#fff7ed", fontSize: 22, fontWeight: 800, margin: "2px 0 0" }}>{sub?.planLabel}</p>
                 </div>
@@ -407,7 +408,7 @@ export default function Subscription() {
                     border: "1.5px solid rgba(251,191,36,0.40)", borderRadius: 999,
                     padding: "4px 12px", fontSize: 12, fontWeight: 700, color: "#fbbf24",
                   }}>
-                    ⚠ Annulé
+                    ⚠ Cancelado
                   </span>
                 ) : (
                   <span style={{
@@ -430,8 +431,8 @@ export default function Subscription() {
                     <CalendarDays style={{ width: 16, height: 16, color: "#fdba74", flexShrink: 0 }} />
                     <p style={{ color: "#fed7aa", fontSize: 13, margin: 0, lineHeight: 1.5 }}>
                       {isCancelled
-                        ? <>Annulé — Accès jusqu'au <strong style={{ color: "#fff7ed" }}>{formatDate(sub.currentPeriodEnd)}</strong></>
-                        : <>Prochain renouvellement : <strong style={{ color: "#fff7ed" }}>{formatDate(sub.currentPeriodEnd)}</strong></>
+                        ? <>Cancelado — Acceso hasta el <strong style={{ color: "#fff7ed" }}>{formatDate(sub.currentPeriodEnd)}</strong></>
+                        : <>Próxima renovación: <strong style={{ color: "#fff7ed" }}>{formatDate(sub.currentPeriodEnd)}</strong></>
                       }
                     </p>
                   </div>
@@ -442,7 +443,7 @@ export default function Subscription() {
                     }}>
                       <Check style={{ width: 13, height: 13, color: "#4ade80", flexShrink: 0, marginTop: 1 }} />
                       <p style={{ color: "#d1d5db", fontSize: 12, margin: 0, lineHeight: 1.5 }}>
-                        Vous pouvez continuer à utiliser les fonctionnalités {sub.planLabel} jusqu'à la fin de la période.
+                        Puedes continuar usando las funciones de {sub.planLabel} hasta el final del período.
                       </p>
                     </div>
                   )}
@@ -465,9 +466,9 @@ export default function Subscription() {
                     <X style={{ width: 18, height: 18, color: RED }} />
                   </div>
                   <div>
-                    <p style={{ fontWeight: 700, fontSize: 15, margin: 0, color: "#111" }}>Annuler mon abonnement</p>
+                    <p style={{ fontWeight: 700, fontSize: 15, margin: 0, color: "#111" }}>Cancelar mi suscripción</p>
                     <p style={{ fontSize: 13, color: "#6b7280", margin: "4px 0 0", lineHeight: 1.5 }}>
-                      Vous conservez l'accès jusqu'à la fin de votre période en cours. Aucun remboursement.
+                      Conservas el acceso hasta el final de tu período actual. Sin reembolso.
                     </p>
                   </div>
                 </div>
@@ -484,7 +485,7 @@ export default function Subscription() {
                   onMouseLeave={e => (e.currentTarget.style.background = "#fff")}
                 >
                   <X style={{ width: 15, height: 15 }} />
-                  Annuler mon abonnement
+                  Cancelar mi suscripción
                 </button>
               </div>
             )}
@@ -499,12 +500,12 @@ export default function Subscription() {
                 fontWeight: 600, fontSize: 14, color: "hsl(var(--muted-foreground))",
               }}>
                 <ShieldCheck style={{ width: 16, height: 16, color: "hsl(var(--primary))" }} />
-                Gérer via le portail Stripe
+                Gestionar vía portal Stripe
                 <span style={{ marginLeft: "auto", fontSize: 12 }}>▾</span>
               </summary>
               <div style={{ padding: "0 22px 20px", borderTop: "1px solid hsl(var(--border))" }}>
                 <p style={{ fontSize: 13, color: "hsl(var(--muted-foreground))", margin: "14px 0 16px", lineHeight: 1.6 }}>
-                  Modifiez votre moyen de paiement, téléchargez vos factures ou gérez vos informations de facturation depuis le portail sécurisé Stripe.
+                  Modifica tu método de pago, descarga tus facturas o gestiona tu información de facturación desde el portal seguro de Stripe.
                 </p>
 
                 {portalError && (
@@ -524,8 +525,8 @@ export default function Subscription() {
                   style={{ width: "100%", height: 42, borderRadius: 12, fontWeight: 600, fontSize: 14 }}
                 >
                   {portalLoading
-                    ? <><Loader2 style={{ width: 14, height: 14, marginRight: 8, animation: "spin 1s linear infinite" }} />Ouverture…</>
-                    : <><ExternalLink style={{ width: 14, height: 14, marginRight: 8 }} />Ouvrir le portail de facturation</>
+                    ? <><Loader2 style={{ width: 14, height: 14, marginRight: 8, animation: "spin 1s linear infinite" }} />Abriendo…</>
+                    : <><ExternalLink style={{ width: 14, height: 14, marginRight: 8 }} />Abrir el portal de facturación</>
                   }
                 </Button>
               </div>
@@ -539,22 +540,22 @@ export default function Subscription() {
                     <Crown style={{ width: 20, height: 20, color: "#fed7aa" }} />
                   </div>
                   <div>
-                    <p style={{ fontWeight: 800, fontSize: 16, color: "#fff7ed", margin: 0 }}>Passez au plan Pro</p>
-                    <p style={{ fontSize: 12, color: "#fdba74", margin: "2px 0 0" }}>Seulement +6 €/mois de plus — annulable à tout moment</p>
+                    <p style={{ fontWeight: 800, fontSize: 16, color: "#fff7ed", margin: 0 }}>Pásate al plan Pro</p>
+                    <p style={{ fontSize: 12, color: "#fdba74", margin: "2px 0 0" }}>Solo +6 €/mes más — cancelable en cualquier momento</p>
                   </div>
                   <div style={{ marginLeft: "auto", textAlign: "right", flexShrink: 0 }}>
                     <div style={{ fontSize: 22, fontWeight: 900, color: "#fff7ed", lineHeight: 1 }}>11 €</div>
-                    <div style={{ fontSize: 11, color: "#fdba74" }}>/mois</div>
+                    <div style={{ fontSize: 11, color: "#fdba74" }}>/mes</div>
                   </div>
                 </div>
                 <div style={{ background: "#fff", padding: "18px 22px" }}>
                   <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 18 }}>
                     {[
-                      { icon: "📄", label: "Export PDF professionnel", sub: "Rapport brandé à partager avec votre comptable" },
-                      { icon: "📊", label: "Graphiques avancés", sub: "Revenus vs dépenses par semaine ou par jour" },
-                      { icon: "🔢", label: "Transactions illimitées", sub: "Aucune limite mensuelle sur vos enregistrements" },
-                      { icon: "📱", label: "Import SMS & relevés", sub: "Importez vos relevés Orange Money, Wave, MTN" },
-                      { icon: "⚡", label: "Support prioritaire", sub: "Réponse en moins de 24 h garanti" },
+                      { icon: "📄", label: "Exportación PDF profesional", sub: "Reporte con marca para compartir con tu contador" },
+                      { icon: "📊", label: "Gráficos avanzados", sub: "Ingresos vs gastos por semana o por día" },
+                      { icon: "🔢", label: "Transacciones ilimitadas", sub: "Sin límite mensual en tus registros" },
+                      { icon: "📱", label: "Import SMS & extractos", sub: "Importa tus extractos de Mercado Pago, Nequi, Yape" },
+                      { icon: "⚡", label: "Soporte prioritario", sub: "Respuesta garantizada en menos de 24 h" },
                     ].map(({ icon, label, sub }) => (
                       <div key={label} style={{ display: "flex", alignItems: "flex-start", gap: 10, padding: "10px 12px", background: "#fff7ed", borderRadius: 10 }}>
                         <span style={{ fontSize: 18, flexShrink: 0, lineHeight: 1.2 }}>{icon}</span>
@@ -575,7 +576,7 @@ export default function Subscription() {
                       display: "flex", alignItems: "center", justifyContent: "center", gap: 7,
                     }}>
                       <Zap style={{ width: 16, height: 16 }} />
-                      Passer au Pro maintenant →
+                      Cambiar a Pro ahora →
                     </button>
                   </Link>
                 </div>
@@ -624,8 +625,8 @@ export default function Subscription() {
                   <Crown style={{ width: 20, height: 20, color: "#fed7aa" }} />
                 </div>
                 <div style={{ flex: 1 }}>
-                  <p style={{ fontWeight: 800, fontSize: 15, color: "#fff7ed", margin: 0 }}>Débloquez l'accès complet</p>
-                  <p style={{ fontSize: 12, color: "#fdba74", margin: "2px 0 0" }}>Récupérez toutes vos données · Dès 5 €/mois</p>
+                  <p style={{ fontWeight: 800, fontSize: 15, color: "#fff7ed", margin: 0 }}>Desbloquea el acceso completo</p>
+                  <p style={{ fontSize: 12, color: "#fdba74", margin: "2px 0 0" }}>Recupera todos tus datos · Desde 5 €/mes</p>
                 </div>
               </div>
               <div style={{ background: "#fff", padding: "16px 22px", display: "flex", flexDirection: "column", gap: 8 }}>
@@ -654,12 +655,12 @@ export default function Subscription() {
             <div style={{ width: 64, height: 64, borderRadius: 20, margin: "0 auto 16px", background: "hsl(var(--primary)/0.1)", display: "flex", alignItems: "center", justifyContent: "center" }}>
               <Star style={{ width: 30, height: 30, color: "hsl(var(--primary))" }} />
             </div>
-            <h2 style={{ fontSize: 18, fontWeight: 700, margin: "0 0 8px" }}>Plan Gratuit</h2>
+            <h2 style={{ fontSize: 18, fontWeight: 700, margin: "0 0 8px" }}>Plan Gratuito</h2>
             <p style={{ fontSize: 14, color: "hsl(var(--muted-foreground))", margin: "0 0 24px", lineHeight: 1.6 }}>
-              Vous utilisez le plan gratuit. Passez à Starter ou Pro pour accéder aux fonctionnalités avancées.
+              Estás en el plan gratuito. Pásate a Starter o Pro para acceder a las funcionalidades avanzadas.
             </p>
             <Link href="/pricing">
-              <Button style={{ borderRadius: 12, fontWeight: 600 }}>Voir les offres</Button>
+              <Button style={{ borderRadius: 12, fontWeight: 600 }}>Ver los planes</Button>
             </Link>
           </div>
         )}

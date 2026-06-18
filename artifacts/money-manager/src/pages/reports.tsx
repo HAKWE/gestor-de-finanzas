@@ -21,12 +21,12 @@ const PIE_COLORS = [
   "#ec4899","#14b8a6","#f43f5e","#84cc16","#06b6d4","#8b5cf6",
 ];
 const MONTHS_FR = [
-  "Janvier","Février","Mars","Avril","Mai","Juin",
-  "Juillet","Août","Septembre","Octobre","Novembre","Décembre",
+  "Enero","Febrero","Marzo","Abril","Mayo","Junio",
+  "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre",
 ];
 
 function fmt(amount: number, currency: string) {
-  return new Intl.NumberFormat("fr-FR", {
+  return new Intl.NumberFormat("es-ES", {
     style: "currency", currency, maximumFractionDigits: 0,
   }).format(amount);
 }
@@ -38,7 +38,7 @@ function fmtShort(amount: number) {
 }
 
 function fmtDate(d: string) {
-  return new Date(d + "T00:00:00").toLocaleDateString("fr-FR", {
+  return new Date(d + "T00:00:00").toLocaleDateString("es-ES", {
     day: "2-digit", month: "short", year: "numeric",
   });
 }
@@ -65,7 +65,7 @@ function TrendBadge({ current, prev, positiveIsGood = true }: {
   const color = t.up === positiveIsGood ? GREEN : RED;
   return (
     <span style={{ fontSize: 11, fontWeight: 600, color, display: "flex", alignItems: "center", gap: 2 }}>
-      {t.up ? "↑" : "↓"} {t.pct}% vs mois préc.
+      {t.up ? "↑" : "↓"} {t.pct}% vs mes ant.
     </span>
   );
 }
@@ -140,11 +140,11 @@ function SummaryCard({ label, value, trend: trendNode, color, icon }: {
 }
 
 const PRO_FEATURES = [
-  { icon: "📊", label: "Graphiques Revenus vs Dépenses", sub: "Par semaine ou par jour" },
-  { icon: "🥧", label: "Répartition par catégorie", sub: "Diagramme camembert interactif" },
-  { icon: "📄", label: "Export PDF brandé", sub: "Rapport professionnel à partager" },
-  { icon: "📋", label: "Tableau de toutes les transactions", sub: "Filtrez et analysez en détail" },
-  { icon: "📈", label: "Comparaison mois précédent", sub: "Tendances sur revenus et dépenses" },
+  { icon: "📊", label: "Gráficos Ingresos vs Gastos", sub: "Por semana o por día" },
+  { icon: "🥧", label: "Distribución por categoría", sub: "Diagrama de pastel interactivo" },
+  { icon: "📄", label: "Export PDF profesional", sub: "Reporte profesional para compartir" },
+  { icon: "📋", label: "Tabla de todas las transacciones", sub: "Filtra y analiza en detalle" },
+  { icon: "📈", label: "Comparación mes anterior", sub: "Tendencias de ingresos y gastos" },
 ];
 
 function StarterTeaser({ isStarter }: { isStarter: boolean }) {
@@ -209,16 +209,16 @@ function StarterTeaser({ isStarter }: { isStarter: boolean }) {
               background: ORANGE, borderRadius: 999,
               padding: "3px 10px", fontSize: 11, fontWeight: 800, color: "#fff",
             }}>
-              {isStarter ? "seulement +6 €/mois" : "dès 11 €/mois"}
+              {isStarter ? "solo +6 €/mes" : "desde 11 €/mes"}
             </span>
           </div>
           <h3 style={{ fontSize: 18, fontWeight: 800, color: "#111", margin: "0 0 6px" }}>
-            Débloquez les Rapports Pro complets
+            Desbloquea los Reportes Pro completos
           </h3>
           <p style={{ fontSize: 13, color: "#6b7280", margin: 0, lineHeight: 1.55 }}>
             {isStarter
-              ? "Vous avez déjà Starter — un seul cran vous sépare des rapports avancés et des exports PDF."
-              : "Passez au plan Pro pour accéder aux graphiques, exports PDF et analyses détaillées."}
+              ? "Ya tienes Starter — un solo paso te separa de los reportes avanzados y los exports PDF."
+              : "Pásate al plan Pro para acceder a gráficos, exports PDF y análisis detallados."}
           </p>
         </div>
 
@@ -255,7 +255,7 @@ function StarterTeaser({ isStarter }: { isStarter: boolean }) {
               display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
             }}>
               <Crown style={{ width: 15, height: 15 }} />
-              Passer au Pro — 11 €/mois
+              Pasarse a Pro — 11 €/mes
             </button>
           </Link>
         </div>
@@ -269,7 +269,7 @@ function StarterTeaser({ isStarter }: { isStarter: boolean }) {
         }}>
           <span style={{ fontSize: 16, flexShrink: 0 }}>🎁</span>
           <span style={{ fontSize: 12, color: "#9a3412", lineHeight: 1.45 }}>
-            <strong>Parrainez un ami</strong> et vous recevez tous les deux <strong>1 mois Pro gratuit</strong> dès qu'il s'abonne.
+            <strong>Recomienda a un amigo</strong> y los dos reciben <strong>1 mes Pro gratis</strong> cuando se suscribe.
           </span>
           <Link href="/settings" style={{ flexShrink: 0 }}>
             <span style={{
@@ -300,10 +300,10 @@ function EmptyState({ month, year }: { month: number; year: number }) {
         <BarChart2 style={{ width: 36, height: 36, color: ORANGE }} />
       </div>
       <div style={{ fontWeight: 700, fontSize: 18, color: "#111", textAlign: "center" }}>
-        Aucune transaction en {MONTHS_FR[month - 1]} {year}
+        Sin transacciones en {MONTHS_FR[month - 1]} {year}
       </div>
       <div style={{ color: "#6b7280", fontSize: 14, textAlign: "center", maxWidth: 300 }}>
-        Commencez à enregistrer vos revenus et dépenses pour voir vos rapports ici.
+        Empieza a registrar tus ingresos y gastos para ver tus reportes aquí.
       </div>
       <Link href="/transactions/new">
         <button style={{
@@ -312,7 +312,7 @@ function EmptyState({ month, year }: { month: number; year: number }) {
           display: "flex", alignItems: "center", gap: 6,
         }}>
           <Plus style={{ width: 15, height: 15 }} />
-          Ajouter une transaction
+          Agregar transacción
         </button>
       </Link>
     </div>
@@ -407,18 +407,18 @@ export default function Reports() {
       doc.setTextColor(255, 255, 255);
       doc.setFontSize(15);
       doc.setFont("helvetica", "bold");
-      doc.text("MobileMoney Manager", 33, 13);
+      doc.text("Gestor de Finanzas", 33, 13);
       doc.setFontSize(9);
       doc.setFont("helvetica", "normal");
-      doc.text("La gestion financière des entrepreneurs africains", 33, 19);
+      doc.text("El gestor financiero para emprendedores latinoamericanos", 33, 19);
       doc.setFontSize(9);
-      doc.text(`Rapport — ${MONTHS_FR[month - 1]} ${year}`, pageW - 12, 14, { align: "right" });
-      doc.text(`Généré le ${new Date().toLocaleDateString("fr-FR")}`, pageW - 12, 20, { align: "right" });
+      doc.text(`Reporte — ${MONTHS_FR[month - 1]} ${year}`, pageW - 12, 14, { align: "right" });
+      doc.text(`Generado el ${new Date().toLocaleDateString("es-ES")}`, pageW - 12, 20, { align: "right" });
 
       doc.setTextColor(20, 20, 20);
       doc.setFontSize(17);
       doc.setFont("helvetica", "bold");
-      doc.text(`Rapport Financier`, 14, 40);
+      doc.text(`Reporte Financiero`, 14, 40);
       doc.setFontSize(12);
       doc.setFont("helvetica", "normal");
       doc.setTextColor(120, 120, 120);
@@ -429,10 +429,10 @@ export default function Reports() {
       doc.line(14, 50, pageW - 14, 50);
 
       const summaryBody: any[] = [
-        ["Total Revenus", { content: fmt(s?.totalIncome ?? 0, currency), styles: { textColor: [34, 197, 94], fontStyle: "bold" } }],
-        ["Total Dépenses", { content: fmt(s?.totalExpenses ?? 0, currency), styles: { textColor: [239, 68, 68], fontStyle: "bold" } }],
+        ["Total Ingresos", { content: fmt(s?.totalIncome ?? 0, currency), styles: { textColor: [34, 197, 94], fontStyle: "bold" } }],
+        ["Total Gastos", { content: fmt(s?.totalExpenses ?? 0, currency), styles: { textColor: [239, 68, 68], fontStyle: "bold" } }],
         [
-          { content: "Solde Net", styles: { fontStyle: "bold" } },
+          { content: "Saldo Neto", styles: { fontStyle: "bold" } },
           {
             content: fmt(s?.netBalance ?? 0, currency),
             styles: {
@@ -442,12 +442,12 @@ export default function Reports() {
             }
           }
         ],
-        ["Nombre de transactions", { content: String(s?.transactionCount ?? 0), styles: { fontStyle: "bold" } }],
+        ["Nro. de transacciones", { content: String(s?.transactionCount ?? 0), styles: { fontStyle: "bold" } }],
       ];
 
       autoTable(doc as any, {
         startY: 54,
-        head: [["Indicateur", "Valeur"]],
+        head: [["Indicador", "Valor"]],
         body: summaryBody,
         headStyles: { fillColor: [249, 115, 22], textColor: 255, fontStyle: "bold", fontSize: 10 },
         bodyStyles: { fontSize: 10, cellPadding: 4.5 },
@@ -463,14 +463,14 @@ export default function Reports() {
         doc.setFontSize(13);
         doc.setFont("helvetica", "bold");
         doc.setTextColor(20, 20, 20);
-        doc.text("Répartition par catégorie", 14, afterSummary + 12);
+        doc.text("Distribución por categoría", 14, afterSummary + 12);
 
         autoTable(doc as any, {
           startY: afterSummary + 16,
-          head: [["Catégorie", "Type", "Montant", "Part"]],
+          head: [["Categoría", "Tipo", "Monto", "Parte"]],
           body: data.categories.slice(0, 12).map(c => [
             c.category,
-            c.type === "income" ? "Revenu" : "Dépense",
+            c.type === "income" ? "Ingreso" : "Gasto",
             {
               content: fmt(c.total, currency),
               styles: { textColor: c.type === "income" ? [34, 197, 94] : [239, 68, 68], fontStyle: "bold" },
@@ -498,11 +498,11 @@ export default function Reports() {
         doc.text(`Transactions — ${MONTHS_FR[month - 1]} ${year}`, 27, 11);
         doc.setFontSize(8);
         doc.setFont("helvetica", "normal");
-        doc.text(`${data.transactions.length} opération(s)`, pageW - 12, 10, { align: "right" });
+        doc.text(`${data.transactions.length} operación(es)`, pageW - 12, 10, { align: "right" });
 
         autoTable(doc as any, {
           startY: 22,
-          head: [["Date", "Catégorie", "Référence", "Moyen paiement", "Montant"]],
+          head: [["Fecha", "Categoría", "Referencia", "Medio de pago", "Monto"]],
           body: data.transactions.map(t => [
             fmtDate(t.date),
             t.category,
@@ -535,7 +535,7 @@ export default function Reports() {
         doc.setTextColor(160, 160, 160);
         doc.setFont("helvetica", "normal");
         doc.text(
-          `MobileMoney Manager  •  Rapport ${MONTHS_FR[month - 1]} ${year}  •  Page ${i} / ${pageCount}`,
+          `Gestor de Finanzas  •  Reporte ${MONTHS_FR[month - 1]} ${year}  •  Página ${i} / ${pageCount}`,
           pageW / 2, pageH - 7, { align: "center" }
         );
       }
@@ -552,9 +552,9 @@ export default function Reports() {
 
         <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
           <div>
-            <h1 style={{ fontSize: 26, fontWeight: 800, margin: 0, color: "#111" }}>Rapports</h1>
+            <h1 style={{ fontSize: 26, fontWeight: 800, margin: 0, color: "#111" }}>Reportes</h1>
             <p style={{ margin: "4px 0 0", color: "#6b7280", fontSize: 14 }}>
-              Analysez votre activité financière mois par mois.
+              Analiza tu actividad financiera mes a mes.
             </p>
           </div>
 
@@ -608,7 +608,7 @@ export default function Reports() {
                   ? <Loader2 style={{ width: 15, height: 15, animation: "spin 0.8s linear infinite" }} />
                   : <FileDown style={{ width: 15, height: 15 }} />
                 }
-                {exporting ? "Génération…" : "Exporter en PDF"}
+                {exporting ? "Generando…" : "Exportar PDF"}
               </button>
             )}
           </div>
@@ -624,18 +624,18 @@ export default function Reports() {
               <span style={{ fontSize: 38 }}>🔒</span>
             </div>
             <div>
-              <h3 style={{ fontSize: 18, fontWeight: 800, color: "#991b1b", margin: "0 0 8px" }}>Rapports désactivés</h3>
+              <h3 style={{ fontSize: 18, fontWeight: 800, color: "#991b1b", margin: "0 0 8px" }}>Reportes desactivados</h3>
               <p style={{ fontSize: 14, color: "#6b7280", margin: "0 0 6px", lineHeight: 1.6, maxWidth: 320 }}>
-                Votre période d'essai est terminée. Les rapports et analyses avancés sont réservés aux abonnés.
+                Tu período de prueba ha terminado. Los reportes y análisis avanzados son exclusivos para suscriptores.
               </p>
             </div>
             <Link href="/pricing">
               <button style={{ background: "#f97316", color: "#fff", border: "none", borderRadius: 13, padding: "12px 24px", fontWeight: 800, fontSize: 14, cursor: "pointer", boxShadow: "0 4px 16px rgba(249,115,22,0.30)" }}>
                 <Crown style={{ width: 15, height: 15, display: "inline", marginRight: 6, verticalAlign: "middle" }} />
-                S'abonner — dès 5 €/mois →
+                Suscribirse — desde 5 €/mes →
               </button>
             </Link>
-            <p style={{ fontSize: 12, color: "#9ca3af", margin: 0 }}>Accès immédiat après paiement · Annulable à tout moment</p>
+            <p style={{ fontSize: 12, color: "#9ca3af", margin: 0 }}>Acceso inmediato tras el pago · Cancelable en cualquier momento</p>
           </div>
         ) : (
           <>
@@ -645,21 +645,21 @@ export default function Reports() {
               gap: 12,
             }}>
               <SummaryCard
-                label="Total Revenus"
+                label="Total Ingresos"
                 value={s ? fmt(s.totalIncome, currency) : "—"}
                 trend={p !== undefined ? <TrendBadge current={s?.totalIncome ?? 0} prev={p.totalIncome} positiveIsGood /> : undefined}
                 color={GREEN}
                 icon={<TrendingUp style={{ width: 17, height: 17 }} />}
               />
               <SummaryCard
-                label="Total Dépenses"
+                label="Total Gastos"
                 value={s ? fmt(s.totalExpenses, currency) : "—"}
                 trend={p !== undefined ? <TrendBadge current={s?.totalExpenses ?? 0} prev={p.totalExpenses} positiveIsGood={false} /> : undefined}
                 color={RED}
                 icon={<TrendingDown style={{ width: 17, height: 17 }} />}
               />
               <SummaryCard
-                label="Solde Net"
+                label="Saldo Neto"
                 value={s ? fmt(s.netBalance, currency) : "—"}
                 trend={p !== undefined ? <TrendBadge current={s?.netBalance ?? 0} prev={p.netBalance} positiveIsGood /> : undefined}
                 color={s && s.netBalance >= 0 ? ORANGE : RED}
@@ -690,7 +690,7 @@ export default function Reports() {
                 }}>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 18, flexWrap: "wrap", gap: 10 }}>
                     <h2 style={{ fontSize: 15, fontWeight: 700, margin: 0, color: "#111" }}>
-                      Revenus vs Dépenses
+                      Ingresos vs Gastos
                     </h2>
                     <div style={{ display: "flex", gap: 5 }}>
                       {(["week", "day"] as const).map(v => (
@@ -704,7 +704,7 @@ export default function Reports() {
                             color: chartView === v ? "#fff" : "#6b7280",
                           }}
                         >
-                          {v === "week" ? "Par semaine" : "Par jour"}
+                          {v === "week" ? "Por semana" : "Por día"}
                         </button>
                       ))}
                     </div>
@@ -725,7 +725,7 @@ export default function Reports() {
                           width={44}
                         />
                         <Tooltip
-                          formatter={(v: number, name: string) => [fmt(v, currency), name === "income" ? "Revenus" : "Dépenses"]}
+                          formatter={(v: number, name: string) => [fmt(v, currency), name === "income" ? "Ingresos" : "Gastos"]}
                           contentStyle={{ borderRadius: 10, border: "1px solid #e5e7eb", fontSize: 12 }}
                         />
                         <Bar dataKey="income" name="income" fill={GREEN} radius={[4, 4, 0, 0]} maxBarSize={28} />
@@ -735,7 +735,7 @@ export default function Reports() {
                   </div>
 
                   <div style={{ display: "flex", gap: 20, marginTop: 10, justifyContent: "center" }}>
-                    {[{ color: GREEN, label: "Revenus" }, { color: RED, label: "Dépenses" }].map(l => (
+                    {[{ color: GREEN, label: "Ingresos" }, { color: RED, label: "Gastos" }].map(l => (
                       <div key={l.label} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "#6b7280" }}>
                         <div style={{ width: 10, height: 10, borderRadius: 3, background: l.color }} />
                         {l.label}
@@ -750,12 +750,12 @@ export default function Reports() {
                     boxShadow: "0 1px 4px rgba(0,0,0,0.06)", padding: "20px 18px",
                   }}>
                     <h2 style={{ fontSize: 15, fontWeight: 700, margin: "0 0 16px", color: "#111" }}>
-                      Top catégories
+                      Top categorías
                     </h2>
 
                     {topCats.length === 0 ? (
                       <div style={{ height: 120, display: "flex", alignItems: "center", justifyContent: "center", color: "#9ca3af", fontSize: 14 }}>
-                        Aucune donnée
+                        Sin datos
                       </div>
                     ) : (
                       <>
@@ -821,17 +821,17 @@ export default function Reports() {
                     boxShadow: "0 1px 4px rgba(0,0,0,0.06)", padding: "20px 18px",
                   }}>
                     <h2 style={{ fontSize: 15, fontWeight: 700, margin: "0 0 16px", color: "#111" }}>
-                      Performance du mois
+                      Rendimiento del mes
                     </h2>
                     {!s ? (
                       <div style={{ color: "#9ca3af", fontSize: 14, textAlign: "center", padding: "36px 0" }}>
-                        Aucune donnée
+                        Sin datos
                       </div>
                     ) : (
                       <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
                         {[
-                          { label: "Revenus", value: s.totalIncome, color: GREEN },
-                          { label: "Dépenses", value: s.totalExpenses, color: RED },
+                          { label: "Ingresos", value: s.totalIncome, color: GREEN },
+                          { label: "Gastos", value: s.totalExpenses, color: RED },
                         ].map(row => (
                           <div key={row.label}>
                             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
@@ -858,7 +858,7 @@ export default function Reports() {
                           border: `1.5px solid ${s.netBalance >= 0 ? "#bbf7d0" : "#fecaca"}`,
                           marginTop: 2,
                         }}>
-                          <div style={{ fontSize: 11, color: "#6b7280", marginBottom: 4 }}>Solde net du mois</div>
+                          <div style={{ fontSize: 11, color: "#6b7280", marginBottom: 4 }}>Saldo neto del mes</div>
                           <div style={{ fontSize: 22, fontWeight: 800, color: s.netBalance >= 0 ? "#16a34a" : RED }}>
                             {fmt(s.netBalance, currency)}
                           </div>
@@ -868,7 +868,7 @@ export default function Reports() {
                             </div>
                           )}
                           <div style={{ fontSize: 12, color: "#6b7280", marginTop: 4 }}>
-                            {s.netBalance >= 0 ? "Bénéfice ce mois-ci 🎉" : "Déficit ce mois-ci"}
+                            {s.netBalance >= 0 ? "Ganancia este mes 🎉" : "Déficit este mes"}
                           </div>
                         </div>
                       </div>
@@ -885,7 +885,7 @@ export default function Reports() {
                     display: "flex", alignItems: "center", justifyContent: "space-between",
                   }}>
                     <h2 style={{ fontSize: 15, fontWeight: 700, margin: 0, color: "#111" }}>
-                      Toutes les transactions
+                      Todas las transacciones
                     </h2>
                     <span style={{ fontSize: 12, color: "#6b7280", background: "#f9fafb", borderRadius: 8, padding: "3px 10px" }}>
                       {data?.transactions.length ?? 0} op.
@@ -896,7 +896,7 @@ export default function Reports() {
                     <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
                       <thead>
                         <tr style={{ background: "#f9fafb" }}>
-                          {["Date", "Catégorie", "Moyen de paiement", "Montant"].map(h => (
+                          {["Fecha", "Categoría", "Medio de pago", "Monto"].map(h => (
                             <th key={h} style={{
                               padding: "10px 16px", textAlign: "left",
                               fontSize: 11, fontWeight: 600, color: "#6b7280",

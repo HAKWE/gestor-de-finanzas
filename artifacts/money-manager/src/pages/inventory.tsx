@@ -83,7 +83,7 @@ export default function Inventory() {
       <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-4xl mx-auto w-full">
         <div className="flex flex-col gap-1">
           <h1 className="text-3xl font-bold tracking-tight">{t("nav.inventory")}</h1>
-          <p className="text-muted-foreground">Suivez votre stock simplement.</p>
+          <p className="text-muted-foreground">Gestiona tu inventario fácilmente.</p>
         </div>
 
         <div className="bg-card rounded-2xl border shadow-sm overflow-hidden">

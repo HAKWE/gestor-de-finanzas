@@ -26,20 +26,20 @@ const MUTED       = "#6b7280";
 const LABEL       = "#374151";
 
 const CATEGORIES = [
-  { label: "Vente produit",       Icon: ShoppingBag },
-  { label: "Service coiffeuse",   Icon: Scissors    },
-  { label: "Achat stock",         Icon: Package     },
-  { label: "Transport",           Icon: Car         },
-  { label: "Alimentation",        Icon: Utensils    },
-  { label: "Loyer",               Icon: Home        },
-  { label: "Revenu Orange Money", Icon: Smartphone  },
-  { label: "Téléphone",           Icon: Phone       },
-  { label: "Beauté/Coiffure",     Icon: Sparkles    },
-  { label: "Divers",              Icon: LayoutGrid  },
-  { label: "Autre",               Icon: HelpCircle  },
+  { label: "Venta de producto",    Icon: ShoppingBag },
+  { label: "Servicio / consulta",  Icon: Scissors    },
+  { label: "Compra de inventario", Icon: Package     },
+  { label: "Transporte",           Icon: Car         },
+  { label: "Alimentación",         Icon: Utensils    },
+  { label: "Alquiler",             Icon: Home        },
+  { label: "Ingreso Mercado Pago", Icon: Smartphone  },
+  { label: "Teléfono",             Icon: Phone       },
+  { label: "Belleza / Estética",   Icon: Sparkles    },
+  { label: "Varios",               Icon: LayoutGrid  },
+  { label: "Otro",                 Icon: HelpCircle  },
 ];
 
-const PAYMENT_METHODS = ["Orange Money", "Wave", "MTN MoMo", "Espèces", "Autre"];
+const PAYMENT_METHODS = ["Mercado Pago", "Nequi", "OXXO Pay", "Efectivo", "Tarjeta", "Otro"];
 
 interface FormState {
   type: "income" | "expense";
@@ -71,10 +71,10 @@ export default function NewTransaction() {
   const validate = () => {
     const e: typeof errors = {};
     if (!form.amount || isNaN(Number(form.amount)) || Number(form.amount) <= 0)
-      e.amount = "Montant invalide";
-    if (!form.category)      e.category      = "Choisissez une catégorie";
-    if (!form.paymentMethod) e.paymentMethod = "Choisissez un moyen de paiement";
-    if (!form.date)          e.date          = "Date requise";
+      e.amount = "Monto inválido";
+    if (!form.category)      e.category      = "Elige una categoría";
+    if (!form.paymentMethod) e.paymentMethod = "Elige un método de pago";
+    if (!form.date)          e.date          = "Fecha requerida";
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -84,7 +84,7 @@ export default function NewTransaction() {
     createTx.mutate(
       {
         data: {
-          type: form.type, amount: Number(form.amount), currency: "XOF",
+          type: form.type, amount: Number(form.amount), currency: "COP",
           category: form.category, paymentMethod: form.paymentMethod,
           referenceNote: form.referenceNote || undefined, date: form.date,
         },
@@ -141,7 +141,7 @@ export default function NewTransaction() {
             border: "none", cursor: "pointer", color: MUTED, fontSize: 14,
             marginBottom: 24, padding: 0, fontFamily: "inherit",
           }}>
-            <ArrowLeft size={15} /> Retour aux transactions
+            <ArrowLeft size={15} /> Volver a transacciones
           </button>
         </Link>
 
@@ -156,8 +156,8 @@ export default function NewTransaction() {
             <SectionLabel>Type</SectionLabel>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
               {([
-                { val: "income"  as const, label: "Revenu",  Icon: TrendingUp   },
-                { val: "expense" as const, label: "Dépense", Icon: TrendingDown },
+                { val: "income"  as const, label: "Ingreso", Icon: TrendingUp   },
+                { val: "expense" as const, label: "Gasto",   Icon: TrendingDown },
               ] as const).map(({ val, label, Icon }) => {
                 const active = form.type === val;
                 return (
@@ -181,7 +181,7 @@ export default function NewTransaction() {
 
           {/* ── 2 · Category grid ── */}
           <section>
-            <SectionLabel>Catégorie</SectionLabel>
+            <SectionLabel>Categoría</SectionLabel>
             <div className="nt-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 9 }}>
               {CATEGORIES.map(({ label, Icon }) => {
                 const sel = form.category === label;
@@ -223,7 +223,7 @@ export default function NewTransaction() {
 
           {/* ── 3 · Amount ── */}
           <section>
-            <SectionLabel>Montant</SectionLabel>
+            <SectionLabel>Monto</SectionLabel>
             <div style={{ position: "relative" }}>
               <Input
                 type="number" min="0" placeholder="0"
@@ -239,14 +239,14 @@ export default function NewTransaction() {
               <span style={{
                 position: "absolute", right: 16, top: "50%", transform: "translateY(-50%)",
                 fontSize: 13, fontWeight: 700, color: MUTED, letterSpacing: "0.04em",
-              }}>FCFA</span>
+              }}>COP</span>
             </div>
             {errors.amount && <ErrorMsg>{errors.amount}</ErrorMsg>}
           </section>
 
           {/* ── 4 · Payment method ── */}
           <section>
-            <SectionLabel>Moyen de paiement</SectionLabel>
+            <SectionLabel>Método de pago</SectionLabel>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
               {PAYMENT_METHODS.map(pm => {
                 const sel = form.paymentMethod === pm;
@@ -295,11 +295,11 @@ export default function NewTransaction() {
               display: "flex", alignItems: "center", gap: 6,
             }}>
               <StickyNote size={14} color={MUTED} />
-              Note / Référence
-              <span style={{ fontWeight: 400, color: MUTED }}>(optionnel)</span>
+              Nota / Referencia
+              <span style={{ fontWeight: 400, color: MUTED }}>(opcional)</span>
             </p>
             <textarea
-              placeholder="Client, motif, numéro de reçu..."
+              placeholder="Cliente, motivo, número de recibo..."
               value={form.referenceNote}
               onChange={e => set("referenceNote", e.target.value)}
               rows={2}
@@ -330,7 +330,7 @@ export default function NewTransaction() {
             {createTx.isPending
               ? <Loader2 size={20} style={{ animation: "spin 1s linear infinite" }} />
               : <Plus size={20} />}
-            Enregistrer la transaction
+            Guardar transacción
           </button>
 
         </div>

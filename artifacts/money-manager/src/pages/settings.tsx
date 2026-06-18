@@ -19,7 +19,7 @@ export default function Settings() {
         <div>
           <h1 style={{ fontSize: 26, fontWeight: 800, margin: 0, color: "#111" }}>{t("nav.settings")}</h1>
           <p style={{ color: "#6b7280", marginTop: 4, fontSize: 14 }}>
-            {fr ? "Personnalisez votre expérience." : "Customize your experience."}
+            {fr ? "Personaliza tu experiencia." : "Customize your experience."}
           </p>
         </div>
 
@@ -30,23 +30,23 @@ export default function Settings() {
         }}>
           <div style={{ padding: "18px 20px", borderBottom: "1px solid #f5f3f0" }}>
             <div style={{ fontWeight: 700, fontSize: 15, color: "#111" }}>
-              {fr ? "Préférences" : "Preferences"}
+              {fr ? "Preferencias" : "Preferences"}
             </div>
             <div style={{ fontSize: 13, color: "#9ca3af", marginTop: 2 }}>
-              {fr ? "Gérez la langue et l'affichage." : "Manage language and display."}
+              {fr ? "Gestiona el idioma y la visualización." : "Manage language and display."}
             </div>
           </div>
           <div style={{ padding: "20px" }}>
             <Label style={{ fontSize: 13, fontWeight: 600, color: "#374151" }}>
-              {fr ? "Langue de l'application" : "App language"}
+              {fr ? "Idioma de la aplicación" : "App language"}
             </Label>
             <div style={{ marginTop: 8 }}>
-              <Select value={language} onValueChange={(val: "fr" | "en") => setLanguage(val)}>
+              <Select value={language} onValueChange={(val: "es" | "en") => setLanguage(val)}>
                 <SelectTrigger>
-                  <SelectValue placeholder={fr ? "Choisir la langue" : "Choose language"} />
+                  <SelectValue placeholder={fr ? "Elige el idioma" : "Choose language"} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="fr">🇫🇷 Français</SelectItem>
+                  <SelectItem value="es">🇪🇸 Español</SelectItem>
                   <SelectItem value="en">🇬🇧 English</SelectItem>
                 </SelectContent>
               </Select>
@@ -71,11 +71,11 @@ export default function Settings() {
             </div>
             <div>
               <div style={{ fontWeight: 700, fontSize: 15, color: "#111" }}>
-                {fr ? "Application mobile" : "Mobile app"}
+                {fr ? "Aplicación móvil" : "Mobile app"}
               </div>
               <div style={{ fontSize: 13, color: "#9ca3af", marginTop: 1 }}>
                 {fr
-                  ? "Installez l'app pour y accéder sans navigateur."
+                  ? "Instala la app para acceder sin navegador."
                   : "Install the app to access it without a browser."}
               </div>
             </div>
@@ -85,7 +85,7 @@ export default function Settings() {
               <div style={{ display: "flex", alignItems: "center", gap: 10, color: "#16a34a" }}>
                 <CheckCircle2 style={{ width: 20, height: 20, flexShrink: 0 }} />
                 <span style={{ fontSize: 14, fontWeight: 600 }}>
-                  {fr ? "Application déjà installée sur cet appareil." : "App already installed on this device."}
+                  {fr ? "La app ya está instalada en este dispositivo." : "App already installed on this device."}
                 </span>
               </div>
             ) : canInstall ? (
@@ -95,15 +95,15 @@ export default function Settings() {
                 cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
               }}>
                 <Smartphone style={{ width: 18, height: 18 }} />
-                {fr ? "Installer l'application" : "Install app"}
+                {fr ? "Instalar la aplicación" : "Install app"}
               </button>
             ) : (
               <div style={{ fontSize: 13, color: "#6b7280", lineHeight: 1.7 }}>
                 <p style={{ fontWeight: 600, color: "#374151", marginBottom: 8 }}>
-                  {fr ? "Comment installer :" : "How to install:"}
+                  {fr ? "Cómo instalar:" : "How to install:"}
                 </p>
-                <p><strong>iOS (Safari) :</strong> {fr ? "Bouton Partager" : "Share button"} ⬆ → {fr ? "Sur l'écran d'accueil" : "Add to Home Screen"}</p>
-                <p><strong>Android (Chrome) :</strong> Menu ⋮ → {fr ? "Ajouter à l'écran d'accueil" : "Add to Home screen"}</p>
+                <p><strong>iOS (Safari):</strong> {fr ? "Botón Compartir" : "Share button"} ⬆ → {fr ? "Agregar a inicio" : "Add to Home Screen"}</p>
+                <p><strong>Android (Chrome):</strong> Menú ⋮ → {fr ? "Agregar a pantalla de inicio" : "Add to Home screen"}</p>
               </div>
             )}
           </div>
@@ -115,10 +115,10 @@ export default function Settings() {
           padding: "16px 20px", display: "flex", flexWrap: "wrap", gap: 16,
         }}>
           {[
-            { href: "mailto:support@mobilemoneymanager.africa", label: fr ? "Contact & Support" : "Contact & Support" },
-            { href: "/confidentialite", label: fr ? "Politique de confidentialité" : "Privacy Policy" },
-            { href: "/conditions", label: fr ? "Conditions d'utilisation" : "Terms of Service" },
-            { href: "/mentions-legales", label: fr ? "Mentions légales" : "Legal notice" },
+            { href: "mailto:support@gestordefinanzas.app", label: fr ? "Contacto y Soporte" : "Contact & Support" },
+            { href: "/confidentialite", label: fr ? "Política de privacidad" : "Privacy Policy" },
+            { href: "/conditions", label: fr ? "Términos de uso" : "Terms of Service" },
+            { href: "/mentions-legales", label: fr ? "Aviso legal" : "Legal notice" },
           ].map(({ href, label }) => (
             <a key={label} href={href} style={{ fontSize: 13, color: "#9ca3af", textDecoration: "none" }}>
               {label}

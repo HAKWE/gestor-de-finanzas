@@ -60,9 +60,9 @@ export default function Import() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const pdfInputRef = useRef<HTMLInputElement>(null);
 
-  const categoriesFr = ["Vente produit", "Service coiffure", "Achat stock", "Transport", "Orange Money reçu", "Wave reçu", "MTN MoMo reçu", "Nourriture", "Loyer", "Eau/Électricité", "Autre"];
+  const categoriesFr = ["Venta producto", "Servicio belleza", "Compra stock", "Transporte", "Mercado Pago recibido", "Nequi recibido", "Yape recibido", "Alimentación", "Alquiler", "Agua/Electricidad", "Otro"];
   const categoriesEn = ["Product sale", "Beauty service", "Stock purchase", "Transport", "Orange Money received", "Wave received", "MTN MoMo received", "Food", "Rent", "Water/Electricity", "Other"];
-  const categories = language === "fr" ? categoriesFr : categoriesEn;
+  const categories = language !== "en" ? categoriesFr : categoriesEn;
   const paymentMethods = ["Orange Money", "Wave", "MTN MoMo", "Cash", "Other"];
 
   // --- SMS Logic ---
@@ -118,7 +118,7 @@ export default function Import() {
     queryClient.invalidateQueries({ queryKey: getGetDashboardSummaryQueryKey() });
     queryClient.invalidateQueries({ queryKey: getGetWeeklySummaryQueryKey() });
     
-    toast({ title: language === "fr" ? "Import terminé" : "Import completed", description: `${success} transactions importées.` });
+    toast({ title: language !== "en" ? "Importación completada" : "Import completed", description: `${success} transacciones importadas.` });
     if (success === parsedSms.length) {
       setParsedSms([]);
       setSmsText("");
@@ -197,8 +197,8 @@ export default function Import() {
     queryClient.invalidateQueries({ queryKey: getGetWeeklySummaryQueryKey() });
     
     toast({ 
-      title: language === "fr" ? "Import terminé" : "Import completed", 
-      description: `${success} importées, ${errors} erreurs.` 
+      title: language !== "en" ? "Importación completada" : "Import completed", 
+      description: `${success} importadas, ${errors} errores.` 
     });
   };
 
@@ -223,7 +223,7 @@ export default function Import() {
       setPdfResult(result);
       setPdfRows(result.transactions.map((tx, i) => ({ ...tx, id: `pdf-${i}`, selected: true })));
     } catch (err) {
-      toast({ title: "Erreur PDF", description: language === "fr" ? "Impossible de lire ce fichier PDF." : "Could not read this PDF file.", variant: "destructive" });
+      toast({ title: "Error PDF", description: language !== "en" ? "No se pudo leer este archivo PDF." : "Could not read this PDF file.", variant: "destructive" });
     } finally {
       setIsPdfParsing(false);
     }
@@ -269,8 +269,8 @@ export default function Import() {
     queryClient.invalidateQueries({ queryKey: getGetDashboardSummaryQueryKey() });
     queryClient.invalidateQueries({ queryKey: getGetWeeklySummaryQueryKey() });
     toast({
-      title: language === "fr" ? "Import terminé" : "Import completed",
-      description: `${success} ${language === "fr" ? "importées" : "imported"}${errors > 0 ? `, ${errors} erreurs` : ""}.`,
+      title: language !== "en" ? "Importación completada" : "Import completed",
+      description: `${success} ${language !== "en" ? "importadas" : "imported"}${errors > 0 ? `, ${errors} errores` : ""}.`,
     });
   };
 
@@ -278,9 +278,9 @@ export default function Import() {
     <Layout>
       <div className="max-w-4xl mx-auto w-full space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
         <div className="flex flex-col gap-1">
-          <h1 className="text-3xl font-bold tracking-tight">{language === "fr" ? "Importer des transactions" : "Import Transactions"}</h1>
+          <h1 className="text-3xl font-bold tracking-tight">{language !== "en" ? "Importar transacciones" : "Import Transactions"}</h1>
           <p className="text-muted-foreground">
-            {language === "fr" ? "Importez depuis vos SMS, un fichier CSV ou un relevé PDF." : "Import from SMS, a CSV file, or a PDF statement."}
+            {language !== "en" ? "Importa desde tus SMS, un archivo CSV o un extracto PDF." : "Import from SMS, a CSV file, or a PDF statement."}
           </p>
         </div>
 
@@ -293,23 +293,23 @@ export default function Import() {
           
           <TabsContent value="sms" className="space-y-6">
             <div className="bg-card p-6 rounded-2xl border shadow-sm space-y-4">
-              <Label className="text-lg font-semibold">{language === "fr" ? "Collez vos SMS" : "Paste your SMS messages"}</Label>
+              <Label className="text-lg font-semibold">{language !== "en" ? "Pega tus SMS" : "Paste your SMS messages"}</Label>
               <Textarea 
-                placeholder={language === "fr" ? "Collez ici les SMS de notification (Orange Money, Wave, etc.)\nSéparés par un retour à la ligne." : "Paste payment notification SMS here\nSeparated by newlines."}
+                placeholder={language !== "en" ? "Pega aquí los SMS de notificación (Mercado Pago, Nequi, etc.)\nSeparados por salto de línea." : "Paste payment notification SMS here\nSeparated by newlines."}
                 className="min-h-[200px] text-base"
                 value={smsText}
                 onChange={(e) => setSmsText(e.target.value)}
               />
               <Button onClick={handleAnalyzeSms} disabled={!smsText || isParsingSms} size="lg" className="w-full rounded-xl">
                 {isParsingSms && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
-                {language === "fr" ? "Analyser" : "Analyze"}
+                {language !== "en" ? "Analizar" : "Analyze"}
               </Button>
             </div>
 
             {parsedSms.length > 0 && (
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-xl font-bold">{parsedSms.length} {language === "fr" ? "transactions détectées" : "transactions detected"}</h3>
+                  <h3 className="text-xl font-bold">{parsedSms.length} {language !== "en" ? "transacciones detectadas" : "transactions detected"}</h3>
                 </div>
                 
                 <div className="space-y-4">
@@ -319,9 +319,9 @@ export default function Import() {
                         <div className="flex items-start justify-between gap-4">
                           <div className="flex flex-wrap items-center gap-2">
                             <Badge variant={tx.confidence === 'high' ? 'default' : tx.confidence === 'medium' ? 'secondary' : 'destructive'} className={tx.confidence === 'high' ? 'bg-green-500 hover:bg-green-600 text-white' : tx.confidence === 'medium' ? 'bg-yellow-500 hover:bg-yellow-600 text-yellow-950' : ''}>
-                              {tx.confidence === 'high' ? (language === "fr" ? "Haute confiance" : "High confidence") : 
-                               tx.confidence === 'medium' ? (language === "fr" ? "Confiance moyenne" : "Medium confidence") : 
-                               (language === "fr" ? "Faible confiance" : "Low confidence")}
+                              {tx.confidence === 'high' ? (language !== "en" ? "Alta confianza" : "High confidence") : 
+                               tx.confidence === 'medium' ? (language !== "en" ? "Confianza media" : "Medium confidence") : 
+                               (language !== "en" ? "Baja confianza" : "Low confidence")}
                             </Badge>
                             {tx.detectedService && (
                               <Badge variant="outline">{tx.detectedService}</Badge>
@@ -338,17 +338,17 @@ export default function Import() {
                             <Select value={tx.type} onValueChange={(val) => updateSmsTx(tx.id, 'type', val)}>
                               <SelectTrigger><SelectValue /></SelectTrigger>
                               <SelectContent>
-                                <SelectItem value="income">{language === "fr" ? "Revenu" : "Income"}</SelectItem>
-                                <SelectItem value="expense">{language === "fr" ? "Dépense" : "Expense"}</SelectItem>
+                                <SelectItem value="income">{language !== "en" ? "Ingreso" : "Income"}</SelectItem>
+                                <SelectItem value="expense">{language !== "en" ? "Gasto" : "Expense"}</SelectItem>
                               </SelectContent>
                             </Select>
                           </div>
                           <div className="space-y-2">
-                            <Label>{language === "fr" ? "Montant" : "Amount"}</Label>
+                            <Label>{language !== "en" ? "Monto" : "Amount"}</Label>
                             <Input type="number" value={tx.amount || ""} onChange={(e) => updateSmsTx(tx.id, 'amount', e.target.value)} />
                           </div>
                           <div className="space-y-2">
-                            <Label>{language === "fr" ? "Devise" : "Currency"}</Label>
+                            <Label>{language !== "en" ? "Moneda" : "Currency"}</Label>
                             <Select value={tx.currency} onValueChange={(val) => updateSmsTx(tx.id, 'currency', val)}>
                               <SelectTrigger><SelectValue /></SelectTrigger>
                               <SelectContent>
@@ -358,9 +358,9 @@ export default function Import() {
                             </Select>
                           </div>
                           <div className="space-y-2">
-                            <Label>{language === "fr" ? "Catégorie" : "Category"}</Label>
+                            <Label>{language !== "en" ? "Categoría" : "Category"}</Label>
                             <Select value={tx.category} onValueChange={(val) => updateSmsTx(tx.id, 'category', val)}>
-                              <SelectTrigger><SelectValue placeholder="Choisir..." /></SelectTrigger>
+                              <SelectTrigger><SelectValue placeholder="Elegir..." /></SelectTrigger>
                               <SelectContent>
                                 {categories.map((cat) => (
                                   <SelectItem key={cat} value={cat}>{cat}</SelectItem>
@@ -369,9 +369,9 @@ export default function Import() {
                             </Select>
                           </div>
                           <div className="space-y-2">
-                            <Label>{language === "fr" ? "Méthode" : "Method"}</Label>
+                            <Label>{language !== "en" ? "Método" : "Method"}</Label>
                             <Select value={tx.paymentMethod} onValueChange={(val) => updateSmsTx(tx.id, 'paymentMethod', val)}>
-                              <SelectTrigger><SelectValue placeholder="Choisir..." /></SelectTrigger>
+                              <SelectTrigger><SelectValue placeholder="Elegir..." /></SelectTrigger>
                               <SelectContent>
                                 {paymentMethods.map((pm) => (
                                   <SelectItem key={pm} value={pm}>{pm}</SelectItem>
@@ -397,21 +397,21 @@ export default function Import() {
                   {isImportingSms || smsSuccessCount > 0 ? (
                     <div className="space-y-2">
                       <div className="flex justify-between text-sm">
-                        <span>{language === "fr" ? "Progression" : "Progress"}</span>
+                        <span>{language !== "en" ? "Progreso" : "Progress"}</span>
                         <span className="font-bold">{smsProgress}%</span>
                       </div>
                       <Progress value={smsProgress} className="h-2" />
                       {smsSuccessCount > 0 && (
                         <div className="flex items-center gap-2 text-green-600 dark:text-green-500 mt-2">
                           <CheckCircle className="h-5 w-5" />
-                          <span>{smsSuccessCount} {language === "fr" ? "transactions importées" : "transactions imported"}</span>
+                          <span>{smsSuccessCount} {language !== "en" ? "transacciones importadas" : "transactions imported"}</span>
                         </div>
                       )}
                     </div>
                   ) : null}
                   <Button onClick={handleImportSms} disabled={isImportingSms || parsedSms.length === 0} size="lg" className="w-full rounded-xl h-14 text-lg">
                     {isImportingSms && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
-                    {language === "fr" ? "Tout importer" : "Import All"}
+                    {language !== "en" ? "Importar todo" : "Import All"}
                   </Button>
                 </div>
               </div>
@@ -424,9 +424,9 @@ export default function Import() {
                 <FileUp className="h-8 w-8" />
               </div>
               <div>
-                <h3 className="text-xl font-bold mb-2">{language === "fr" ? "Sélectionner un fichier CSV" : "Select CSV file"}</h3>
+                <h3 className="text-xl font-bold mb-2">{language !== "en" ? "Seleccionar archivo CSV" : "Select CSV file"}</h3>
                 <p className="text-muted-foreground mb-6">
-                  {language === "fr" ? "Relevé bancaire ou export Mobile Money" : "Bank statement or Mobile Money export"}
+                  {language !== "en" ? "Estado de cuenta o exportación de billetera móvil" : "Bank statement or Mobile Money export"}
                 </p>
                 <input 
                   type="file" 
@@ -436,7 +436,7 @@ export default function Import() {
                   onChange={handleFileSelect} 
                 />
                 <Button onClick={() => fileInputRef.current?.click()} size="lg" variant="outline" className="rounded-xl">
-                  {language === "fr" ? "Parcourir" : "Browse files"}
+                  {language !== "en" ? "Explorar" : "Browse files"}
                 </Button>
               </div>
               {csvFile && (
@@ -451,17 +451,17 @@ export default function Import() {
 
             {parsedCsv && mappedCsvRows.length === 0 && (
               <div className="bg-card p-6 rounded-2xl border shadow-sm space-y-6">
-                <h3 className="text-xl font-bold">{language === "fr" ? "Mappage des colonnes" : "Column Mapping"}</h3>
+                <h3 className="text-xl font-bold">{language !== "en" ? "Mapeo de columnas" : "Column Mapping"}</h3>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
                   {[
                     { key: "date", label: "Date" },
-                    { key: "amount", label: language === "fr" ? "Montant" : "Amount" },
-                    { key: "type", label: "Type (Revenu/Dépense)" },
+                    { key: "amount", label: language !== "en" ? "Monto" : "Amount" },
+                    { key: "type", label: "Tipo (Ingreso/Gasto)" },
                     { key: "description", label: "Description" },
                     { key: "reference", label: "Reference" },
-                    { key: "debit", label: "Débit (Optionnel)" },
-                    { key: "credit", label: "Crédit (Optionnel)" },
+                    { key: "debit", label: "Débito (Opcional)" },
+                    { key: "credit", label: "Crédito (Opcional)" },
                   ].map(field => (
                     <div key={field.key} className="space-y-2">
                       <Label>{field.label}</Label>
@@ -469,9 +469,9 @@ export default function Import() {
                         value={mapping[field.key as keyof ColumnMapping] || "none"} 
                         onValueChange={(val) => handleUpdateMapping(field.key as keyof ColumnMapping, val)}
                       >
-                        <SelectTrigger><SelectValue placeholder="Ignorer" /></SelectTrigger>
+                        <SelectTrigger><SelectValue placeholder="Ignorar" /></SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="none">-- {language === "fr" ? "Ignorer" : "Ignore"} --</SelectItem>
+                          <SelectItem value="none">-- {language !== "en" ? "Ignorar" : "Ignore"} --</SelectItem>
                           {parsedCsv.headers.map(h => (
                             <SelectItem key={h} value={h}>{h}</SelectItem>
                           ))}
@@ -482,7 +482,7 @@ export default function Import() {
                 </div>
                 
                 <Button onClick={handlePreviewCsv} size="lg" className="w-full rounded-xl">
-                  {language === "fr" ? "Prévisualiser" : "Preview"}
+                  {language !== "en" ? "Vista previa" : "Preview"}
                 </Button>
               </div>
             )}
@@ -491,7 +491,7 @@ export default function Import() {
               <div className="space-y-4">
                 <div className="bg-card rounded-2xl border shadow-sm overflow-hidden">
                   <div className="p-4 border-b bg-muted/30">
-                    <h3 className="font-bold">{mappedCsvRows.length} {language === "fr" ? "lignes prêtes" : "rows ready"}</h3>
+                    <h3 className="font-bold">{mappedCsvRows.length} {language !== "en" ? "filas listas" : "rows ready"}</h3>
                   </div>
                   <div className="overflow-x-auto">
                     <Table>
@@ -500,8 +500,8 @@ export default function Import() {
                           <TableHead className="w-[50px]"></TableHead>
                           <TableHead>Date</TableHead>
                           <TableHead>Type</TableHead>
-                          <TableHead>{language === "fr" ? "Montant" : "Amount"}</TableHead>
-                          <TableHead>{language === "fr" ? "Catégorie" : "Category"}</TableHead>
+                          <TableHead>{language !== "en" ? "Monto" : "Amount"}</TableHead>
+                          <TableHead>{language !== "en" ? "Categoría" : "Category"}</TableHead>
                           <TableHead>Reference</TableHead>
                         </TableRow>
                       </TableHeader>
@@ -530,7 +530,7 @@ export default function Import() {
                   </div>
                   {mappedCsvRows.length > 20 && (
                     <div className="p-4 text-center text-sm text-muted-foreground border-t">
-                      {language === "fr" ? "Et" : "And"} {mappedCsvRows.length - 20} {language === "fr" ? "autres lignes..." : "more rows..."}
+                      {language !== "en" ? "Y" : "And"} {mappedCsvRows.length - 20} {language !== "en" ? "filas más..." : "more rows..."}
                     </div>
                   )}
                 </div>
@@ -539,7 +539,7 @@ export default function Import() {
                   {isImportingCsv || csvSuccessCount > 0 ? (
                     <div className="space-y-2">
                       <div className="flex justify-between text-sm">
-                        <span>{language === "fr" ? "Progression" : "Progress"}</span>
+                        <span>{language !== "en" ? "Progreso" : "Progress"}</span>
                         <span className="font-bold">{csvProgress}%</span>
                       </div>
                       <Progress value={csvProgress} className="h-2" />
@@ -548,12 +548,12 @@ export default function Import() {
                           {csvSuccessCount > 0 && (
                             <div className="flex items-center gap-2 text-green-600 dark:text-green-500">
                               <CheckCircle className="h-5 w-5" />
-                              <span>{csvSuccessCount} {language === "fr" ? "succès" : "success"}</span>
+                              <span>{csvSuccessCount} {language !== "en" ? "éxito" : "success"}</span>
                             </div>
                           )}
                           {csvErrorCount > 0 && (
                             <div className="flex items-center gap-2 text-destructive">
-                              <span>{csvErrorCount} {language === "fr" ? "erreurs" : "errors"}</span>
+                              <span>{csvErrorCount} {language !== "en" ? "errores" : "errors"}</span>
                             </div>
                           )}
                         </div>
@@ -567,7 +567,7 @@ export default function Import() {
                     className="w-full rounded-xl h-14 text-lg"
                   >
                     {isImportingCsv && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
-                    {language === "fr" ? "Importer" : "Import"} {mappedCsvRows.filter(r => r.selected).length} transactions
+                    {language !== "en" ? "Importar" : "Import"} {mappedCsvRows.filter(r => r.selected).length} transactions
                   </Button>
                 </div>
               </div>
@@ -581,16 +581,16 @@ export default function Import() {
               </div>
               <div>
                 <h3 className="text-xl font-bold mb-2">
-                  {language === "fr" ? "Sélectionner un relevé PDF" : "Select a PDF statement"}
+                  {language !== "en" ? "Seleccionar extracto PDF" : "Select a PDF statement"}
                 </h3>
                 <p className="text-muted-foreground mb-1">
-                  {language === "fr"
-                    ? "Relevé bancaire, historique Orange Money, Wave ou MTN MoMo"
+                  {language !== "en"
+                    ? "Estado de cuenta bancaria, historial Mercado Pago, Nequi o Yape"
                     : "Bank statement, Orange Money, Wave or MTN MoMo history"}
                 </p>
                 <p className="text-xs text-muted-foreground mb-6">
-                  {language === "fr"
-                    ? "Le fichier est analysé directement sur votre appareil, aucune donnée n'est envoyée."
+                  {language !== "en"
+                    ? "El archivo se analiza directamente en tu dispositivo, no se envía ningún dato."
                     : "The file is processed directly on your device — nothing is uploaded."}
                 </p>
                 <input
@@ -603,8 +603,8 @@ export default function Import() {
                 <Button onClick={() => pdfInputRef.current?.click()} size="lg" variant="outline" className="rounded-xl" disabled={isPdfParsing}>
                   {isPdfParsing ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : null}
                   {isPdfParsing
-                    ? (language === "fr" ? "Analyse en cours..." : "Analyzing...")
-                    : (language === "fr" ? "Parcourir" : "Browse files")}
+                    ? (language !== "en" ? "Analizando..." : "Analyzing...")
+                    : (language !== "en" ? "Explorar" : "Browse files")}
                 </Button>
               </div>
               {pdfFile && isPdfParsing && pdfParseStage && (
@@ -622,7 +622,7 @@ export default function Import() {
                   {pdfResult && (
                     <>
                       <Badge variant="secondary">{pdfResult.detectedFormat}</Badge>
-                      <Badge variant="outline">{pdfResult.pageCount} {language === "fr" ? "pages" : "pages"}</Badge>
+                      <Badge variant="outline">{pdfResult.pageCount} {language !== "en" ? "pages" : "pages"}</Badge>
                       {pdfResult.ocrUsed && (
                         <Badge variant="outline" className="text-blue-600 border-blue-300">OCR</Badge>
                       )}
@@ -637,23 +637,23 @@ export default function Import() {
                 {pdfResult.rawText.trim().length === 0 ? (
                   <div className="text-center space-y-2">
                     <p className="font-semibold text-destructive">
-                      {language === "fr" ? "PDF scanné détecté" : "Scanned PDF detected"}
+                      {language !== "en" ? "PDF escaneado detectado" : "Scanned PDF detected"}
                     </p>
                     <p className="text-muted-foreground text-sm">
-                      {language === "fr"
-                        ? "Ce PDF est une image — aucun texte ne peut être extrait automatiquement. Retapez les transactions manuellement ou utilisez l'onglet SMS."
+                      {language !== "en"
+                        ? "Este PDF es una imagen — no se puede extraer texto automáticamente. Ingresa las transacciones manualmente o usa la pestaña SMS."
                         : "This PDF is an image — no text can be extracted automatically. Enter transactions manually or use the SMS tab."}
                     </p>
                   </div>
                 ) : (
                   <>
                     <p className="text-muted-foreground text-center text-sm">
-                      {language === "fr"
-                        ? "Aucune transaction détectée. Voici le texte brut extrait — copiez-le dans l'onglet SMS si c'est un relevé mobile money."
+                      {language !== "en"
+                        ? "No se detectaron transacciones. Aquí está el texto extraído — pégalo en la pestaña SMS si es un extracto de billetera móvil."
                         : "No transactions detected. Here is the raw extracted text — paste it into the SMS tab if it's a mobile money statement."}
                     </p>
                     <div className="flex items-center justify-between text-xs text-muted-foreground px-1">
-                      <span>{pdfResult.rawText.length} {language === "fr" ? "caractères extraits" : "characters extracted"}, {pdfResult.reconstructedLines.length} {language === "fr" ? "lignes" : "lines"}</span>
+                      <span>{pdfResult.rawText.length} {language !== "en" ? "caracteres extraídos" : "characters extracted"}, {pdfResult.reconstructedLines.length} {language !== "en" ? "líneas" : "lines"}</span>
                       <Button
                         size="sm"
                         variant="ghost"
@@ -662,7 +662,7 @@ export default function Import() {
                           navigator.clipboard.writeText(pdfResult.reconstructedLines.join("\n"));
                         }}
                       >
-                        {language === "fr" ? "Copier le texte" : "Copy text"}
+                        {language !== "en" ? "Copiar texto" : "Copy text"}
                       </Button>
                     </div>
                     <div className="bg-muted rounded-xl p-4 max-h-64 overflow-y-auto">
@@ -680,7 +680,7 @@ export default function Import() {
                 <div className="bg-card rounded-2xl border shadow-sm overflow-hidden">
                   <div className="p-4 border-b bg-muted/30 flex items-center justify-between">
                     <h3 className="font-bold">
-                      {pdfRows.filter(r => r.selected).length} / {pdfRows.length} {language === "fr" ? "transactions sélectionnées" : "transactions selected"}
+                      {pdfRows.filter(r => r.selected).length} / {pdfRows.length} {language !== "en" ? "transacciones seleccionadas" : "transactions selected"}
                     </h3>
                     <Button
                       variant="ghost"
@@ -690,7 +690,7 @@ export default function Import() {
                         return prev.map(r => ({ ...r, selected: !allSelected }));
                       })}
                     >
-                      {language === "fr" ? "Tout sélectionner / désélectionner" : "Select / deselect all"}
+                      {language !== "en" ? "Seleccionar / deseleccionar todo" : "Select / deselect all"}
                     </Button>
                   </div>
                   <div className="overflow-x-auto">
@@ -700,9 +700,9 @@ export default function Import() {
                           <TableHead className="w-[50px]"></TableHead>
                           <TableHead>Date</TableHead>
                           <TableHead>Type</TableHead>
-                          <TableHead>{language === "fr" ? "Montant" : "Amount"}</TableHead>
-                          <TableHead>{language === "fr" ? "Devise" : "Currency"}</TableHead>
-                          <TableHead>{language === "fr" ? "Catégorie" : "Category"}</TableHead>
+                          <TableHead>{language !== "en" ? "Monto" : "Amount"}</TableHead>
+                          <TableHead>{language !== "en" ? "Moneda" : "Currency"}</TableHead>
+                          <TableHead>{language !== "en" ? "Categoría" : "Category"}</TableHead>
                           <TableHead>Reference</TableHead>
                         </TableRow>
                       </TableHeader>
@@ -718,7 +718,7 @@ export default function Import() {
                                 variant={row.type === "income" ? "default" : "secondary"}
                                 className={row.type === "income" ? "bg-green-500 hover:bg-green-600 text-white" : ""}
                               >
-                                {row.type === "income" ? (language === "fr" ? "Revenu" : "Income") : (language === "fr" ? "Dépense" : "Expense")}
+                                {row.type === "income" ? (language !== "en" ? "Ingreso" : "Income") : (language !== "en" ? "Gasto" : "Expense")}
                               </Badge>
                             </TableCell>
                             <TableCell className="font-bold">{row.amount.toLocaleString()}</TableCell>
@@ -732,7 +732,7 @@ export default function Import() {
                   </div>
                   {pdfRows.length > 50 && (
                     <div className="p-4 text-center text-sm text-muted-foreground border-t">
-                      {language === "fr" ? "Et" : "And"} {pdfRows.length - 50} {language === "fr" ? "autres lignes..." : "more rows..."}
+                      {language !== "en" ? "Y" : "And"} {pdfRows.length - 50} {language !== "en" ? "filas más..." : "more rows..."}
                     </div>
                   )}
                 </div>
@@ -741,7 +741,7 @@ export default function Import() {
                   {isImportingPdf || pdfSuccessCount > 0 ? (
                     <div className="space-y-2">
                       <div className="flex justify-between text-sm">
-                        <span>{language === "fr" ? "Progression" : "Progress"}</span>
+                        <span>{language !== "en" ? "Progreso" : "Progress"}</span>
                         <span className="font-bold">{pdfProgress}%</span>
                       </div>
                       <Progress value={pdfProgress} className="h-2" />
@@ -750,12 +750,12 @@ export default function Import() {
                           {pdfSuccessCount > 0 && (
                             <div className="flex items-center gap-2 text-green-600 dark:text-green-500">
                               <CheckCircle className="h-5 w-5" />
-                              <span>{pdfSuccessCount} {language === "fr" ? "succès" : "success"}</span>
+                              <span>{pdfSuccessCount} {language !== "en" ? "éxito" : "success"}</span>
                             </div>
                           )}
                           {pdfErrorCount > 0 && (
                             <div className="flex items-center gap-2 text-destructive">
-                              <span>{pdfErrorCount} {language === "fr" ? "erreurs" : "errors"}</span>
+                              <span>{pdfErrorCount} {language !== "en" ? "errores" : "errors"}</span>
                             </div>
                           )}
                         </div>
@@ -769,7 +769,7 @@ export default function Import() {
                     className="w-full rounded-xl h-14 text-lg"
                   >
                     {isImportingPdf && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
-                    {language === "fr" ? "Importer" : "Import"} {pdfRows.filter(r => r.selected).length} transactions
+                    {language !== "en" ? "Importar" : "Import"} {pdfRows.filter(r => r.selected).length} transactions
                   </Button>
                 </div>
               </div>

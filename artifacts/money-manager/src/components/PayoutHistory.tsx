@@ -72,27 +72,27 @@ function fmtAmount(n: number | undefined, currency: string | undefined): string 
 
 const STATUS_MAP: Record<string, { color: string; bg: string; border: string; label: string; icon: React.ReactNode }> = {
   completed: {
-    color: GREEN, bg: "#f0fdf4", border: "#bbf7d0", label: "Complété",
+    color: GREEN, bg: "#f0fdf4", border: "#bbf7d0", label: "Completado",
     icon: <CheckCircle2 style={{ width: 11, height: 11 }} />,
   },
   awaiting_funds: {
-    color: ORANGE, bg: "#fff7ed", border: "#fed7aa", label: "En attente",
+    color: ORANGE, bg: "#fff7ed", border: "#fed7aa", label: "En espera",
     icon: <Clock style={{ width: 11, height: 11 }} />,
   },
   pending: {
-    color: ORANGE, bg: "#fff7ed", border: "#fed7aa", label: "En cours",
+    color: ORANGE, bg: "#fff7ed", border: "#fed7aa", label: "En proceso",
     icon: <Clock style={{ width: 11, height: 11 }} />,
   },
   processing: {
-    color: "#2563eb", bg: "#eff6ff", border: "#bfdbfe", label: "En traitement",
+    color: "#2563eb", bg: "#eff6ff", border: "#bfdbfe", label: "Procesando",
     icon: <Loader2 style={{ width: 11, height: 11 }} />,
   },
   failed: {
-    color: RED, bg: "#fef2f2", border: "#fecaca", label: "Échoué",
+    color: RED, bg: "#fef2f2", border: "#fecaca", label: "Fallido",
     icon: <XCircle style={{ width: 11, height: 11 }} />,
   },
   cancelled: {
-    color: RED, bg: "#fef2f2", border: "#fecaca", label: "Annulé",
+    color: RED, bg: "#fef2f2", border: "#fecaca", label: "Cancelado",
     icon: <XCircle style={{ width: 11, height: 11 }} />,
   },
 };
@@ -129,7 +129,7 @@ function CopyableId({ value }: { value: string }) {
   return (
     <button
       onClick={doCopy}
-      title="Copier l'identifiant"
+      title="Copiar ID"
       style={{
         display: "inline-flex", alignItems: "center", gap: 5,
         background: "#f3f4f6", border: `1px solid ${BORDER}`, borderRadius: 8,
@@ -209,7 +209,7 @@ function TransferCard({ t }: { t: Transfer }) {
         {t.metadata?.paymentType === "subscription_renewal" && (
           <div style={{ marginTop: 10, display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, color: ORANGE, background: "#fff7ed", border: "1px solid #fed7aa", borderRadius: 999, padding: "3px 9px" }}>
             <CheckCircle2 style={{ width: 11, height: 11 }} />
-            Renouvellement d'abonnement
+            Renovación de suscripción
           </div>
         )}
       </div>
@@ -253,7 +253,7 @@ export default function PayoutHistory() {
       setTransfers(list);
       setLastRefresh(new Date());
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : "Erreur de chargement");
+      setError(e instanceof Error ? e.message : "Error al cargar");
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -277,7 +277,7 @@ export default function PayoutHistory() {
     return (
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: 260, gap: 12 }}>
         <Loader2 style={{ width: 32, height: 32, color: ORANGE, animation: "spin 0.9s linear infinite" }} />
-        <p style={{ fontSize: 14, color: "#6b7280", margin: 0 }}>Chargement des virements…</p>
+        <p style={{ fontSize: 14, color: "#6b7280", margin: 0 }}>Cargando transferencias…</p>
         <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       </div>
     );
@@ -288,13 +288,13 @@ export default function PayoutHistory() {
     return (
       <div style={{ background: "#fef2f2", border: "1.5px solid #fecaca", borderRadius: 18, padding: "24px 20px", textAlign: "center", maxWidth: 480, margin: "0 auto" }}>
         <AlertCircle style={{ width: 32, height: 32, color: RED, margin: "0 auto 12px" }} />
-        <p style={{ fontSize: 14, color: "#7f1d1d", fontWeight: 600, margin: "0 0 6px" }}>Impossible de charger l'historique</p>
+        <p style={{ fontSize: 14, color: "#7f1d1d", fontWeight: 600, margin: "0 0 6px" }}>No se pudo cargar el historial</p>
         <p style={{ fontSize: 13, color: "#b91c1c", margin: "0 0 16px" }}>{error}</p>
         <button
           onClick={() => fetchTransfers()}
           style={{ background: RED, color: "#fff", border: "none", borderRadius: 12, padding: "10px 20px", fontWeight: 700, fontSize: 13, cursor: "pointer" }}
         >
-          Réessayer
+          Reintentar
         </button>
       </div>
     );
@@ -307,13 +307,13 @@ export default function PayoutHistory() {
         <div style={{ width: 64, height: 64, borderRadius: 20, background: "#fff7ed", border: "1.5px solid #fed7aa", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>
           <Send style={{ width: 28, height: 28, color: ORANGE }} />
         </div>
-        <h3 style={{ fontSize: 18, fontWeight: 800, color: "#111", margin: "0 0 8px" }}>Aucun virement pour l'instant</h3>
+        <h3 style={{ fontSize: 18, fontWeight: 800, color: "#111", margin: "0 0 8px" }}>Aún no hay pagos</h3>
         <p style={{ fontSize: 14, color: "#6b7280", margin: "0 0 24px", lineHeight: 1.6 }}>
-          Vos paiements Mobile Money apparaîtront ici une fois effectués.
+          Tus pagos de billeteras digitales aparecerán aquí una vez realizados.
         </p>
         <Link href="/payout">
           <button style={{ background: ORANGE, color: "#fff", border: "none", borderRadius: 13, padding: "12px 24px", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>
-            Effectuer un paiement →
+            Realizar un pago →
           </button>
         </Link>
       </div>
@@ -384,7 +384,7 @@ export default function PayoutHistory() {
         <Link href="/payout">
           <span style={{ fontSize: 13, color: ORANGE, fontWeight: 700, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 4 }}>
             <ExternalLink style={{ width: 13, height: 13 }} />
-            Effectuer un nouveau paiement
+            Realizar un nuevo pago
           </span>
         </Link>
       </div>

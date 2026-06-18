@@ -26,38 +26,36 @@ import { useToast } from "@/hooks/use-toast";
    CATEGORIES – icon map
 ──────────────────────────────────────────────────────────── */
 const CATEGORIES: { label: string; Icon: React.ElementType }[] = [
-  { label: "Vente produit",      Icon: ShoppingBag },
-  { label: "Service coiffeuse",  Icon: Scissors    },
-  { label: "Achat stock",        Icon: Package     },
-  { label: "Transport",          Icon: Car         },
-  { label: "Alimentation",       Icon: Utensils    },
-  { label: "Loyer",              Icon: Home        },
-  { label: "Revenu Orange Money",Icon: Smartphone  },
-  { label: "Téléphone",          Icon: Phone       },
-  { label: "Beauté/Coiffure",    Icon: Sparkles    },
-  { label: "Divers",             Icon: LayoutGrid  },
-  { label: "Autre",              Icon: HelpCircle  },
+  { label: "Venta de producto",    Icon: ShoppingBag },
+  { label: "Servicio / consulta",  Icon: Scissors    },
+  { label: "Compra de inventario", Icon: Package     },
+  { label: "Transporte",           Icon: Car         },
+  { label: "Alimentación",         Icon: Utensils    },
+  { label: "Alquiler",             Icon: Home        },
+  { label: "Ingreso Mercado Pago", Icon: Smartphone  },
+  { label: "Teléfono",             Icon: Phone       },
+  { label: "Belleza / Estética",   Icon: Sparkles    },
+  { label: "Varios",               Icon: LayoutGrid  },
+  { label: "Otro",                 Icon: HelpCircle  },
 ];
 
 /* icon for the transaction list rows */
 const LIST_ICON_MAP: Record<string, React.ElementType> = {
-  "Vente produit":       ShoppingBag,
-  "Service coiffeuse":   Scissors,
-  "Service coiffure":    Scissors,
-  "Achat stock":         Package,
-  "Transport":           Car,
-  "Alimentation":        Utensils,
-  "Nourriture":          Utensils,
-  "Loyer":               Home,
-  "Revenu Orange Money": Smartphone,
-  "Orange Money reçu":   Smartphone,
-  "Wave reçu":           Smartphone,
-  "MTN MoMo reçu":       Smartphone,
-  "Téléphone":           Phone,
-  "Beauté/Coiffure":     Sparkles,
-  "Divers":              LayoutGrid,
-  "Eau/Électricité":     Zap,
-  "Autre":               HelpCircle,
+  "Venta de producto":    ShoppingBag,
+  "Servicio / consulta":  Scissors,
+  "Compra de inventario": Package,
+  "Transporte":           Car,
+  "Alimentación":         Utensils,
+  "Alquiler":             Home,
+  "Ingreso Mercado Pago": Smartphone,
+  "Mercado Pago recibido":Smartphone,
+  "Nequi recibido":       Smartphone,
+  "OXXO Pay recibido":    Smartphone,
+  "Teléfono":             Phone,
+  "Belleza / Estética":   Sparkles,
+  "Varios":               LayoutGrid,
+  "Agua/Electricidad":    Zap,
+  "Otro":                 HelpCircle,
 };
 
 function ListCategoryIcon({ category, isIncome }: { category: string; isIncome: boolean }) {
@@ -66,14 +64,15 @@ function ListCategoryIcon({ category, isIncome }: { category: string; isIncome: 
 }
 
 const PAYMENT_METHOD_COLORS: Record<string, string> = {
-  "Orange Money": "bg-orange-100 text-orange-700 border-orange-200",
-  "Wave":         "bg-blue-100 text-blue-700 border-blue-200",
-  "MTN MoMo":     "bg-yellow-100 text-yellow-700 border-yellow-200",
-  "Espèces":      "bg-gray-100 text-gray-700 border-gray-200",
-  "Autre":        "bg-slate-100 text-slate-700 border-slate-200",
+  "Mercado Pago": "bg-emerald-100 text-emerald-700 border-emerald-200",
+  "Nequi":        "bg-blue-100 text-blue-700 border-blue-200",
+  "OXXO Pay":     "bg-orange-100 text-orange-700 border-orange-200",
+  "Efectivo":     "bg-gray-100 text-gray-700 border-gray-200",
+  "Tarjeta":      "bg-violet-100 text-violet-700 border-violet-200",
+  "Otro":         "bg-slate-100 text-slate-700 border-slate-200",
 };
 
-const PAYMENT_METHODS = ["Orange Money", "Wave", "MTN MoMo", "Espèces", "Autre"];
+const PAYMENT_METHODS = ["Mercado Pago", "Nequi", "OXXO Pay", "Efectivo", "Tarjeta", "Otro"];
 
 /* ────────────────────────────────────────────────────────────
    MODAL
@@ -110,10 +109,10 @@ function AddTransactionModal({ onClose }: { onClose: () => void }) {
   const validate = () => {
     const e: typeof errors = {};
     if (!form.amount || isNaN(Number(form.amount)) || Number(form.amount) <= 0)
-      e.amount = "Montant invalide";
-    if (!form.category)      e.category      = "Choisissez une catégorie";
-    if (!form.paymentMethod) e.paymentMethod = "Choisissez un moyen de paiement";
-    if (!form.date)          e.date          = "Date requise";
+      e.amount = "Monto inválido";
+    if (!form.category)      e.category      = "Elige una categoría";
+    if (!form.paymentMethod) e.paymentMethod = "Elige un medio de pago";
+    if (!form.date)          e.date          = "Fecha requerida";
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -121,7 +120,7 @@ function AddTransactionModal({ onClose }: { onClose: () => void }) {
   const handleSubmit = () => {
     if (!validate()) return;
     createTx.mutate(
-      { data: { type: form.type, amount: Number(form.amount), currency: "XOF",
+      { data: { type: form.type, amount: Number(form.amount), currency: "COP",
                 category: form.category, paymentMethod: form.paymentMethod,
                 referenceNote: form.referenceNote || undefined, date: form.date } },
       {
@@ -198,8 +197,8 @@ function AddTransactionModal({ onClose }: { onClose: () => void }) {
           {/* 1 · Type toggle */}
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
             {[
-              { val: "income"  as const, label: "Revenu",  Icon: TrendingUp,   activeColor: "#22c55e" },
-              { val: "expense" as const, label: "Dépense", Icon: TrendingDown, activeColor: "#ef4444" },
+              { val: "income"  as const, label: "Ingreso", Icon: TrendingUp,   activeColor: "#22c55e" },
+              { val: "expense" as const, label: "Gasto",   Icon: TrendingDown, activeColor: "#ef4444" },
             ].map(({ val, label, Icon, activeColor }) => {
               const active = form.type === val;
               return (
@@ -228,7 +227,7 @@ function AddTransactionModal({ onClose }: { onClose: () => void }) {
           {/* 2 · Category grid – RIGHT AFTER the toggle so it's immediately visible */}
           <div>
             <p style={{ fontSize: 13, fontWeight: 600, color: "#374151", marginBottom: 10 }}>
-              Catégorie
+              Categoría
             </p>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
               {CATEGORIES.map(({ label, Icon }) => {
@@ -267,7 +266,7 @@ function AddTransactionModal({ onClose }: { onClose: () => void }) {
 
           {/* 3 · Amount */}
           <div>
-            <p style={{ fontSize: 13, fontWeight: 600, color: "#374151", marginBottom: 8 }}>Montant</p>
+            <p style={{ fontSize: 13, fontWeight: 600, color: "#374151", marginBottom: 8 }}>Monto</p>
             <div style={{ position: "relative" }}>
               <Input
                 type="number"
@@ -281,7 +280,7 @@ function AddTransactionModal({ onClose }: { onClose: () => void }) {
                 position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)",
                 fontSize: 13, fontWeight: 600, color: "#9ca3af",
               }}>
-                FCFA
+                COP
               </span>
             </div>
             {errors.amount && (
@@ -292,7 +291,7 @@ function AddTransactionModal({ onClose }: { onClose: () => void }) {
           {/* 4 · Payment method */}
           <div>
             <p style={{ fontSize: 13, fontWeight: 600, color: "#374151", marginBottom: 10 }}>
-              Moyen de paiement
+              Método de pago
             </p>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
               {PAYMENT_METHODS.map((pm) => {
@@ -341,11 +340,11 @@ function AddTransactionModal({ onClose }: { onClose: () => void }) {
             <p style={{ fontSize: 13, fontWeight: 600, color: "#374151", marginBottom: 8,
                         display: "flex", alignItems: "center", gap: 6 }}>
               <StickyNote size={14} color="#9ca3af" />
-              Note / Référence
-              <span style={{ fontWeight: 400, color: "#9ca3af" }}>(optionnel)</span>
+              Nota / Referencia
+              <span style={{ fontWeight: 400, color: "#9ca3af" }}>(opcional)</span>
             </p>
             <textarea
-              placeholder="Client, motif, numéro de reçu..."
+              placeholder="Cliente, motivo, número de recibo..."
               value={form.referenceNote}
               onChange={(e) => set("referenceNote", e.target.value)}
               rows={2}
@@ -383,7 +382,7 @@ function AddTransactionModal({ onClose }: { onClose: () => void }) {
             {createTx.isPending
               ? <Loader2 size={20} style={{ animation: "spin 1s linear infinite" }} />
               : <Plus size={20} />}
-            Enregistrer la transaction
+            Guardar transacción
           </button>
         </div>
 
@@ -403,12 +402,12 @@ export default function Transactions() {
   const [showModal, setShowModal] = useState(false);
 
   const formatCurrency = (amount: number | string, currency: string) =>
-    new Intl.NumberFormat("fr-FR", {
-      style: "currency", currency: currency || "XOF", maximumFractionDigits: 0,
+    new Intl.NumberFormat("es-ES", {
+      style: "currency", currency: currency || "COP", maximumFractionDigits: 0,
     }).format(Number(amount));
 
   const formatDate = (dateStr: string) =>
-    new Date(dateStr).toLocaleDateString("fr-FR", {
+    new Date(dateStr).toLocaleDateString("es-ES", {
       day: "2-digit", month: "short", year: "numeric",
     });
 
@@ -433,7 +432,7 @@ export default function Transactions() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">{t("nav.transactions")}</h1>
-            <p className="text-muted-foreground mt-1">Gérez toutes vos entrées et sorties.</p>
+            <p className="text-muted-foreground mt-1">Gestiona todos tus ingresos y gastos.</p>
           </div>
           <div className="flex items-center gap-2 w-full sm:w-auto">
             <Link href="/import" className="flex-1 sm:flex-none">
@@ -459,7 +458,7 @@ export default function Transactions() {
         {!isLoading && transactions && transactions.length > 0 && (() => {
           const totalIn  = transactions.filter(t => t.type === "income").reduce((s, t) => s + Number(t.amount), 0);
           const totalOut = transactions.filter(t => t.type === "expense").reduce((s, t) => s + Number(t.amount), 0);
-          const currency = transactions[0]?.currency || "XOF";
+          const currency = transactions[0]?.currency || "COP";
           const net = totalIn - totalOut;
           return (
             <div className="grid grid-cols-3 gap-3">
@@ -547,11 +546,11 @@ export default function Transactions() {
                 <Wallet className="w-8 h-8 text-muted-foreground" />
               </div>
               <div>
-                <p className="font-semibold">Aucune transaction</p>
-                <p className="text-sm text-muted-foreground mt-1">Commencez par enregistrer votre première entrée ou sortie.</p>
+                <p className="font-semibold">Sin transacciones</p>
+                <p className="text-sm text-muted-foreground mt-1">Comienza registrando tu primer ingreso o gasto.</p>
               </div>
               <Button className="rounded-xl gap-2 mt-2" onClick={() => setShowModal(true)}>
-                <Plus className="w-4 h-4" /> Ajouter une transaction
+                <Plus className="w-4 h-4" /> Agregar transacción
               </Button>
             </div>
           )}

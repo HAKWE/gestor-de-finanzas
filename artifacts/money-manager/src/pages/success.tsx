@@ -102,10 +102,10 @@ export default function Success() {
 
         {/* Headline */}
         <h1 style={{ fontSize: 30, fontWeight: 800, letterSpacing: "-0.03em", margin: "0 0 10px" }}>
-          Félicitations&nbsp;! 🎉
+          ¡Felicitaciones!&nbsp;🎉
         </h1>
         <p style={{ fontSize: 16, color: "hsl(var(--muted-foreground))", margin: "0 0 28px", lineHeight: 1.6 }}>
-          Votre abonnement est maintenant actif. Vous pouvez profiter de toutes vos fonctionnalités.
+          Tu suscripción está activa. Ya puedes disfrutar de todas las funciones.
         </p>
 
         {/* Plan badge */}
@@ -137,13 +137,13 @@ export default function Success() {
           marginBottom: 24, textAlign: "left",
         }}>
           <p style={{ fontWeight: 700, fontSize: 14, margin: "0 0 12px", color: "hsl(var(--foreground))" }}>
-            Ce qui vous attend :
+            Lo que incluye tu plan:
           </p>
           {[
-            "Accès complet à toutes les fonctionnalités",
-            "Transactions et rapports illimités",
-            "Import SMS et relevés bancaires",
-            "Support prioritaire",
+            "Acceso completo a todas las funciones",
+            "Transacciones y reportes ilimitados",
+            "Importar SMS y estados de cuenta",
+            "Soporte prioritario",
           ].map((item) => (
             <div key={item} style={{
               display: "flex", alignItems: "center", gap: 10, marginBottom: 8,
@@ -166,12 +166,12 @@ export default function Success() {
             fontSize: 15, fontWeight: 700,
           }}>
             <LayoutDashboard style={{ width: 17, height: 17, marginRight: 8 }} />
-            Accéder au tableau de bord
+            Ir al panel principal
           </Button>
         </Link>
 
         <p style={{ fontSize: 12, color: "hsl(var(--muted-foreground))", marginTop: 16 }}>
-          Un reçu a été envoyé à votre adresse e-mail.
+          Se ha enviado un recibo a tu dirección de correo electrónico.
         </p>
       </div>
     </div>

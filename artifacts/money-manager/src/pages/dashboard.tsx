@@ -33,14 +33,14 @@ function fmtShort(v: number) {
 }
 
 function fmtDate(d: string) {
-  return new Date(d + "T00:00:00").toLocaleDateString("fr-FR", { day: "2-digit", month: "short" });
+  return new Date(d + "T00:00:00").toLocaleDateString("es-ES", { day: "2-digit", month: "short" });
 }
 
 function getGreeting() {
   const h = new Date().getHours();
-  if (h < 12) return "Bonjour";
-  if (h < 18) return "Bon après-midi";
-  return "Bonsoir";
+  if (h < 12) return "Buenos días";
+  if (h < 18) return "Buenas tardes";
+  return "Buenas noches";
 }
 
 function getGreetingEmoji() {
@@ -208,7 +208,7 @@ function CustomTooltip({ active, payload, label, currency }: any) {
       <p style={{ color: "#9ca3af", margin: "0 0 8px", fontSize: 11, fontWeight: 600, textTransform: "uppercase" }}>{label}</p>
       {payload.map((e: any) => (
         <p key={e.name} style={{ margin: "3px 0", color: e.name === "income" ? "#4ade80" : "#f87171", fontWeight: 700 }}>
-          {e.name === "income" ? "Revenus" : "Dépenses"} : {fmt(e.value)}
+          {e.name === "income" ? "Ingresos" : "Gastos"} : {fmt(e.value)}
         </p>
       ))}
     </div>
@@ -220,8 +220,8 @@ function UpgradeBanner({ plan, onDismiss }: { plan: string; onDismiss: () => voi
   if (plan === "pro") return null;
   const isStarter = plan === "starter";
   const features = isStarter
-    ? ["📄 Export PDF professionnel", "📱 Import SMS Orange Money", "📊 Rapports avancés", "♾️ Transactions illimitées"]
-    : ["📊 Tableau de bord complet", "📄 Export PDF", "📱 Import SMS & relevés", "🗂️ Jusqu'à 3 wallets"];
+    ? ["📄 Export PDF profesional", "📱 Importar transacciones", "📊 Reportes avanzados", "♾️ Transacciones ilimitadas"]
+    : ["📊 Panel completo", "📄 Export PDF", "📱 Importar transacciones", "🗂️ Hasta 3 billeteras"];
   return (
     <div style={{
       borderRadius: 20, overflow: "hidden", position: "relative",
@@ -234,11 +234,11 @@ function UpgradeBanner({ plan, onDismiss }: { plan: string; onDismiss: () => voi
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 10 }}>
           <div>
             <span style={{ display: "inline-flex", alignItems: "center", gap: 4, background: "#fff7ed", borderRadius: 999, padding: "3px 10px", fontSize: 11, fontWeight: 700, color: "#ea580c", marginBottom: 6, border: "1px solid #fed7aa" }}>
-              {isStarter ? "⚡ Starter → 👑 Pro" : "🎁 Plan Gratuit → Pro"}
-              <strong style={{ color: "#c2410c", marginLeft: 4 }}>{isStarter ? "+6 €/mois" : "dès 5 €/mois"}</strong>
+              {isStarter ? "⚡ Starter → 👑 Pro" : "🎁 Plan Gratuito → Pro"}
+              <strong style={{ color: "#c2410c", marginLeft: 4 }}>{isStarter ? "+6 €/mes" : "desde 5 €/mes"}</strong>
             </span>
             <p style={{ fontSize: 14, fontWeight: 800, color: "#111827", margin: 0 }}>
-              {isStarter ? "Passez au Pro — un cran au-dessus" : "Gérez votre activité comme un pro"}
+              {isStarter ? "Pásate a Pro — un nivel arriba" : "Gestiona tu actividad como un pro"}
             </p>
           </div>
           <button onClick={onDismiss} style={{ background: "#f9fafb", border: "1px solid #e5e7eb", cursor: "pointer", color: "#9ca3af", padding: 5, borderRadius: 7, flexShrink: 0, display: "flex", alignItems: "center" }}>
@@ -255,7 +255,7 @@ function UpgradeBanner({ plan, onDismiss }: { plan: string; onDismiss: () => voi
         <Link href="/pricing">
           <button style={{ width: "100%", background: ORANGE, color: "#fff", border: "none", borderRadius: 12, padding: "11px 20px", fontWeight: 800, fontSize: 13, cursor: "pointer", boxShadow: "0 3px 12px rgba(249,115,22,0.30)" }}>
             <Crown style={{ width: 14, height: 14, display: "inline", marginRight: 6, verticalAlign: "middle" }} />
-            {isStarter ? "Passer au Pro maintenant →" : "Voir les offres →"}
+            {isStarter ? "Pasarse a Pro ahora →" : "Ver los planes →"}
           </button>
         </Link>
       </div>
@@ -281,10 +281,10 @@ function TrialCountdownBanner({ daysLeft, onDismiss }: { daysLeft: number; onDis
             <span style={{ fontSize: 24, flexShrink: 0 }}>⏰</span>
             <div style={{ flex: 1 }}>
               <p style={{ fontSize: 15, fontWeight: 900, color: "#dc2626", margin: "0 0 3px", lineHeight: 1.3 }}>
-                Votre essai se termine bientôt !
+                ¡Tu prueba termina pronto!
               </p>
               <p style={{ fontSize: 12, color: "#6b7280", margin: 0, lineHeight: 1.5 }}>
-                Plus que <strong style={{ color: "#dc2626" }}>{daysLeft} jour{daysLeft > 1 ? "s" : ""}</strong> — Upgrade maintenant pour garder l'accès complet à toutes vos données.
+                Solo quedan <strong style={{ color: "#dc2626" }}>{daysLeft} día{daysLeft > 1 ? "s" : ""}</strong> — Suscríbete ahora para mantener el acceso completo a tus datos.
               </p>
             </div>
           </div>
@@ -293,7 +293,7 @@ function TrialCountdownBanner({ daysLeft, onDismiss }: { daysLeft: number; onDis
           </div>
           <Link href="/pricing">
             <button style={{ width: "100%", background: "linear-gradient(135deg,#dc2626,#b91c1c)", color: "#fff", border: "none", borderRadius: 13, padding: "13px 14px", fontWeight: 800, fontSize: 14, cursor: "pointer", boxShadow: "0 4px 14px rgba(220,38,38,0.35)" }}>
-              🚀 Upgrade maintenant — dès 3,99 €/mois →
+              🚀 Suscribirse ahora — desde 3,99 €/mes →
             </button>
           </Link>
         </div>
@@ -310,10 +310,10 @@ function TrialCountdownBanner({ daysLeft, onDismiss }: { daysLeft: number; onDis
             <span style={{ fontSize: 20, flexShrink: 0 }}>📅</span>
             <div style={{ flex: 1 }}>
               <p style={{ fontSize: 14, fontWeight: 800, color: "#c2410c", margin: "0 0 2px" }}>
-                Essai se termine dans {daysLeft} jours
+                La prueba termina en {daysLeft} días
               </p>
               <p style={{ fontSize: 12, color: "#6b7280", margin: 0 }}>
-                Passez au Starter à <strong>3,99 €/mois</strong> pour ne pas perdre votre accès.
+                Pásate a Starter a <strong>3,99 €/mes</strong> para no perder tu acceso.
               </p>
             </div>
             <button onClick={onDismiss} style={{ background: "none", border: "none", cursor: "pointer", color: "#fdba74", padding: 3, borderRadius: 6, display: "flex", flexShrink: 0 }}>
@@ -325,7 +325,7 @@ function TrialCountdownBanner({ daysLeft, onDismiss }: { daysLeft: number; onDis
           </div>
           <Link href="/pricing">
             <button style={{ background: "linear-gradient(135deg,#f97316,#ea580c)", color: "#fff", border: "none", borderRadius: 10, padding: "10px 18px", fontWeight: 700, fontSize: 13, cursor: "pointer", boxShadow: "0 3px 10px rgba(249,115,22,0.30)" }}>
-              Choisir mon plan →
+              Elegir mi plan →
             </button>
           </Link>
         </div>
@@ -340,10 +340,10 @@ function TrialCountdownBanner({ daysLeft, onDismiss }: { daysLeft: number; onDis
         <span style={{ fontSize: 18, flexShrink: 0 }}>🎁</span>
         <div style={{ flex: 1 }}>
           <p style={{ fontSize: 13, fontWeight: 700, color: "#1d4ed8", margin: "0 0 1px" }}>
-            Votre essai gratuit se termine dans {daysLeft} jours
+            Tu prueba gratuita termina en {daysLeft} días
           </p>
           <p style={{ fontSize: 11, color: "#6b7280", margin: 0 }}>
-            Passez au Starter à <strong>3,99 €/mois</strong> pour continuer sans interruption.
+            Pásate a Starter a <strong>3,99 €/mes</strong> para continuar sin interrupciones.
           </p>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
@@ -371,14 +371,14 @@ function LimitedFreeBanner() {
           <span style={{ fontSize: 20, flexShrink: 0 }}>🔒</span>
           <div style={{ flex: 1 }}>
             <p style={{ fontSize: 13, fontWeight: 800, color: "#dc2626", margin: "0 0 3px" }}>
-              Essai terminé — Accès limité
+              Prueba terminada — Acceso limitado
             </p>
             <p style={{ fontSize: 11, color: "#6b7280", margin: "0 0 10px", lineHeight: 1.4 }}>
-              14 derniers jours · 10 transactions/mois · Pas d'export PDF
+              Últimos 14 días · 10 transacciones/mes · Sin export PDF
             </p>
             <Link href="/pricing">
               <button style={{ background: "#dc2626", color: "#fff", border: "none", borderRadius: 10, padding: "8px 14px", fontWeight: 800, fontSize: 12, cursor: "pointer", boxShadow: "0 2px 8px rgba(220,38,38,0.25)" }}>
-                Passer à Starter — dès 5 €/mois →
+                Pasarse a Starter — desde 5 €/mes →
               </button>
             </Link>
           </div>
@@ -391,9 +391,9 @@ function LimitedFreeBanner() {
 // ── Welcome tour ──────────────────────────────────────────────────────────────
 function WelcomeTour({ onClose }: { onClose: () => void }) {
   const steps = [
-    { icon: "📊", title: "Tableau de bord", desc: "Suivez vos revenus et dépenses en temps réel." },
-    { icon: "➕", title: "Ajouter des transactions", desc: "Enregistrez chaque recette et dépense instantanément." },
-    { icon: "📈", title: "Rapports & analyses", desc: "Visualisez votre activité sur la semaine ou le mois." },
+    { icon: "📊", title: "Panel principal", desc: "Sigue tus ingresos y gastos en tiempo real." },
+    { icon: "➕", title: "Agregar transacciones", desc: "Registra cada ingreso y gasto al instante." },
+    { icon: "📈", title: "Reportes & análisis", desc: "Visualiza tu actividad de la semana o del mes." },
   ];
   const [step, setStep] = useState(0);
   return (
@@ -418,12 +418,12 @@ function WelcomeTour({ onClose }: { onClose: () => void }) {
         <div style={{ display: "flex", gap: 10 }}>
           {step < steps.length - 1 ? (
             <>
-              <button onClick={onClose} style={{ flex: 1, background: "#f3f4f6", color: "#6b7280", border: "none", borderRadius: 12, padding: "12px", fontWeight: 600, fontSize: 13, cursor: "pointer" }}>Passer</button>
-              <button onClick={() => setStep(s => s + 1)} style={{ flex: 2, background: ORANGE, color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>Suivant →</button>
+              <button onClick={onClose} style={{ flex: 1, background: "#f3f4f6", color: "#6b7280", border: "none", borderRadius: 12, padding: "12px", fontWeight: 600, fontSize: 13, cursor: "pointer" }}>Omitir</button>
+              <button onClick={() => setStep(s => s + 1)} style={{ flex: 2, background: ORANGE, color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>Siguiente →</button>
             </>
           ) : (
             <button onClick={onClose} style={{ flex: 1, background: ORANGE, color: "#fff", border: "none", borderRadius: 12, padding: "13px", fontWeight: 800, fontSize: 14, cursor: "pointer", boxShadow: "0 4px 14px rgba(249,115,22,0.35)" }}>
-              C'est parti ! 🚀
+              ¡Empezar! 🚀
             </button>
           )}
         </div>
@@ -566,11 +566,11 @@ export default function Dashboard() {
             <div style={{ padding: "20px 22px", display: "flex", alignItems: "center", gap: 14 }}>
               <div style={{ fontSize: 30, flexShrink: 0 }}>🏆</div>
               <div style={{ flex: 1 }}>
-                <p style={{ fontWeight: 800, fontSize: 16, color: "#f0fdf4", margin: "0 0 4px" }}>Félicitations !</p>
+                <p style={{ fontWeight: 800, fontSize: 16, color: "#f0fdf4", margin: "0 0 4px" }}>¡Felicitaciones!</p>
                 <p style={{ fontSize: 13, color: "#86efac", margin: 0, lineHeight: 1.5 }}>
                   {subStatus?.plan !== "free"
-                    ? <>Abonnement <strong style={{ color: "#4ade80" }}>{subStatus?.planLabel}</strong> activé. Toutes vos fonctionnalités sont disponibles.</>
-                    : "Votre abonnement est maintenant actif."}
+                    ? <>Suscripción <strong style={{ color: "#4ade80" }}>{subStatus?.planLabel}</strong> activada. Todas tus funciones están disponibles.</>
+                    : "Tu suscripción está ahora activa."}
                 </p>
               </div>
               <button onClick={() => setShowSuccessBanner(false)} style={{ background: "rgba(255,255,255,0.10)", border: "none", cursor: "pointer", color: "#86efac", padding: 6, borderRadius: 8, flexShrink: 0, display: "flex" }}>
@@ -598,7 +598,7 @@ export default function Dashboard() {
               boxShadow: "0 4px 14px rgba(249,115,22,0.38)",
             }}>
               <Plus style={{ width: 17, height: 17 }} />
-              Ajouter
+              Agregar
             </button>
           </Link>
         </div>
@@ -647,14 +647,14 @@ export default function Dashboard() {
             {/* Income vs Expenses mini summary */}
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
               <div style={{ background: "#f0fdf4", borderRadius: 14, padding: "12px 14px", border: "1px solid #bbf7d0" }}>
-                <p style={{ margin: 0, fontSize: 10, color: "#16a34a", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 }}>↑ Revenus sem.</p>
+                <p style={{ margin: 0, fontSize: 10, color: "#16a34a", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 }}>↑ Ingresos sem.</p>
                 {isLoadingSummary
                   ? <div style={{ height: 20, background: "#bbf7d0", borderRadius: 6, animation: "pulse 1.5s ease-in-out infinite" }} />
                   : <p style={{ margin: 0, fontSize: 16, fontWeight: 800, color: "#15803d" }}>{fmt(summary?.weekIncome ?? 0)}</p>
                 }
               </div>
               <div style={{ background: "#fef2f2", borderRadius: 14, padding: "12px 14px", border: "1px solid #fecaca" }}>
-                <p style={{ margin: 0, fontSize: 10, color: "#dc2626", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 }}>↓ Dépenses sem.</p>
+                <p style={{ margin: 0, fontSize: 10, color: "#dc2626", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 }}>↓ Gastos sem.</p>
                 {isLoadingSummary
                   ? <div style={{ height: 20, background: "#fecaca", borderRadius: 6, animation: "pulse 1.5s ease-in-out infinite" }} />
                   : <p style={{ margin: 0, fontSize: 16, fontWeight: 800, color: "#dc2626" }}>{fmt(summary?.weekExpenses ?? 0)}</p>
@@ -712,8 +712,8 @@ export default function Dashboard() {
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 }}>
           {[
             { label: "Transaction", icon: <Plus style={{ width: 18, height: 18 }} />, href: "/transactions/new", primary: true },
-            { label: "Rapports",    icon: <BarChart2 style={{ width: 18, height: 18 }} />, href: "/reports", primary: false },
-            { label: "Importer",   icon: <Download style={{ width: 18, height: 18 }} />, href: "/import", primary: false },
+            { label: "Reportes",    icon: <BarChart2 style={{ width: 18, height: 18 }} />, href: "/reports", primary: false },
+            { label: "Importar",   icon: <Download style={{ width: 18, height: 18 }} />, href: "/import", primary: false },
           ].map(a => (
             <Link key={a.label} href={a.href}>
               <button style={{
@@ -746,18 +746,18 @@ export default function Dashboard() {
         <div style={{ background: "#fff", borderRadius: 20, border: "1px solid #f0ede9", boxShadow: "0 1px 4px rgba(0,0,0,0.05)", overflow: "hidden" }}>
           <div style={{ padding: "18px 20px 0", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <div>
-              <h2 style={{ fontSize: 15, fontWeight: 700, margin: 0, color: "#111" }}>Activité de la semaine</h2>
+              <h2 style={{ fontSize: 15, fontWeight: 700, margin: 0, color: "#111" }}>Actividad de la semana</h2>
               {!isLoadingSummary && (
                 <p style={{ margin: "3px 0 0", fontSize: 12, color: "#9ca3af" }}>
                   {(summary?.weekIncome ?? 0) > 0 || (summary?.weekExpenses ?? 0) > 0
-                    ? `Revenus vs dépenses · ${summary?.currency ?? "XOF"}`
-                    : "Aucune activité cette semaine"
+                    ? `Ingresos vs gastos · ${summary?.currency ?? "COP"}`
+                    : "Sin actividad esta semana"
                   }
                 </p>
               )}
             </div>
             <div style={{ display: "flex", gap: 12 }}>
-              {[{ color: GREEN_LIGHT, label: "Revenus" }, { color: "#f87171", label: "Dépenses" }].map(l => (
+              {[{ color: GREEN_LIGHT, label: "Ingresos" }, { color: "#f87171", label: "Gastos" }].map(l => (
                 <div key={l.label} style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11, color: "#9ca3af", fontWeight: 600 }}>
                   <div style={{ width: 8, height: 8, borderRadius: 3, background: l.color }} />
                   {l.label}
@@ -772,11 +772,11 @@ export default function Dashboard() {
             ) : !hasChartData ? (
               <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%", gap: 10, padding: 20, textAlign: "center" }}>
                 <div style={{ fontSize: 36, opacity: 0.4 }}>📊</div>
-                <p style={{ fontWeight: 700, fontSize: 14, color: "#374151", margin: 0 }}>Pas encore d'activité</p>
-                <p style={{ fontSize: 12, color: "#9ca3af", margin: 0 }}>Les courbes apparaîtront dès votre première transaction.</p>
+                <p style={{ fontWeight: 700, fontSize: 14, color: "#374151", margin: 0 }}>Aún sin actividad</p>
+                <p style={{ fontSize: 12, color: "#9ca3af", margin: 0 }}>Las barras aparecerán con tu primera transacción.</p>
                 <Link href="/transactions/new">
                   <button style={{ background: ORANGE, color: "#fff", border: "none", borderRadius: 10, padding: "9px 18px", fontWeight: 700, fontSize: 12, cursor: "pointer", marginTop: 4 }}>
-                    + Première transaction
+                    + Primera transacción
                   </button>
                 </Link>
               </div>
@@ -830,14 +830,14 @@ export default function Dashboard() {
                 <Receipt style={{ width: 34, height: 34, color: ORANGE }} />
               </div>
               <div>
-                <p style={{ fontWeight: 800, fontSize: 16, color: "#111", margin: "0 0 6px" }}>Aucune transaction</p>
+                <p style={{ fontWeight: 800, fontSize: 16, color: "#111", margin: "0 0 6px" }}>Sin transacciones</p>
                 <p style={{ color: "#6b7280", fontSize: 13, maxWidth: 240, lineHeight: 1.6, margin: 0 }}>
-                  Enregistrez votre première recette ou dépense pour voir votre activité ici.
+                  Registra tu primer ingreso o gasto para ver tu actividad aquí.
                 </p>
               </div>
               <Link href="/transactions/new">
                 <button style={{ background: ORANGE, color: "#fff", border: "none", borderRadius: 14, padding: "12px 24px", fontWeight: 800, fontSize: 13, cursor: "pointer", boxShadow: "0 4px 14px rgba(249,115,22,0.35)" }}>
-                  + Ajouter ma première transaction
+                  + Agregar mi primera transacción
                 </button>
               </Link>
             </div>
@@ -907,15 +907,15 @@ export default function Dashboard() {
             </div>
             <div style={{ flex: 1, minWidth: 160 }}>
               <p style={{ fontWeight: 700, fontSize: 14, color: "#fff7ed", margin: 0 }}>
-                Abonnement <span style={{ color: "#fdba74" }}>{subStatus?.planLabel}</span> actif ✓
+                Suscripción <span style={{ color: "#fdba74" }}>{subStatus?.planLabel}</span> activa ✓
               </p>
               <p style={{ fontSize: 12, color: "#fdba74", margin: "3px 0 0", opacity: 0.85 }}>
-                Vous bénéficiez de toutes les fonctionnalités de votre offre.
+                Disfrutas de todas las funcionalidades de tu plan.
               </p>
             </div>
             <Link href="/subscription">
               <button style={{ background: "rgba(255,255,255,0.14)", border: "1.5px solid rgba(255,255,255,0.22)", color: "#fff7ed", fontWeight: 600, fontSize: 12, padding: "8px 16px", borderRadius: 10, cursor: "pointer", whiteSpace: "nowrap" }}>
-                Mon abonnement →
+                Mi suscripción →
               </button>
             </Link>
           </div>

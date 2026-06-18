@@ -1,26 +1,26 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 
-type Language = "fr" | "en";
+type Language = "es" | "en";
 
 interface Translations {
   [key: string]: {
-    fr: string;
+    es: string;
     en: string;
   };
 }
 
 const translations: Translations = {
-  "app.title": { fr: "MobileMoney Manager", en: "MobileMoney Manager" },
-  "nav.dashboard": { fr: "Tableau de bord", en: "Dashboard" },
-  "nav.transactions": { fr: "Transactions", en: "Transactions" },
-  "nav.reports": { fr: "Rapports", en: "Reports" },
-  "nav.inventory": { fr: "Inventaire", en: "Inventory" },
-  "nav.settings": { fr: "Paramètres", en: "Settings" },
-  "landing.hero": { fr: "Gérez votre argent avec fierté.", en: "Manage your money with pride." },
-  "landing.subhero": { fr: "Le compagnon financier des entrepreneurs africains.", en: "The financial companion for African entrepreneurs." },
-  "landing.cta": { fr: "Commencer", en: "Get Started" },
-  "auth.signin": { fr: "Se connecter", en: "Sign In" },
-  "auth.signup": { fr: "Créer un compte", en: "Sign Up" },
+  "app.title": { es: "Gestor de Finanzas", en: "Finance Manager" },
+  "nav.dashboard": { es: "Panel", en: "Dashboard" },
+  "nav.transactions": { es: "Transacciones", en: "Transactions" },
+  "nav.reports": { es: "Reportes", en: "Reports" },
+  "nav.inventory": { es: "Inventario", en: "Inventory" },
+  "nav.settings": { es: "Configuración", en: "Settings" },
+  "landing.hero": { es: "Gestiona tu dinero con confianza.", en: "Manage your money with confidence." },
+  "landing.subhero": { es: "El gestor financiero para emprendedores latinoamericanos.", en: "The financial manager for Latin American entrepreneurs." },
+  "landing.cta": { es: "Comenzar", en: "Get Started" },
+  "auth.signin": { es: "Iniciar sesión", en: "Sign In" },
+  "auth.signup": { es: "Crear cuenta", en: "Sign Up" },
 };
 
 interface LanguageContextType {
@@ -34,7 +34,8 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const [language, setLanguage] = useState<Language>(() => {
     const saved = localStorage.getItem("app-language");
-    return (saved as Language) || "fr";
+    if (saved === "es" || saved === "en") return saved;
+    return "es";
   });
 
   useEffect(() => {

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, Component } from "react";
 import type { ErrorInfo, ReactNode } from "react";
 import { ClerkProvider, Show, useClerk, useAuth, useUser } from '@clerk/react';
+import { esES } from '@clerk/localizations';
 import { Switch, Route, useLocation, Router as WouterRouter, Redirect } from 'wouter';
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider, useQueryClient, useQuery } from "@tanstack/react-query";
@@ -54,13 +55,13 @@ const clerkAppearance = {
     logoImageUrl: `${window.location.origin}${basePath}/logo.svg`,
   },
   variables: {
-    colorPrimary: "hsl(24, 90%, 55%)",
-    colorBackground: "hsl(30, 50%, 98%)",
+    colorPrimary: "hsl(160, 84%, 39%)",
+    colorBackground: "hsl(0, 0%, 98%)",
     colorInputBackground: "hsl(0, 0%, 100%)",
-    colorText: "hsl(140, 40%, 10%)",
-    colorTextSecondary: "hsl(140, 20%, 40%)",
-    colorInputText: "hsl(140, 40%, 10%)",
-    colorNeutral: "hsl(140, 40%, 10%)",
+    colorText: "hsl(220, 20%, 12%)",
+    colorTextSecondary: "hsl(220, 10%, 46%)",
+    colorInputText: "hsl(220, 20%, 12%)",
+    colorNeutral: "hsl(220, 20%, 12%)",
     borderRadius: "0.75rem",
     fontFamily: "'Inter', sans-serif",
   },
@@ -137,13 +138,13 @@ function AdminTopBar() {
     <div style={{ position: "fixed", top: 0, left: 0, right: 0, height: 52, background: "#161b22", borderBottom: "1px solid #21262d", display: "flex", alignItems: "center", padding: "0 24px", gap: 10, zIndex: 100 }}>
       <div style={{ width: 28, height: 28, borderRadius: 8, background: "linear-gradient(135deg, #fb923c, #ea580c)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 800, color: "#fff" }}>MM</div>
       <span style={{ fontSize: 14, fontWeight: 600, color: "#e6edf3" }}>
-        Admin Dashboard <span style={{ color: "#7d8590", fontWeight: 400 }}>— MobileMoney Manager</span>
+        Admin Dashboard <span style={{ color: "#7d8590", fontWeight: 400 }}>— Gestor de Finanzas</span>
       </span>
       <span style={{ fontSize: 10, fontWeight: 700, color: "#f97316", background: "#1c0904", border: "1px solid #7c2d12", borderRadius: 20, padding: "2px 9px", letterSpacing: "0.06em" }}>
-        RESTREINT
+        RESTRINGIDO
       </span>
       <a href="https://mobilemoneymanager.africa" style={{ marginLeft: "auto", textDecoration: "none", fontSize: 12, color: "#7d8590", fontWeight: 500 }}>
-        ← Accueil
+        ← Inicio
       </a>
     </div>
   );
@@ -182,7 +183,7 @@ function AdminSignInForm() {
     if (loading) return;
     const signInResource = clerk.client?.signIn;
     if (!signInResource) {
-      setError("Le service d'authentification n'est pas encore prêt. Rechargez la page.");
+      setError("El servicio de autenticación no está listo. Recarga la página.");
       return;
     }
     setError(""); setLoading(true);
@@ -199,10 +200,10 @@ function AdminSignInForm() {
         await signInResource.prepareFirstFactor({ strategy: "email_code", emailAddressId: emailFactor?.emailAddressId ?? "" });
         setStep("otp");
       } else {
-        setError("Étape d'authentification inconnue. Contactez l'administrateur.");
+        setError("Paso de autenticación desconocido. Contacta al administrador.");
       }
     } catch (err: any) {
-      const msg = err?.errors?.[0]?.longMessage || err?.errors?.[0]?.message || "Email ou mot de passe incorrect.";
+      const msg = err?.errors?.[0]?.longMessage || err?.errors?.[0]?.message || "Correo o contraseña incorrectos.";
       setError(msg);
     } finally { setLoading(false); }
   }
@@ -213,7 +214,7 @@ function AdminSignInForm() {
     if (loading) return;
     const signInResource = clerk.client?.signIn;
     if (!signInResource) {
-      setError("Le service d'authentification n'est pas encore prêt. Rechargez la page.");
+      setError("El servicio de autenticación no está listo. Recarga la página.");
       return;
     }
     setError(""); setLoading(true);
@@ -228,10 +229,10 @@ function AdminSignInForm() {
       if (result.status === "complete") {
         await clerk.setActive({ session: result.createdSessionId });
       } else {
-        setError("Code incorrect ou expiré. Réessayez.");
+        setError("Código incorrecto o expirado. Inténtalo de nuevo.");
       }
     } catch (err: any) {
-      const msg = err?.errors?.[0]?.longMessage || err?.errors?.[0]?.message || "Code incorrect ou expiré.";
+      const msg = err?.errors?.[0]?.longMessage || err?.errors?.[0]?.message || "Código incorrecto o expirado.";
       setError(msg);
     } finally { setLoading(false); }
   }
@@ -242,11 +243,11 @@ function AdminSignInForm() {
     if (loading) return;
     const signInResource = clerk.client?.signIn;
     if (!signInResource) {
-      setError("Le service d'authentification n'est pas encore prêt. Rechargez la page.");
+      setError("El servicio de autenticación no está listo. Recarga la página.");
       return;
     }
     if (!email.trim()) {
-      setError("Saisissez d'abord votre adresse e-mail.");
+      setError("Primero ingresa tu correo electrónico.");
       return;
     }
     setError(""); setLoading(true);
@@ -254,7 +255,7 @@ function AdminSignInForm() {
       await signInResource.create({ strategy: "email_code", identifier: email.trim() });
       setStep("emailcode");
     } catch (err: any) {
-      const msg = err?.errors?.[0]?.longMessage || err?.errors?.[0]?.message || "Impossible d'envoyer le code. Vérifiez l'adresse e-mail.";
+      const msg = err?.errors?.[0]?.longMessage || err?.errors?.[0]?.message || "No se pudo enviar el código. Verifica el correo electrónico.";
       setError(msg);
     } finally { setLoading(false); }
   }
@@ -265,7 +266,7 @@ function AdminSignInForm() {
     if (loading) return;
     const signInResource = clerk.client?.signIn;
     if (!signInResource) {
-      setError("Le service d'authentification n'est pas encore prêt. Rechargez la page.");
+      setError("El servicio de autenticación no está listo. Recarga la página.");
       return;
     }
     setError(""); setLoading(true);
@@ -274,24 +275,24 @@ function AdminSignInForm() {
       if (result.status === "complete") {
         await clerk.setActive({ session: result.createdSessionId });
       } else {
-        setError("Code incorrect ou expiré. Réessayez.");
+        setError("Código incorrecto o expirado. Inténtalo de nuevo.");
       }
     } catch (err: any) {
-      const msg = err?.errors?.[0]?.longMessage || err?.errors?.[0]?.message || "Code incorrect ou expiré.";
+      const msg = err?.errors?.[0]?.longMessage || err?.errors?.[0]?.message || "Código incorrecto o expirado.";
       setError(msg);
     } finally { setLoading(false); }
   }
 
   const stepSubtitle = step === "password"
-    ? "Email + mot de passe"
+    ? "Email + contraseña"
     : step === "emailcode"
-    ? `Code envoyé à ${email}`
-    : `Vérification 2FA — ${email}`;
+    ? `Código enviado a ${email}`
+    : `Verificación 2FA — ${email}`;
 
   const header = (
     <div style={{ textAlign: "center", marginBottom: 28 }}>
       <div style={{ width: 44, height: 44, borderRadius: 12, background: "linear-gradient(135deg,#fb923c,#ea580c)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, fontWeight: 800, color: "#fff", margin: "0 auto 14px" }}>MM</div>
-      <h2 style={{ fontSize: 18, fontWeight: 700, color: "#e6edf3", margin: "0 0 6px" }}>Connexion administrateur</h2>
+      <h2 style={{ fontSize: 18, fontWeight: 700, color: "#e6edf3", margin: "0 0 6px" }}>Acceso administrador</h2>
       <p style={{ fontSize: 13, color: "#7d8590", margin: 0 }}>{stepSubtitle}</p>
     </div>
   );
@@ -305,7 +306,7 @@ function AdminSignInForm() {
   const submitBtn = (label: string) => (
     <button type="submit" disabled={loading}
       style={{ width: "100%", background: "#f97316", color: "#fff", border: "none", borderRadius: 9, padding: "12px 0", fontWeight: 700, fontSize: 15, cursor: loading ? "default" : "pointer", opacity: loading ? 0.7 : 1, fontFamily: "inherit" }}>
-      {loading ? "Connexion…" : label}
+      {loading ? "Conectando…" : label}
     </button>
   );
 
@@ -318,33 +319,33 @@ function AdminSignInForm() {
         {step === "password" && (
           <form onSubmit={handlePassword}>
             <div style={{ marginBottom: 16 }}>
-              <label style={labelStyle}>Adresse e-mail</label>
+              <label style={labelStyle}>Correo electrónico</label>
               <input type="email" required autoComplete="username"
                 value={email} onChange={e => setEmail(e.target.value)}
                 placeholder="sosthen@gmail.com" style={inputStyle} />
             </div>
             <div style={{ marginBottom: 20 }}>
-              <label style={labelStyle}>Mot de passe</label>
+              <label style={labelStyle}>Contraseña</label>
               <div style={{ position: "relative" }}>
                 <input type={showPwd ? "text" : "password"} required autoComplete="current-password"
                   value={password} onChange={e => setPassword(e.target.value)}
                   placeholder="••••••••" style={{ ...inputStyle, paddingRight: 44 }} />
                 <button type="button" onClick={() => setShowPwd(v => !v)}
                   style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", color: "#7d8590", cursor: "pointer", fontSize: 18, lineHeight: 1, padding: 0 }}
-                  aria-label={showPwd ? "Masquer" : "Afficher"}>
+                  aria-label={showPwd ? "Ocultar" : "Mostrar"}>
                   {showPwd ? "🙈" : "👁️"}
                 </button>
               </div>
             </div>
             {errorBox}
-            {submitBtn("Se connecter")}
+            {submitBtn("Iniciar sesión")}
             <div style={{ margin: "16px 0 0", textAlign: "center" }}>
-              <span style={{ fontSize: 12, color: "#484f58" }}>Pas de mot de passe ?</span>
+              <span style={{ fontSize: 12, color: "#484f58" }}>¿Sin contraseña?</span>
               {" "}
               <button type="button" disabled={loading}
                 onClick={handleSendEmailCode}
                 style={{ background: "none", border: "none", color: "#f97316", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", padding: 0 }}>
-                {loading ? "Envoi…" : "Se connecter par code e-mail"}
+                {loading ? "Enviando…" : "Iniciar sesión por código de email"}
               </button>
             </div>
           </form>
@@ -354,20 +355,20 @@ function AdminSignInForm() {
         {step === "otp" && (
           <form onSubmit={handleOtp}>
             <div style={{ background: "#0d2818", border: "1px solid #166534", borderRadius: 8, padding: "10px 14px", marginBottom: 20, fontSize: 13, color: "#86efac" }}>
-              Un code de vérification a été envoyé à <strong>{email}</strong>. Vérifiez votre boite mail.
+              Se envió un código de verificación a <strong>{email}</strong>. Revisa tu bandeja de entrada.
             </div>
             <div style={{ marginBottom: 20 }}>
-              <label style={labelStyle}>Code de vérification</label>
+              <label style={labelStyle}>Código de verificación</label>
               <input type="text" required autoComplete="one-time-code" inputMode="numeric"
                 value={otp} onChange={e => setOtp(e.target.value.replace(/\D/g, "").slice(0, 8))}
                 placeholder="123456" maxLength={8}
                 style={{ ...inputStyle, letterSpacing: "0.2em", textAlign: "center", fontSize: 20 }} />
             </div>
             {errorBox}
-            {submitBtn("Vérifier le code")}
+            {submitBtn("Verificar código")}
             <button type="button" onClick={() => { setStep("password"); setOtp(""); setError(""); }}
               style={{ width: "100%", background: "none", border: "none", color: "#7d8590", fontSize: 13, marginTop: 12, cursor: "pointer", fontFamily: "inherit" }}>
-              ← Retour
+              ← Volver
             </button>
           </form>
         )}
@@ -376,20 +377,20 @@ function AdminSignInForm() {
         {step === "emailcode" && (
           <form onSubmit={handleVerifyEmailCode}>
             <div style={{ background: "#0d2818", border: "1px solid #166534", borderRadius: 8, padding: "10px 14px", marginBottom: 20, fontSize: 13, color: "#86efac" }}>
-              Un code à 6 chiffres a été envoyé à <strong>{email}</strong>. Vérifiez votre boite mail.
+              Se envió un código de 6 dígitos a <strong>{email}</strong>. Revisa tu bandeja de entrada.
             </div>
             <div style={{ marginBottom: 20 }}>
-              <label style={labelStyle}>Code e-mail</label>
+              <label style={labelStyle}>Código por email</label>
               <input type="text" required autoComplete="one-time-code" inputMode="numeric"
                 value={otp} onChange={e => setOtp(e.target.value.replace(/\D/g, "").slice(0, 8))}
                 placeholder="123456" maxLength={8} autoFocus
                 style={{ ...inputStyle, letterSpacing: "0.2em", textAlign: "center", fontSize: 20 }} />
             </div>
             {errorBox}
-            {submitBtn("Vérifier le code")}
+            {submitBtn("Verificar código")}
             <button type="button" onClick={() => { setStep("password"); setOtp(""); setError(""); }}
               style={{ width: "100%", background: "none", border: "none", color: "#7d8590", fontSize: 13, marginTop: 12, cursor: "pointer", fontFamily: "inherit" }}>
-              ← Retour
+              ← Volver
             </button>
           </form>
         )}
@@ -447,7 +448,7 @@ function AdminGuard() {
       <div style={{ ...S.page, display: "flex", alignItems: "center", justifyContent: "center" }}>
         <div style={{ textAlign: "center" }}>
           <div style={{ width: 44, height: 44, border: "3px solid #21262d", borderTopColor: "#f97316", borderRadius: "50%", animation: "spin 0.8s linear infinite", margin: "0 auto 14px" }} />
-          <p style={{ color: "#7d8590", fontSize: 14 }}>Vérification de l'accès…</p>
+          <p style={{ color: "#7d8590", fontSize: 14 }}>Verificando acceso…</p>
         </div>
         <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
       </div>
@@ -483,11 +484,11 @@ function AdminGuard() {
           <div style={{ textAlign: "center", maxWidth: 420, padding: "0 24px" }}>
             <div style={{ width: 76, height: 76, borderRadius: 22, background: "#1a0808", border: "1px solid #7f1d1d", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px", fontSize: 36 }}>🚫</div>
             <div style={{ display: "inline-block", background: "#1a0808", border: "1px solid #7f1d1d", borderRadius: 7, padding: "3px 13px", marginBottom: 14 }}>
-              <span style={{ fontFamily: "monospace", fontSize: 12, color: "#f85149", fontWeight: 700, letterSpacing: "0.06em" }}>403 — ACCÈS REFUSÉ</span>
+              <span style={{ fontFamily: "monospace", fontSize: 12, color: "#f85149", fontWeight: 700, letterSpacing: "0.06em" }}>403 — ACCESO DENEGADO</span>
             </div>
-            <h1 style={{ fontSize: 21, fontWeight: 800, color: "#e6edf3", margin: "0 0 10px" }}>Accès administrateur uniquement</h1>
+            <h1 style={{ fontSize: 21, fontWeight: 800, color: "#e6edf3", margin: "0 0 10px" }}>Acceso solo para administradores</h1>
             <p style={{ color: "#7d8590", fontSize: 14, lineHeight: 1.6, margin: "0 0 6px" }}>
-              Ce compte n'est pas autorisé à accéder au tableau de bord admin.
+              Esta cuenta no tiene autorización para acceder al panel de administración.
             </p>
             <p style={{ fontFamily: "monospace", fontSize: 12, color: "#484f58", background: "#161b22", border: "1px solid #21262d", borderRadius: 8, padding: "7px 14px", display: "inline-block", margin: "8px 0 24px" }}>
               {email || "compte inconnu"}
@@ -501,11 +502,11 @@ function AdminGuard() {
                 }}
                 style={{ background: "#f97316", color: "#fff", border: "none", borderRadius: 11, padding: "10px 22px", fontWeight: 700, fontSize: 14, cursor: signingOut ? "default" : "pointer", opacity: signingOut ? 0.6 : 1 }}
               >
-                {signingOut ? "Déconnexion…" : "Se déconnecter"}
+                {signingOut ? "Cerrando sesión…" : "Cerrar sesión"}
               </button>
               <a href="https://mobilemoneymanager.africa/dashboard" style={{ textDecoration: "none" }}>
                 <button style={{ background: "#161b22", border: "1px solid #30363d", color: "#e6edf3", borderRadius: 11, padding: "10px 22px", fontWeight: 600, fontSize: 14, cursor: "pointer" }}>
-                  Mon tableau de bord
+                  Mi panel de control
                 </button>
               </a>
             </div>
@@ -562,16 +563,21 @@ function ClerkProviderWithRoutes() {
       proxyUrl={clerkProxyUrl}
       appearance={clerkAppearance}
       localization={{
+        ...esES,
         signIn: {
+          ...esES.signIn,
           start: {
-            title: "Bon retour !",
-            subtitle: "Connectez-vous pour accéder à vos comptes",
+            ...(esES.signIn as Record<string, unknown>)?.["start"] as object,
+            title: "¡Bienvenido de nuevo!",
+            subtitle: "Inicia sesión para acceder a tus cuentas",
           },
         },
         signUp: {
+          ...esES.signUp,
           start: {
-            title: "Créer un compte",
-            subtitle: "Gérez votre argent comme un pro",
+            ...(esES.signUp as Record<string, unknown>)?.["start"] as object,
+            title: "Crea tu cuenta gratis",
+            subtitle: "Gestiona tu dinero como un profesional",
           },
         },
       }}
@@ -628,13 +634,13 @@ class AppErrorBoundary extends Component<{ children: ReactNode }, { error: Error
       return (
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "100dvh", padding: 32, textAlign: "center", fontFamily: "sans-serif" }}>
           <div style={{ fontSize: 40, marginBottom: 16 }}>⚠️</div>
-          <h1 style={{ fontSize: 20, fontWeight: 700, color: "#111", marginBottom: 8 }}>Quelque chose s'est mal passé</h1>
-          <p style={{ color: "#6b7280", fontSize: 14, marginBottom: 24 }}>Veuillez recharger la page. Si le problème persiste, contactez le support.</p>
+          <h1 style={{ fontSize: 20, fontWeight: 700, color: "#111", marginBottom: 8 }}>Algo salió mal</h1>
+          <p style={{ color: "#6b7280", fontSize: 14, marginBottom: 24 }}>Por favor, recarga la página. Si el problema persiste, contacta al soporte.</p>
           <button
             onClick={() => window.location.reload()}
             style={{ background: "#f97316", color: "#fff", border: "none", borderRadius: 12, padding: "12px 28px", fontWeight: 700, fontSize: 14, cursor: "pointer" }}
           >
-            Recharger la page
+            Recargar la página
           </button>
         </div>
       );

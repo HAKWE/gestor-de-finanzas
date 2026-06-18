@@ -8,32 +8,32 @@ import { Loader2, Briefcase, User, CheckCircle2 } from "lucide-react";
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
 const CURRENCIES = [
-  { code: "XOF", name: "Franc CFA (BCEAO)", flag: "🌍" },
-  { code: "XAF", name: "Franc CFA (BEAC)", flag: "🌍" },
-  { code: "NGN", name: "Naira nigérian", flag: "🇳🇬" },
-  { code: "KES", name: "Shilling kényan", flag: "🇰🇪" },
-  { code: "GHS", name: "Cédi ghanéen", flag: "🇬🇭" },
-  { code: "ZAR", name: "Rand sud-africain", flag: "🇿🇦" },
-  { code: "EGP", name: "Livre égyptienne", flag: "🇪🇬" },
-  { code: "MAD", name: "Dirham marocain", flag: "🇲🇦" },
-  { code: "TZS", name: "Shilling tanzanien", flag: "🇹🇿" },
-  { code: "UGX", name: "Shilling ougandais", flag: "🇺🇬" },
-  { code: "RWF", name: "Franc rwandais", flag: "🇷🇼" },
-  { code: "ETB", name: "Birr éthiopien", flag: "🇪🇹" },
-  { code: "USD", name: "Dollar américain", flag: "🇺🇸" },
+  { code: "MXN", name: "Peso mexicano", flag: "🇲🇽" },
+  { code: "COP", name: "Peso colombiano", flag: "🇨🇴" },
+  { code: "ARS", name: "Peso argentino", flag: "🇦🇷" },
+  { code: "BRL", name: "Real brasileño", flag: "🇧🇷" },
+  { code: "PEN", name: "Sol peruano", flag: "🇵🇪" },
+  { code: "CLP", name: "Peso chileno", flag: "🇨🇱" },
+  { code: "VES", name: "Bolívar venezolano", flag: "🇻🇪" },
+  { code: "BOB", name: "Boliviano", flag: "🇧🇴" },
+  { code: "PYG", name: "Guaraní paraguayo", flag: "🇵🇾" },
+  { code: "UYU", name: "Peso uruguayo", flag: "🇺🇾" },
+  { code: "DOP", name: "Peso dominicano", flag: "🇩🇴" },
+  { code: "GTQ", name: "Quetzal guatemalteco", flag: "🇬🇹" },
+  { code: "USD", name: "Dólar estadounidense", flag: "🇺🇸" },
   { code: "EUR", name: "Euro", flag: "🇪🇺" },
 ];
 
 const PROVIDERS = [
-  { id: "mtn", name: "MTN Mobile Money", countries: "Côte d'Ivoire, Ghana, Nigeria, Uganda, Rwanda..." },
-  { id: "orange", name: "Orange Money", countries: "Sénégal, Mali, Côte d'Ivoire, Cameroun..." },
-  { id: "moov", name: "Moov Money", countries: "Bénin, Togo, Burkina Faso, Niger..." },
-  { id: "airtel", name: "Airtel Money", countries: "Kenya, Tanzania, Uganda, Zambia..." },
-  { id: "mpesa", name: "M-Pesa", countries: "Kenya, Tanzania, Mozambique, Ghana..." },
-  { id: "wave", name: "Wave", countries: "Sénégal, Côte d'Ivoire, Mali, Ouganda..." },
-  { id: "free", name: "Free Money", countries: "Sénégal" },
-  { id: "other", name: "Autre", countries: "" },
-  { id: "none", name: "Aucun", countries: "" },
+  { id: "mercadopago", name: "Mercado Pago", countries: "Argentina, México, Colombia, Brasil, Chile, Perú..." },
+  { id: "nequi", name: "Nequi", countries: "Colombia" },
+  { id: "oxxo", name: "OXXO Pay", countries: "México" },
+  { id: "yape", name: "Yape", countries: "Perú" },
+  { id: "daviplata", name: "Daviplata", countries: "Colombia" },
+  { id: "pix", name: "Pix", countries: "Brasil" },
+  { id: "clip", name: "Clip", countries: "México" },
+  { id: "other", name: "Otro", countries: "" },
+  { id: "none", name: "Ninguno", countries: "" },
 ];
 
 export default function OnboardingPage() {
@@ -43,8 +43,8 @@ export default function OnboardingPage() {
 
   const [step, setStep] = useState(1);
   const [accountType, setAccountType] = useState<"personal" | "business">("personal");
-  const [currency, setCurrency] = useState("XOF");
-  const [provider, setProvider] = useState("mtn");
+  const [currency, setCurrency] = useState("MXN");
+  const [provider, setProvider] = useState("mercadopago");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
@@ -86,11 +86,11 @@ export default function OnboardingPage() {
           onboardingCompleted: true,
         }),
       });
-      if (!res.ok) throw new Error("Échec de la sauvegarde.");
+      if (!res.ok) throw new Error("Error al guardar.");
       await queryClient.invalidateQueries({ queryKey: ["profile"] });
       setLocation(`${basePath}/dashboard`);
     } catch {
-      setError("Impossible de sauvegarder. Veuillez réessayer.");
+      setError("No se pudo guardar. Por favor intenta de nuevo.");
     } finally {
       setSaving(false);
     }
@@ -104,7 +104,7 @@ export default function OnboardingPage() {
         <div className="rounded-2xl border border-border bg-card shadow-lg overflow-hidden">
           <div className="bg-primary px-8 py-6 text-primary-foreground">
             <div className="flex items-center justify-between mb-1">
-              <h1 className="text-2xl font-bold">Configuration du compte</h1>
+              <h1 className="text-2xl font-bold">Configuración de cuenta</h1>
               <span className="text-sm opacity-70">{step}/{totalSteps}</span>
             </div>
             <div className="mt-3 flex gap-1.5">
@@ -121,13 +121,13 @@ export default function OnboardingPage() {
             {step === 1 && (
               <div className="space-y-4">
                 <div>
-                  <h2 className="text-lg font-semibold">Type de compte</h2>
-                  <p className="text-sm text-muted-foreground mt-1">Comment souhaitez-vous utiliser MobileMoney Manager ?</p>
+                  <h2 className="text-lg font-semibold">Tipo de cuenta</h2>
+                  <p className="text-sm text-muted-foreground mt-1">¿Cómo quieres usar Gestor de Finanzas?</p>
                 </div>
                 <div className="grid grid-cols-2 gap-3 mt-4">
                   {[
-                    { value: "personal" as const, label: "Personnel", desc: "Pour vos finances personnelles", Icon: User },
-                    { value: "business" as const, label: "Business", desc: "Pour une entreprise ou activité", Icon: Briefcase },
+                    { value: "personal" as const, label: "Personal", desc: "Para tus finanzas personales", Icon: User },
+                    { value: "business" as const, label: "Negocio", desc: "Para un negocio o actividad", Icon: Briefcase },
                   ].map(({ value, label, desc, Icon }) => (
                     <button
                       key={value}
@@ -149,7 +149,7 @@ export default function OnboardingPage() {
                   ))}
                 </div>
                 <Button className="w-full h-11 mt-2" onClick={() => setStep(2)}>
-                  Continuer →
+                  Continuar →
                 </Button>
               </div>
             )}
@@ -157,8 +157,8 @@ export default function OnboardingPage() {
             {step === 2 && (
               <div className="space-y-4">
                 <div>
-                  <h2 className="text-lg font-semibold">Devise principale</h2>
-                  <p className="text-sm text-muted-foreground mt-1">Choisissez la devise dans laquelle vous gérez vos finances.</p>
+                  <h2 className="text-lg font-semibold">Moneda principal</h2>
+                  <p className="text-sm text-muted-foreground mt-1">Elige la moneda en la que manejas tus finanzas.</p>
                 </div>
                 <div className="max-h-64 overflow-y-auto rounded-xl border border-border divide-y divide-border">
                   {CURRENCIES.map((c) => (
@@ -181,10 +181,10 @@ export default function OnboardingPage() {
                 </div>
                 <div className="flex gap-2">
                   <Button variant="outline" className="flex-1 h-11" onClick={() => setStep(1)}>
-                    ← Retour
+                    ← Volver
                   </Button>
                   <Button className="flex-1 h-11" onClick={() => setStep(3)}>
-                    Continuer →
+                    Continuar →
                   </Button>
                 </div>
               </div>
@@ -193,8 +193,8 @@ export default function OnboardingPage() {
             {step === 3 && (
               <div className="space-y-4">
                 <div>
-                  <h2 className="text-lg font-semibold">Mobile Money principal</h2>
-                  <p className="text-sm text-muted-foreground mt-1">Quel service de mobile money utilisez-vous le plus ?</p>
+                  <h2 className="text-lg font-semibold">Billetera digital principal</h2>
+                  <p className="text-sm text-muted-foreground mt-1">¿Qué servicio de pago digital usas más?</p>
                 </div>
                 <div className="max-h-64 overflow-y-auto rounded-xl border border-border divide-y divide-border">
                   {PROVIDERS.map((p) => (
@@ -221,10 +221,10 @@ export default function OnboardingPage() {
 
                 <div className="flex gap-2">
                   <Button variant="outline" className="flex-1 h-11" onClick={() => setStep(2)} disabled={saving}>
-                    ← Retour
+                    ← Volver
                   </Button>
                   <Button className="flex-1 h-11" onClick={handleFinish} disabled={saving}>
-                    {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Commencer →"}
+                    {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Empezar →"}
                   </Button>
                 </div>
               </div>
@@ -234,7 +234,7 @@ export default function OnboardingPage() {
 
         {user && (
           <p className="text-center text-xs text-muted-foreground mt-4">
-            Connecté en tant que {user.primaryEmailAddress?.emailAddress}
+            Conectado como {user.primaryEmailAddress?.emailAddress}
           </p>
         )}
       </div>

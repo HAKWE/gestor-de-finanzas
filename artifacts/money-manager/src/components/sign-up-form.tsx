@@ -19,10 +19,10 @@ function getPasswordStrength(password: string): {
   if (/[A-Z]/.test(password)) score++;
   if (/[0-9]/.test(password)) score++;
   if (/[^A-Za-z0-9]/.test(password)) score++;
-  if (score <= 1) return { score, label: "Faible", color: "bg-red-500" };
-  if (score === 2) return { score, label: "Moyen", color: "bg-yellow-500" };
-  if (score === 3) return { score, label: "Bon", color: "bg-blue-500" };
-  return { score, label: "Fort", color: "bg-green-500" };
+  if (score <= 1) return { score, label: "Débil", color: "bg-red-500" };
+  if (score === 2) return { score, label: "Regular", color: "bg-yellow-500" };
+  if (score === 3) return { score, label: "Buena", color: "bg-blue-500" };
+  return { score, label: "Fuerte", color: "bg-green-500" };
 }
 
 function PasswordStrengthBar({ password }: { password: string }) {
@@ -41,7 +41,7 @@ function PasswordStrengthBar({ password }: { password: string }) {
       <p
         className={`text-xs font-medium ${score <= 1 ? "text-red-500" : score === 2 ? "text-yellow-600" : score === 3 ? "text-blue-600" : "text-green-600"}`}
       >
-        Force : {label}
+        Seguridad: {label}
       </p>
     </div>
   );
@@ -92,39 +92,31 @@ export function SignUpForm({
 
   function validate() {
     const e: typeof errors = {};
-    if (fullForm && !form.firstName.trim()) e.firstName = "Prénom requis.";
-    if (fullForm && !form.lastName.trim()) e.lastName = "Nom requis.";
-    if (!form.email.trim()) e.email = "Email requis.";
+    if (fullForm && !form.firstName.trim()) e.firstName = "Nombre requerido.";
+    if (fullForm && !form.lastName.trim()) e.lastName = "Apellido requerido.";
+    if (!form.email.trim()) e.email = "Email requerido.";
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email))
-      e.email = "Email invalide.";
-    if (!form.password) e.password = "Mot de passe requis.";
-    else if (form.password.length < 8) e.password = "Minimum 8 caractères.";
+      e.email = "Email inválido.";
+    if (!form.password) e.password = "Contraseña requerida.";
+    else if (form.password.length < 8) e.password = "Mínimo 8 caracteres.";
     if (!simpleForm) {
       if (!form.confirmPassword)
-        e.confirmPassword = "Confirmez votre mot de passe.";
+        e.confirmPassword = "Confirma tu contraseña.";
       else if (form.password !== form.confirmPassword)
-        e.confirmPassword = "Les mots de passe ne correspondent pas.";
+        e.confirmPassword = "Las contraseñas no coinciden.";
     }
     return e;
   }
 
-    async function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    console.log("✅ Form submitted! handleSubmit was called");
 
     const errs = validate();
     setErrors(errs);
-    if (Object.keys(errs).length > 0) {
-      console.log("❌ Validation errors:", errs);
-      return;
-    }
-
-    console.log("isLoaded:", isLoaded);
-    console.log("clerk?.client:", !!clerk?.client);
+    if (Object.keys(errs).length > 0) return;
 
     if (!isLoaded || !clerk?.client) {
-      console.log("❌ Clerk not ready - skipping signup");
-      setErrors({ global: "Clerk not ready. Please refresh the page." });
+      setErrors({ global: "Servicio no disponible. Recarga la página." });
       return;
     }
 
@@ -132,8 +124,6 @@ export function SignUpForm({
     setErrors({});
 
     try {
-      console.log("🔄 Starting Clerk signup for:", form.email);
-      // ... rest of the try block remains the same
       const signUp = clerk.client.signUp;
       const result = await signUp.create({
         emailAddress: form.email.trim(),
@@ -142,17 +132,20 @@ export function SignUpForm({
         lastName: form.lastName.trim() || undefined,
       });
 
-      console.log("✅ Clerk signup successful! ID:", result.id);
-
       await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
-      setStep("verify");
+
+      if (result.status === "complete") {
+        await clerk.setActive({ session: result.createdSessionId });
+        setLocation(`${basePath}/onboarding`);
+      } else {
+        setStep("verify");
+      }
     } catch (err: any) {
-      console.error("❌ Clerk signup FAILED:", err);
       const msg =
         err?.errors?.[0]?.longMessage ||
         err?.errors?.[0]?.message ||
         err?.message ||
-        "Failed to create account. Please try again.";
+        "No se pudo crear la cuenta. Inténtalo de nuevo.";
       setErrors({ global: msg });
     } finally {
       setSubmitting(false);
@@ -162,11 +155,11 @@ export function SignUpForm({
   async function handleVerify(e: React.FormEvent) {
     e.preventDefault();
     if (!code.trim()) {
-      setCodeError("Entrez le code de vérification.");
+      setCodeError("Introduce el código de verificación.");
       return;
     }
     if (!clerk?.client) {
-      setCodeError("Service non prêt. Rechargez la page.");
+      setCodeError("Servicio no disponible. Recarga la página.");
       return;
     }
 
@@ -195,13 +188,13 @@ export function SignUpForm({
         }
         setLocation(`${basePath}/onboarding`);
       } else {
-        setCodeError("Vérification incomplète. Veuillez réessayer.");
+        setCodeError("Verificación incompleta. Inténtalo de nuevo.");
       }
     } catch (err: any) {
       const msg =
         err?.errors?.[0]?.longMessage ||
         err?.errors?.[0]?.message ||
-        "Code incorrect.";
+        "Código incorrecto.";
       setCodeError(msg);
     } finally {
       setSubmitting(false);
@@ -213,18 +206,17 @@ export function SignUpForm({
       <form onSubmit={handleVerify} className="space-y-4">
         {showTitle && (
           <div className="mb-2">
-            <h2 className="text-xl font-bold">Vérifiez votre e-mail</h2>
+            <h2 className="text-xl font-bold">Verifica tu correo</h2>
             <p className="text-sm text-muted-foreground mt-1">
-              Un code a été envoyé à <strong>{form.email}</strong>
+              Se envió un código a <strong>{form.email}</strong>
             </p>
           </div>
         )}
         <div className="rounded-lg bg-blue-50 border border-blue-200 px-4 py-3 text-sm text-blue-800">
-          Code envoyé à <strong>{form.email}</strong>. Vérifiez votre boîte
-          e-mail.
+          Código enviado a <strong>{form.email}</strong>. Revisa tu bandeja de entrada.
         </div>
         <div>
-          <Label htmlFor="code">Code de vérification</Label>
+          <Label htmlFor="code">Código de verificación</Label>
           <Input
             id="code"
             value={code}
@@ -247,7 +239,7 @@ export function SignUpForm({
           {submitting ? (
             <Loader2 className="h-4 w-4 animate-spin" />
           ) : (
-            "Vérifier"
+            "Verificar"
           )}
         </Button>
         <button
@@ -255,7 +247,7 @@ export function SignUpForm({
           onClick={() => setStep("form")}
           className="w-full text-center text-sm text-muted-foreground hover:underline"
         >
-          ← Retour
+          ← Volver
         </button>
       </form>
     );
@@ -267,9 +259,9 @@ export function SignUpForm({
     <form onSubmit={handleSubmit} className="space-y-3" noValidate>
       {showTitle && (
         <div className="mb-1">
-          <h2 className="text-xl font-bold">Créer un compte</h2>
+          <h2 className="text-xl font-bold">Crear una cuenta</h2>
           <p className="text-sm text-muted-foreground">
-            Gérez votre argent comme un pro
+            Gestiona tu dinero como un profesional
           </p>
         </div>
       )}
@@ -283,7 +275,7 @@ export function SignUpForm({
       {fullForm && (
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <Label htmlFor="sf-firstName">Prénom</Label>
+            <Label htmlFor="sf-firstName">Nombre</Label>
             <Input
               id="sf-firstName"
               value={form.firstName}
@@ -294,7 +286,7 @@ export function SignUpForm({
             <FieldError message={errors.firstName} />
           </div>
           <div>
-            <Label htmlFor="sf-lastName">Nom</Label>
+            <Label htmlFor="sf-lastName">Apellido</Label>
             <Input
               id="sf-lastName"
               value={form.lastName}
@@ -308,7 +300,7 @@ export function SignUpForm({
       )}
 
       <div>
-        <Label htmlFor="sf-email">Adresse e-mail</Label>
+        <Label htmlFor="sf-email">Correo electrónico</Label>
         <Input
           id="sf-email"
           type="email"
@@ -321,7 +313,7 @@ export function SignUpForm({
       </div>
 
       <div>
-        <Label htmlFor="sf-password">Mot de passe</Label>
+        <Label htmlFor="sf-password">Contraseña</Label>
         <div className="relative">
           <Input
             id="sf-password"
@@ -350,7 +342,7 @@ export function SignUpForm({
 
       {!simpleForm && (
         <div>
-          <Label htmlFor="sf-confirmPassword">Confirmer le mot de passe</Label>
+          <Label htmlFor="sf-confirmPassword">Confirmar contraseña</Label>
           <div className="relative">
             <Input
               id="sf-confirmPassword"
@@ -388,14 +380,12 @@ export function SignUpForm({
           </div>
           {form.confirmPassword && form.password === form.confirmPassword && (
             <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
-              <CheckCircle2 className="h-3 w-3" /> Les mots de passe
-              correspondent
+              <CheckCircle2 className="h-3 w-3" /> Las contraseñas coinciden
             </p>
           )}
           {form.confirmPassword && form.password !== form.confirmPassword && (
             <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
-              <XCircle className="h-3 w-3" /> Les mots de passe ne correspondent
-              pas
+              <XCircle className="h-3 w-3" /> Las contraseñas no coinciden
             </p>
           )}
           {!form.confirmPassword && (
@@ -420,20 +410,20 @@ export function SignUpForm({
         ) : !isLoaded ? (
           <>
             <Loader2 className="h-4 w-4 animate-spin mr-2" />
-            Chargement...
+            Cargando...
           </>
         ) : (
-          "Créer mon compte →"
+          "Crear mi cuenta →"
         )}
       </Button>
 
       <p className="text-center text-sm text-muted-foreground">
-        Déjà un compte ?{" "}
+        ¿Ya tienes cuenta?{" "}
         <Link
           href={`${basePath}/sign-in`}
           className="text-primary font-medium hover:underline"
         >
-          Se connecter
+          Iniciar sesión
         </Link>
       </p>
     </form>

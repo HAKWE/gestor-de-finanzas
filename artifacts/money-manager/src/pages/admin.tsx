@@ -90,7 +90,7 @@ function avatarColor(id: string) {
 }
 
 function downloadCsv(users: AdminUser[]) {
-  const cols = ["Email", "Nom complet", "Date inscription", "Plan", "Statut abonnement", "Fin abonnement"];
+  const cols = ["Email", "Nombre completo", "Fecha registro", "Plan", "Estado suscripción", "Fin suscripción"];
   const rows = users.map(u => [
     u.email,
     u.name,
@@ -111,7 +111,7 @@ function downloadCsv(users: AdminUser[]) {
 // ── Sub-components ─────────────────────────────────────────────────────────────
 function PlanBadge({ plan }: { plan: string }) {
   const map: Record<string, [string, string, string, string]> = {
-    free:    ["Gratuit", "#0d1117", T.muted,  T.border2],
+    free:    ["Gratis", "#0d1117", T.muted,  T.border2],
     starter: ["Starter", "#1a0e2e", "#bc8cff", "#4c1d95"],
     pro:     ["Pro",     "#1c0904", "#fb923c", "#7c2d12"],
   };
@@ -125,10 +125,10 @@ function PlanBadge({ plan }: { plan: string }) {
 
 function StatusBadge({ status }: { status: AdminUser["subscriptionStatus"] }) {
   const map = {
-    active:    ["Actif",   "#051a0a", "#3fb950", "#196c2e", true],
-    cancelled: ["Annulé",  "#1a0808", "#f85149", "#7f1d1d", false],
-    expired:   ["Expiré",  "#1a1208", "#d29922", "#78350f", false],
-    free:      ["Gratuit", "#0d1117", T.muted,   T.border,  false],
+    active:    ["Activo",    "#051a0a", "#3fb950", "#196c2e", true],
+    cancelled: ["Cancelado", "#1a0808", "#f85149", "#7f1d1d", false],
+    expired:   ["Vencido",   "#1a1208", "#d29922", "#78350f", false],
+    free:      ["Gratis",    "#0d1117", T.muted,   T.border,  false],
   } as Record<string, [string, string, string, string, boolean]>;
   const [label, bg, color, border, glow] = map[status] ?? map.free;
   return (
@@ -269,11 +269,11 @@ export default function AdminPage() {
       <div style={{ minHeight: "100dvh", display: "flex", alignItems: "center", justifyContent: "center", background: T.bg, fontFamily: "system-ui" }}>
         <div style={{ textAlign: "center", maxWidth: 380, padding: 24 }}>
           <div style={{ fontSize: 40, marginBottom: 16 }}>⚠️</div>
-          <h2 style={{ color: T.text, fontSize: 18, fontWeight: 700, margin: "0 0 8px" }}>Erreur de chargement</h2>
+          <h2 style={{ color: T.text, fontSize: 18, fontWeight: 700, margin: "0 0 8px" }}>Error al cargar</h2>
           <p style={{ color: T.muted, fontSize: 14, margin: "0 0 24px" }}>{error}</p>
           <div style={{ display: "flex", gap: 10, justifyContent: "center" }}>
             <button onClick={() => load()} style={{ background: T.orange, color: "#fff", border: "none", borderRadius: 10, padding: "10px 22px", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
-              Réessayer
+              Reintentar
             </button>
             <a href={APP_HOME} style={{ textDecoration: "none" }}>
               <button style={{ display: "flex", alignItems: "center", gap: 6, background: T.panel, color: T.text, border: `1px solid ${T.border2}`, borderRadius: 10, padding: "10px 22px", fontWeight: 600, fontSize: 13, cursor: "pointer" }}>
@@ -327,7 +327,7 @@ export default function AdminPage() {
         {/* ── Page title ──────────────────────────────────────────────────────── */}
         <div style={{ marginBottom: 28 }}>
           <p style={{ color: T.muted, fontSize: 13, margin: 0 }}>
-            Données en direct · Dernière mise à jour {fmtAgo(data?.generatedAt ?? null)}
+            Datos en vivo · Última actualización {fmtAgo(data?.generatedAt ?? null)}
           </p>
         </div>
 
@@ -344,7 +344,7 @@ export default function AdminPage() {
             icon={<Crown style={{ width: 16, height: 16 }} />}
             label="Utilisateurs Pro"
             value={stats.pro}
-            sub={`${stats.starter} Starter · ${stats.free} Gratuit`}
+            sub={`${stats.starter} Starter · ${stats.free} Gratis`}
             accent={T.orange}
           />
           <StatCard
@@ -406,7 +406,7 @@ export default function AdminPage() {
             onClick={() => downloadCsv(filtered)}
             style={{ display: "flex", alignItems: "center", gap: 6, background: "#0d1117", border: `1px solid ${T.border2}`, borderRadius: 9, padding: "7px 13px", fontSize: 12, color: T.muted, cursor: "pointer", fontWeight: 500, whiteSpace: "nowrap" }}
           >
-            <Download style={{ width: 12, height: 12 }} /> Exporter CSV
+            <Download style={{ width: 12, height: 12 }} /> Exportar CSV
           </button>
         </div>
 
@@ -416,12 +416,12 @@ export default function AdminPage() {
             <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13, minWidth: 820 }}>
               <thead>
                 <tr>
-                  <SortTh sortKey="email" active={sort.key === "email"} dir={sort.dir} onClick={() => toggleSort("email")}>Email / Nom</SortTh>
-                  <SortTh sortKey="createdAt" active={sort.key === "createdAt"} dir={sort.dir} onClick={() => toggleSort("createdAt")}>Date inscription</SortTh>
-                  <SortTh sortKey="plan" active={sort.key === "plan"} dir={sort.dir} onClick={() => toggleSort("plan")}>Plan actuel</SortTh>
-                  <SortTh sortKey="plan" active={false} dir={sort.dir}>Statut abonnement</SortTh>
-                  <SortTh sortKey="plan" active={false} dir={sort.dir}>Fin abonnement</SortTh>
-                  <SortTh sortKey="lastSignIn" active={sort.key === "lastSignIn"} dir={sort.dir} onClick={() => toggleSort("lastSignIn")}>Dernière connexion</SortTh>
+                  <SortTh sortKey="email" active={sort.key === "email"} dir={sort.dir} onClick={() => toggleSort("email")}>Email / Nombre</SortTh>
+                  <SortTh sortKey="createdAt" active={sort.key === "createdAt"} dir={sort.dir} onClick={() => toggleSort("createdAt")}>Fecha registro</SortTh>
+                  <SortTh sortKey="plan" active={sort.key === "plan"} dir={sort.dir} onClick={() => toggleSort("plan")}>Plan actual</SortTh>
+                  <SortTh sortKey="plan" active={false} dir={sort.dir}>Estado suscripción</SortTh>
+                  <SortTh sortKey="plan" active={false} dir={sort.dir}>Fin suscripción</SortTh>
+                  <SortTh sortKey="lastSignIn" active={sort.key === "lastSignIn"} dir={sort.dir} onClick={() => toggleSort("lastSignIn")}>Última conexión</SortTh>
                   <SortTh active={false} dir={sort.dir}></SortTh>
                 </tr>
               </thead>
@@ -528,7 +528,7 @@ export default function AdminPage() {
         </div>
 
         <p style={{ textAlign: "center", fontSize: 11, color: T.border, marginTop: 24 }}>
-          MobileMoney Manager · Console Admin · Accès confidentiel
+          Gestor de Finanzas · Consola Admin · Acceso confidencial
         </p>
       </main>
 

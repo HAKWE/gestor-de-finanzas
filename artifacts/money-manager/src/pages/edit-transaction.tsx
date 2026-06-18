@@ -65,9 +65,9 @@ export default function EditTransaction() {
     }
   }, [transaction, form]);
 
-  const categoriesFr = ["Vente produit", "Service coiffure", "Achat stock", "Transport", "Orange Money reçu", "Wave reçu", "MTN MoMo reçu", "Nourriture", "Loyer", "Eau/Électricité", "Autre"];
+  const categoriesFr = ["Venta producto", "Servicio belleza", "Compra stock", "Transporte", "Mercado Pago recibido", "Nequi recibido", "Yape recibido", "Alimentación", "Alquiler", "Agua/Electricidad", "Otro"];
   const categoriesEn = ["Product sale", "Beauty service", "Stock purchase", "Transport", "Orange Money received", "Wave received", "MTN MoMo received", "Food", "Rent", "Water/Electricity", "Other"];
-  const categories = language === "fr" ? categoriesFr : categoriesEn;
+  const categories = language !== "en" ? categoriesFr : categoriesEn;
 
   const paymentMethods = ["Orange Money", "Wave", "MTN MoMo", "Cash", "Other"];
 
@@ -101,7 +101,7 @@ export default function EditTransaction() {
     <Layout>
       <div className="max-w-2xl mx-auto w-full space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
         <div className="flex flex-col gap-1">
-          <h1 className="text-3xl font-bold tracking-tight">Modifier la transaction</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Editar transacción</h1>
         </div>
 
         <div className="bg-card p-6 rounded-2xl border shadow-sm">
@@ -123,13 +123,13 @@ export default function EditTransaction() {
                           <FormControl>
                             <RadioGroupItem value="income" />
                           </FormControl>
-                          <FormLabel className="font-normal cursor-pointer">Revenu</FormLabel>
+                          <FormLabel className="font-normal cursor-pointer">Ingreso</FormLabel>
                         </FormItem>
                         <FormItem className="flex items-center space-x-3 space-y-0">
                           <FormControl>
                             <RadioGroupItem value="expense" />
                           </FormControl>
-                          <FormLabel className="font-normal cursor-pointer">Dépense</FormLabel>
+                          <FormLabel className="font-normal cursor-pointer">Gasto</FormLabel>
                         </FormItem>
                       </RadioGroup>
                     </FormControl>
@@ -144,7 +144,7 @@ export default function EditTransaction() {
                   name="amount"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Montant</FormLabel>
+                      <FormLabel>Monto</FormLabel>
                       <FormControl>
                         <Input type="number" placeholder="0" {...field} className="text-lg" />
                       </FormControl>
@@ -157,11 +157,11 @@ export default function EditTransaction() {
                   name="currency"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Devise</FormLabel>
+                      <FormLabel>Moneda</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Devise" />
+                            <SelectValue placeholder="Moneda" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
@@ -180,11 +180,11 @@ export default function EditTransaction() {
                 name="category"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Catégorie</FormLabel>
+                    <FormLabel>Categoría</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Choisir..." />
+                          <SelectValue placeholder="Elegir..." />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -203,11 +203,11 @@ export default function EditTransaction() {
                 name="paymentMethod"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Méthode de paiement</FormLabel>
+                    <FormLabel>Método de pago</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Choisir..." />
+                          <SelectValue placeholder="Elegir..." />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>

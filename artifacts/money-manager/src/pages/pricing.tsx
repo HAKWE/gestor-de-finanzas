@@ -35,13 +35,13 @@ const PLANS = [
     launchPrice: 399,
     launchMonths: 3,
     features: [
-      "Jusqu'à 500 transactions/mois",
-      "3 wallets (Orange Money, Wave, espèces)",
-      "Rapports mensuels",
-      "Accès mobile (PWA)",
-      "Support par e-mail",
+      "Hasta 500 transacciones/mes",
+      "3 billeteras (Mercado Pago, Nequi, efectivo)",
+      "Reportes mensuales",
+      "Acceso móvil (PWA)",
+      "Soporte por correo",
     ],
-    cta: "Choisir Starter",
+    cta: "Elegir Starter",
   },
   {
     key: "pro",
@@ -54,27 +54,27 @@ const PLANS = [
     launchPrice: null,
     launchMonths: 0,
     features: [
-      "Transactions illimitées",
-      "Wallets illimités",
-      "Rapports avancés & exports PDF",
-      "Import SMS / relevés bancaires",
-      "Gestion des stocks",
-      "Support prioritaire",
+      "Transacciones ilimitadas",
+      "Billeteras ilimitadas",
+      "Reportes avanzados & exportación PDF",
+      "Import SMS / extractos bancarios",
+      "Gestión de inventario",
+      "Soporte prioritario",
     ],
-    cta: "Choisir Pro",
+    cta: "Elegir Pro",
   },
 ] as const;
 
 const COMPARISON = [
-  { label: "Transactions/mois",      free: "50",       starter: "500",      pro: "Illimité" },
-  { label: "Wallets",                free: "1",        starter: "3",        pro: "Illimité" },
-  { label: "Tableau de bord",        free: "Basique",  starter: "Complet",  pro: "Avancé" },
-  { label: "Rapports mensuels",      free: "Basique",  starter: "✓",        pro: "Avancé" },
+  { label: "Transacciones/mes",       free: "50",       starter: "500",      pro: "Ilimitado" },
+  { label: "Billeteras",             free: "1",        starter: "3",        pro: "Ilimitado" },
+  { label: "Panel de control",       free: "Básico",   starter: "Completo", pro: "Avanzado" },
+  { label: "Reportes mensuales",     free: "Básico",   starter: "✓",        pro: "Avanzado" },
   { label: "Export PDF",             free: "—",        starter: "—",        pro: "✓" },
-  { label: "Import SMS / relevés",   free: "—",        starter: "—",        pro: "✓" },
-  { label: "Gestion des stocks",     free: "—",        starter: "—",        pro: "✓" },
-  { label: "Accès mobile (PWA)",     free: "✓",        starter: "✓",        pro: "✓" },
-  { label: "Support",                free: "—",        starter: "E-mail",   pro: "Prioritaire" },
+  { label: "Import SMS / extractos", free: "—",        starter: "—",        pro: "✓" },
+  { label: "Gestión de inventario",  free: "—",        starter: "—",        pro: "✓" },
+  { label: "Acceso móvil (PWA)",     free: "✓",        starter: "✓",        pro: "✓" },
+  { label: "Soporte",                free: "—",        starter: "Correo",   pro: "Prioritario" },
 ];
 
 const PLAN_RANK: Record<string, number> = { free: 0, limited_free: 0, trial: 1, starter: 1, pro: 2, paid: 1 };
@@ -164,15 +164,15 @@ export default function Pricing() {
         <div style={{ maxWidth: 860, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <Link href="/" style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, color: "#6b7280", textDecoration: "none" }}>
             <ArrowLeft style={{ width: 15, height: 15 }} />
-            Retour à l'accueil
+            Volver al inicio
           </Link>
           <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
             <img src="/logo.svg" alt="MobileMoney" style={{ width: 24, height: 24 }} />
-            <span style={{ fontWeight: 700, fontSize: 14, color: "#111" }}>MobileMoney Manager</span>
+            <span style={{ fontWeight: 700, fontSize: 14, color: "#111" }}>Gestor de Finanzas</span>
           </div>
           {isLoaded && !isSignedIn && (
             <Link href="/sign-in" style={{ fontSize: 13, color: "#f97316", fontWeight: 600, textDecoration: "none" }}>
-              Se connecter
+              Iniciar sesión
             </Link>
           )}
           {isLoaded && isSignedIn && (
@@ -232,13 +232,13 @@ export default function Pricing() {
                   <div>
                     <p style={{ margin: 0, fontWeight: 900, fontSize: 17, color: txtColor, lineHeight: 1.2 }}>
                       {trialUrgency === "critical"
-                        ? `⏰ Plus que ${trialDaysLeft} jour${trialDaysLeft > 1 ? "s" : ""} d'essai gratuit !`
-                        : `Votre essai gratuit se termine dans ${trialDaysLeft} jours`}
+                        ? `⏰ ¡Solo quedan ${trialDaysLeft} día${trialDaysLeft > 1 ? "s" : ""} de prueba gratis!`
+                        : `Tu prueba gratuita termina en ${trialDaysLeft} día${trialDaysLeft > 1 ? "s" : ""}`}
                     </p>
                     <p style={{ margin: "3px 0 0", fontSize: 12, color: "#6b7280", lineHeight: 1.4 }}>
                       {trialUrgency === "critical"
-                        ? "Abonnez-vous maintenant pour ne pas perdre l'accès à vos données."
-                        : "Profitez de toutes les fonctionnalités premium jusqu'à la fin de l'essai."}
+                        ? "Suscríbete ahora para no perder el acceso a tus datos."
+                        : "Disfruta de todas las funciones premium hasta el final de la prueba."}
                     </p>
                   </div>
                 </div>
@@ -265,8 +265,8 @@ export default function Pricing() {
         }}>
           <span style={{ fontSize: 20 }}>🎁</span>
           <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: "#92400e" }}>
-            Programme de parrainage —{" "}
-            <span style={{ color: "#c2410c" }}>Invitez un ami et gagnez tous les deux 1 mois gratuit</span>
+            Programa de referidos —{" "}
+            <span style={{ color: "#c2410c" }}>Invita a un amigo y ambos ganan 1 mes gratis</span>
           </p>
           <a href="/dashboard" style={{
             marginLeft: "auto", flexShrink: 0,
@@ -288,13 +288,13 @@ export default function Pricing() {
             marginBottom: 14,
           }}>
             <ShieldCheck style={{ width: 13, height: 13 }} />
-            Paiement sécurisé via Stripe et PayPal
+            Pago seguro vía Stripe y PayPal
           </div>
           <h1 style={{ fontSize: 36, fontWeight: 900, color: "#111", margin: "0 0 10px", lineHeight: 1.15 }}>
-            Choisissez votre offre
+            Elige tu plan
           </h1>
           <p style={{ fontSize: 16, color: "#6b7280", margin: "0 0 20px", lineHeight: 1.6 }}>
-            45 jours d'essai gratuit inclus. Aucune carte bancaire requise.
+            45 días de prueba gratuita incluidos. Sin tarjeta bancaria.
           </p>
 
           {/* Trial CTA (not signed in) */}
@@ -311,7 +311,7 @@ export default function Pricing() {
                 marginBottom: 8,
               }}
             >
-              🎁 Démarrer l'essai gratuit 45 jours →
+              🎁 Empezar la prueba gratuita 45 días →
             </Link>
           )}
 
@@ -324,7 +324,7 @@ export default function Pricing() {
               padding: "7px 16px", fontSize: 13, fontWeight: 700, color: "#9a3412",
             }}>
               <Crown style={{ width: 13, height: 13, color: "#f97316" }} />
-              Plan actuel&nbsp;: <span style={{ color: "#f97316" }}>{currentLabel}</span>
+              Plan actual&nbsp;: <span style={{ color: "#f97316" }}>{currentLabel}</span>
             </div>
           )}
         </div>
@@ -360,7 +360,7 @@ export default function Pricing() {
                 color: billing === "annual" ? "#fff" : "#16a34a",
                 fontSize: 10, fontWeight: 800, padding: "2px 7px", borderRadius: 99,
               }}>
-                Jusqu'à 5 mois offerts
+                Hasta 5 meses gratis
               </span>
             </button>
           </div>
@@ -451,7 +451,7 @@ export default function Pricing() {
                       }}>
                         <Sparkles style={{ width: 11, height: 11, color: "#fbbf24" }} />
                         <span style={{ fontSize: 11, fontWeight: 800, color: "#e9d5ff" }}>
-                          Prix de lancement — {plan.launchMonths} premiers mois à {eur(plan.launchPrice!, 2)} !
+                          Precio de lanzamiento — ¡{plan.launchMonths} primeros meses a {eur(plan.launchPrice!, 2)}!
                         </span>
                       </div>
                     )}
@@ -469,10 +469,10 @@ export default function Pricing() {
                     {billing === "annual" ? (
                       <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 4 }}>
                         <span style={{ fontSize: 13, fontWeight: 700, color: "#16a34a" }}>
-                          {eur(annualTotal)} facturé annuellement
+                          {eur(annualTotal)} facturado anualmente
                         </span>
                         <span style={{ background: "#dcfce7", color: "#15803d", fontSize: 10, fontWeight: 800, padding: "2px 7px", borderRadius: 99 }}>
-                          {plan.key === "pro" ? "5 mois offerts" : "2 mois offerts"}
+                          {plan.key === "pro" ? "5 meses gratis" : "2 meses gratis"}
                         </span>
                       </div>
                     ) : (
@@ -517,7 +517,7 @@ export default function Pricing() {
                         display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
                         boxShadow: plan.recommended ? "0 4px 16px rgba(249,115,22,0.35)" : "0 4px 14px rgba(0,0,0,0.18)",
                       }}>
-                        🎁 Commencer l'essai gratuit
+                        🎁 Comenzar prueba gratis
                       </div>
                     </Link>
                   ) : (
@@ -570,7 +570,7 @@ export default function Pricing() {
                               <path d="M7.5 21.5h2.6l.4-2.6h1.7c2.8 0 4.9-1.4 5.5-4.3.5-2.5-.8-4-3.1-4.1H9.6L7.5 21.5z" fill="#179BD7"/>
                               <path d="M9.9 10.5h4.5c.6 0 1.1.1 1.5.2-.4-2.8-2.3-3.7-5-3.7H7.2L5 18.9h2.9l.7-4.6.9-5.9 1 2.1z" fill="#253B80"/>
                             </svg>
-                            <span style={{ fontSize: 14, fontWeight: 800, color: "#253B80", letterSpacing: "-0.2px" }}>Payer avec PayPal</span>
+                            <span style={{ fontSize: 14, fontWeight: 800, color: "#253B80", letterSpacing: "-0.2px" }}>Pagar con PayPal</span>
                           </>
                         )}
                       </button>
@@ -610,10 +610,10 @@ export default function Pricing() {
             <span style={{ fontSize: 28, flexShrink: 0 }}>🎉</span>
             <div>
               <p style={{ margin: 0, fontWeight: 800, fontSize: 14, color: "#15803d" }}>
-                Payez annuellement et économisez jusqu'à 5 mois !
+                ¡Paga anualmente y ahorra hasta 5 meses!
               </p>
               <p style={{ margin: "3px 0 0", fontSize: 12, color: "#4b7c59" }}>
-                Starter : <strong>39 €/an</strong> au lieu de 60 € (économie 21 €) · Pro : <strong>79 €/an</strong> au lieu de 132 € (≈ 5 mois offerts) — Annulable avant renouvellement
+                Starter : <strong>39 €/año</strong> en vez de 60 € (ahorro 21 €) · Pro : <strong>79 €/año</strong> en vez de 132 € (≈ 5 meses gratis) — Cancelable antes de la renovación
               </p>
             </div>
           </div>
@@ -625,11 +625,11 @@ export default function Pricing() {
           marginBottom: 40,
         }}>
           {[
-            { icon: "🔒", text: "Paiements sécurisés via Stripe" },
-            { icon: "🚫", text: "Aucune carte pour l'essai" },
-            { icon: "✂️", text: "Annulable à tout moment" },
-            { icon: "🔒", text: "Données chiffrées" },
-            { icon: "🌍", text: "Conçu pour l'Afrique" },
+            { icon: "🔒", text: "Pagos seguros vía Stripe" },
+            { icon: "🚫", text: "Sin tarjeta para la prueba" },
+            { icon: "✂️", text: "Cancelable en cualquier momento" },
+            { icon: "🔒", text: "Datos cifrados" },
+            { icon: "🌎", text: "Diseñado para LATAM" },
           ].map(({ icon, text }) => (
             <div key={text} style={{
               display: "inline-flex", alignItems: "center", gap: 6,
@@ -646,15 +646,15 @@ export default function Pricing() {
         {/* ── Comparison table ─────────────────────────────────────────────── */}
         <div style={{ background: "#fff", borderRadius: 20, border: "1.5px solid #e5e7eb", overflow: "hidden", marginBottom: 32 }}>
           <div style={{ padding: "18px 22px", borderBottom: "1px solid #f3f4f6", background: "linear-gradient(135deg,#fff7ed,#fff)" }}>
-            <h3 style={{ fontSize: 17, fontWeight: 800, color: "#111", margin: 0 }}>Comparaison détaillée</h3>
-            <p style={{ margin: "3px 0 0", fontSize: 12, color: "#9ca3af" }}>Essai gratuit → Starter → Pro</p>
+            <h3 style={{ fontSize: 17, fontWeight: 800, color: "#111", margin: 0 }}>Comparación detallada</h3>
+            <p style={{ margin: "3px 0 0", fontSize: 12, color: "#9ca3af" }}>Prueba gratuita → Starter → Pro</p>
           </div>
           <div style={{ overflowX: "auto" }}>
             <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
               <thead>
                 <tr style={{ borderBottom: "1px solid #f3f4f6", background: "#fafafa" }}>
-                  <th style={{ textAlign: "left", padding: "12px 20px", color: "#9ca3af", fontWeight: 600, width: "40%" }}>Fonctionnalité</th>
-                  <th style={{ textAlign: "center", padding: "12px 12px", color: "#9ca3af", fontWeight: 600 }}>Essai / Gratuit</th>
+                  <th style={{ textAlign: "left", padding: "12px 20px", color: "#9ca3af", fontWeight: 600, width: "40%" }}>Funcionalidad</th>
+                  <th style={{ textAlign: "center", padding: "12px 12px", color: "#9ca3af", fontWeight: 600 }}>Prueba / Gratis</th>
                   <th style={{ textAlign: "center", padding: "12px 12px", color: "#6b7280", fontWeight: 700 }}>Starter</th>
                   <th style={{ textAlign: "center", padding: "12px 12px", color: "#f97316", fontWeight: 800 }}>Pro ⭐</th>
                 </tr>
@@ -686,10 +686,10 @@ export default function Pricing() {
                 boxShadow: "0 6px 24px rgba(249,115,22,0.40)",
               }}
             >
-              🎁 Démarrer 45 jours gratuits — sans carte bancaire
+              🎁 Empezar 45 días gratis — sin tarjeta bancaria
             </Link>
             <p style={{ margin: "10px 0 0", fontSize: 12, color: "#9ca3af" }}>
-              Aucun engagement · Annulable à tout moment · Accès immédiat
+              Sin compromiso · Cancelable en cualquier momento · Acceso inmediato
             </p>
           </div>
         )}
@@ -697,9 +697,9 @@ export default function Pricing() {
       </main>
 
       <footer style={{ borderTop: "1px solid #ede9e3", padding: "18px 20px", textAlign: "center", fontSize: 12, color: "#9ca3af" }}>
-        © {new Date().getFullYear()} MobileMoney Manager — Tous droits réservés.{" "}
-        <a href="/confidentialite" style={{ color: "#9ca3af" }}>Confidentialité</a>{" · "}
-        <a href="/conditions" style={{ color: "#9ca3af" }}>Conditions</a>
+        © {new Date().getFullYear()} Gestor de Finanzas — Todos los derechos reservados.{" "}
+        <a href="/confidentialite" style={{ color: "#9ca3af" }}>Privacidad</a>{" · "}
+        <a href="/conditions" style={{ color: "#9ca3af" }}>Condiciones</a>
       </footer>
     </div>
   );

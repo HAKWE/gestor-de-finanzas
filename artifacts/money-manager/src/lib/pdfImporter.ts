@@ -224,7 +224,7 @@ async function ocrPdfPages(
 ): Promise<string> {
   const { createWorker } = await import("tesseract.js");
 
-  onProgress?.("Chargement OCR...", 5);
+  onProgress?.("Cargando OCR...", 5);
 
   // Initialize Tesseract with French + English
   const worker = await createWorker(["fra", "eng"], 1, {

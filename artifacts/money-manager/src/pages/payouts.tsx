@@ -12,11 +12,11 @@ export default function PayoutsPage() {
               <History style={{ width: 18, height: 18, color: "#16a34a" }} />
             </div>
             <h1 style={{ fontSize: 22, fontWeight: 800, color: "#111", margin: 0 }}>
-              Mes Virements Mobile Money
+              Mis Pagos de Billetera Digital
             </h1>
           </div>
           <p style={{ margin: 0, fontSize: 14, color: "#6b7280", lineHeight: 1.6 }}>
-            Historique de vos paiements d'abonnement via Orange Money, Wave, MTN MoMo et autres.
+            Historial de tus pagos de suscripción vía Mercado Pago, Nequi, Yape y otros.
           </p>
         </div>
 

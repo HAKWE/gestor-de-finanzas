@@ -60,7 +60,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
     { href: "/settings", label: t("nav.settings"), icon: Settings },
   ];
 
-  const subLink     = { href: "/subscription", label: "Mon abonnement", icon: CreditCard };
+  const subLink     = { href: "/subscription", label: "Mi suscripción", icon: CreditCard };
   // payoutLink & historyLink hidden — Due KYC pending
   const links = isPaid
     ? [...baseLinks, subLink]
@@ -80,7 +80,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             <nav className="grid gap-6 text-lg font-medium mt-6">
               <div className="flex items-center gap-2 px-2 pb-4">
                 <img src="/logo.svg" alt="Logo" className="w-8 h-8" />
-                <span className="font-bold text-primary">MobileMoney</span>
+                <span className="font-bold text-primary">Gestor de Finanzas</span>
               </div>
               {links.map((link) => (
                 <Link
@@ -104,7 +104,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <div className="hidden md:flex md:flex-1">
             <div className="flex items-center gap-2">
               <img src="/logo.svg" alt="Logo" className="w-8 h-8" />
-              <span className="font-bold text-primary text-xl">MobileMoney</span>
+              <span className="font-bold text-primary text-xl">Gestor de Finanzas</span>
             </div>
           </div>
 
@@ -143,18 +143,18 @@ export function Layout({ children }: { children: React.ReactNode }) {
         justifyContent: "space-between", gap: 10,
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
-          <img src="/logo.svg" alt="MobileMoney" style={{ width: 16, height: 16 }} />
+          <img src="/logo.svg" alt="Gestor de Finanzas" style={{ width: 16, height: 16 }} />
           <span style={{ fontSize: 12, color: "#9ca3af" }}>
-            © {new Date().getFullYear()} MobileMoney Manager · Luxembourg
+            © {new Date().getFullYear()} Gestor de Finanzas
           </span>
         </div>
         <nav style={{ display: "flex", flexWrap: "wrap", gap: 16 }}>
           {[
-            { href: "mailto:support@mobilemoneymanager.africa", label: "Contact" },
-            { href: "/confidentialite", label: "Confidentialité" },
-            { href: "/conditions", label: "Conditions d'utilisation" },
-            { href: "/mentions-legales", label: "Mentions légales" },
-            { href: "/pricing", label: "Tarifs" },
+            { href: "mailto:support@gestordefinanzas.app", label: "Contacto" },
+            { href: "/confidentialite", label: "Privacidad" },
+            { href: "/conditions", label: "Términos" },
+            { href: "/mentions-legales", label: "Aviso legal" },
+            { href: "/pricing", label: "Precios" },
           ].map(({ href, label }) => (
             <a key={label} href={href} style={{ fontSize: 12, color: "#9ca3af", textDecoration: "none" }}>
               {label}

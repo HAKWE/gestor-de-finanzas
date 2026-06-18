@@ -45,7 +45,7 @@ class PayoutErrorBoundary extends Component<{ children: ReactNode }, EBState> {
               onClick={() => this.setState({ hasError: false, message: "" })}
               style={{ width: "100%", background: "#f97316", color: "#fff", border: "none", borderRadius: 14, padding: "14px 0", fontWeight: 700, fontSize: 14, cursor: "pointer" }}
             >
-              Réessayer
+              Reintentar
             </button>
           </div>
         </div>
@@ -274,7 +274,7 @@ function PayoutFormInner({ onSuccess }: PayoutFormProps) {
       } catch {
         if (!cancelled) {
           setRecipients([]);
-          setRecipientsError("Impossible de charger les destinataires");
+          setRecipientsError("No se pudieron cargar los destinatarios");
         }
       }
     }
@@ -373,16 +373,16 @@ function PayoutFormInner({ onSuccess }: PayoutFormProps) {
   function validate(): boolean {
     const errs: Partial<Record<keyof FormState, string>> = {};
     const amt = parseFloat(form.amountUsd);
-    if (!form.amountUsd || isNaN(amt))    errs.amountUsd = "Montant requis";
-    else if (amt < 5)                     errs.amountUsd = "Minimum 5 EUR";
-    else if (amt > 200)                   errs.amountUsd = "Maximum 200 EUR";
-    if (!form.phone.trim())               errs.phone = "Numéro requis";
+    if (!form.amountUsd || isNaN(amt))    errs.amountUsd = "Monto requerido";
+    else if (amt < 5)                     errs.amountUsd = "Mínimo 5 EUR";
+    else if (amt > 200)                   errs.amountUsd = "Máximo 200 EUR";
+    if (!form.phone.trim())               errs.phone = "Número requerido";
     else if (!/^\+?[0-9\s\-]{7,16}$/.test(form.phone.trim()))
-                                          errs.phone = "Numéro invalide";
-    if (!form.recipientId.trim())         errs.recipientId = "ID destinataire requis";
+                                          errs.phone = "Número inválido";
+    if (!form.recipientId.trim())         errs.recipientId = "ID destinatario requerido";
     else if (!/^rcp_[a-zA-Z0-9]+$/.test(form.recipientId.trim()))
-                                          errs.recipientId = "Format : rcp_xxxxxxxx";
-    if (form.memo.length > 200)           errs.memo = "200 caractères max";
+                                          errs.recipientId = "Formato: rcp_xxxxxxxx";
+    if (form.memo.length > 200)           errs.memo = "Máximo 200 caracteres";
     setFieldErrors(errs);
     return Object.keys(errs).length === 0;
   }
@@ -503,8 +503,8 @@ function PayoutFormInner({ onSuccess }: PayoutFormProps) {
             <div style={{ width: 72, height: 72, borderRadius: 22, background: GREEN, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px", animation: "bounceIn 0.5s cubic-bezier(.36,.07,.19,.97) both" }}>
               <CheckCircle2 style={{ width: 36, height: 36, color: "#fff" }} />
             </div>
-            <h2 style={{ fontSize: 22, fontWeight: 800, color: "#14532d", margin: "0 0 6px" }}>Paiement envoyé ✓</h2>
-            <p style={{ fontSize: 13, color: "#15803d", margin: 0 }}>Votre abonnement sera renouvelé dès réception du paiement</p>
+            <h2 style={{ fontSize: 22, fontWeight: 800, color: "#14532d", margin: "0 0 6px" }}>Pago enviado ✓</h2>
+            <p style={{ fontSize: 13, color: "#15803d", margin: 0 }}>Tu suscripción se renovará al recibir el pago</p>
           </div>
 
           <div style={{ padding: "20px 24px 24px" }}>
@@ -518,7 +518,7 @@ function PayoutFormInner({ onSuccess }: PayoutFormProps) {
                       setCopied(true);
                       setTimeout(() => setCopied(false), 2500);
                     }}
-                    title="Copier l'ID"
+                    title="Copiar ID"
                     style={{ background: "none", border: "none", cursor: "pointer", padding: 3, color: copied ? GREEN : "#9ca3af", flexShrink: 0, transition: "color 0.2s" }}
                   >
                     {copied ? <Check style={{ width: 14, height: 14 }} /> : <Copy style={{ width: 14, height: 14 }} />}
@@ -541,15 +541,15 @@ function PayoutFormInner({ onSuccess }: PayoutFormProps) {
                 } />
               )}
               {result.fxRate != null && (
-                <Row label="Taux" value={`1 EUR = ${result.fxRate} ${result.destinationCurrency ?? country.currency}`} />
+                <Row label="Tasa" value={`1 EUR = ${result.fxRate} ${result.destinationCurrency ?? country.currency}`} />
               )}
-              <Row label="Réseau" value={`${provider} · ${country.flag} ${country.name}`} />
-              <Row label="Téléphone" value={form.phone} />
+              <Row label="Red" value={`${provider} · ${country.flag} ${country.name}`} />
+              <Row label="Teléfono" value={form.phone} />
             </div>
 
             <InfoBox icon={<Info />} color="#2563eb" bg="#eff6ff" border="#bfdbfe">
-              Le paiement sera crédité sur votre compte MobileMoney Manager une fois reçu et confirmé par notre équipe (généralement sous 24h ouvrées).{" "}
-              <strong>Conservez l'identifiant de transfert</strong> comme preuve de paiement.
+              El pago se acreditará en tu cuenta Gestor de Finanzas una vez recibido y confirmado por nuestro equipo (generalmente en 24h hábiles).{" "}
+              <strong>Guarda el identificador de transferencia</strong> como comprobante de pago.
             </InfoBox>
 
             <button
@@ -613,19 +613,19 @@ function PayoutFormInner({ onSuccess }: PayoutFormProps) {
                   style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, width: "100%", background: "#d97706", color: "#fff", border: "none", borderRadius: 14, padding: "14px 0", fontWeight: 700, fontSize: 14, cursor: "pointer", textDecoration: "none", boxSizing: "border-box" }}
                 >
                   <ExternalLink style={{ width: 15, height: 15 }} />
-                  Ouvrir le tableau de bord Due
+                  Abrir panel de Due
                 </a>
                 <button onClick={reset} style={{ width: "100%", background: "#f9fafb", color: "#374151", border: `1.5px solid ${BORDER}`, borderRadius: 14, padding: "13px 0", fontWeight: 600, fontSize: 14, cursor: "pointer" }}>
-                  Réessayer plus tard
+                  Reintentar más tarde
                 </button>
               </>
             ) : (
               <>
                 <button onClick={() => setStep("confirm")} style={{ width: "100%", background: ORANGE, color: "#fff", border: "none", borderRadius: 14, padding: "14px 0", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>
-                  Réessayer
+                  Reintentar
                 </button>
                 <button onClick={reset} style={{ width: "100%", background: "#f9fafb", color: "#374151", border: `1.5px solid ${BORDER}`, borderRadius: 14, padding: "13px 0", fontWeight: 600, fontSize: 14, cursor: "pointer" }}>
-                  Recommencer
+                  Volver a empezar
                 </button>
               </>
             )}
@@ -646,8 +646,8 @@ function PayoutFormInner({ onSuccess }: PayoutFormProps) {
         <style>{KEYFRAMES}</style>
         <div style={{ background: "#fff", borderRadius: 22, border: `1px solid ${BORDER}`, boxShadow: "0 4px 20px rgba(0,0,0,0.06)", overflow: "hidden", animation: "fadeUp 0.3s ease" }}>
           <div style={{ background: "linear-gradient(135deg, #fff7ed, #ffedd5)", padding: "24px 24px 18px" }}>
-            <h2 style={{ fontSize: 18, fontWeight: 800, color: "#431407", margin: "0 0 4px" }}>Confirmer le virement</h2>
-            <p style={{ fontSize: 13, color: "#9a3412", margin: 0 }}>Vérifiez les informations avant de valider</p>
+            <h2 style={{ fontSize: 18, fontWeight: 800, color: "#431407", margin: "0 0 4px" }}>Confirmar transferencia</h2>
+            <p style={{ fontSize: 13, color: "#9a3412", margin: 0 }}>Verifica los datos antes de confirmar</p>
           </div>
           <div style={{ padding: "20px 24px" }}>
 
@@ -655,33 +655,33 @@ function PayoutFormInner({ onSuccess }: PayoutFormProps) {
             <div style={{ background: "#f9fafb", borderRadius: 14, padding: "16px 18px", marginBottom: 14 }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", paddingBottom: 12, marginBottom: 12, borderBottom: `1px solid ${BORDER}` }}>
                 <div>
-                  <p style={{ margin: 0, fontSize: 11, color: "#9ca3af", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em" }}>Vous envoyez</p>
+                  <p style={{ margin: 0, fontSize: 11, color: "#9ca3af", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em" }}>Tú envías</p>
                   <p style={{ margin: "4px 0 0", fontSize: 24, fontWeight: 800, color: "#111" }}>{fmtCurrency(parseFloat(form.amountUsd), "EUR")}</p>
                 </div>
                 <div style={{ textAlign: "right" }}>
-                  <p style={{ margin: 0, fontSize: 11, color: "#9ca3af", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em" }}>Destinataire reçoit</p>
+                  <p style={{ margin: 0, fontSize: 11, color: "#9ca3af", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em" }}>El destinatario recibe</p>
                   <p style={{ margin: "4px 0 0", fontSize: 24, fontWeight: 800, color: ORANGE }}>
                     {fmtCurrency(estimatedLocal, country.currency)}
                     <span style={{ display: "block", fontSize: 10, color: estimatedIsLive ? GREEN : "#9ca3af", fontWeight: 600, marginTop: 2 }}>
-                      {estimatedIsLive ? "✓ taux en direct" : "≈ estimation"}
+                      {estimatedIsLive ? "✓ tasa en vivo" : "≈ estimado"}
                     </span>
                   </p>
                 </div>
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                 {liveQuote?.fxRate && (
-                  <Row label="Taux de change" value={`1 EUR = ${liveQuote.fxRate.toFixed(2)} ${country.currency}`} />
+                  <Row label="Tasa de cambio" value={`1 EUR = ${liveQuote.fxRate.toFixed(2)} ${country.currency}`} />
                 )}
                 {hasFee && liveQuote?.fee != null && (
-                  <Row label="Frais réseau" value={`≈ ${fmtCurrency(liveQuote.fee, "EUR")}`} />
+                  <Row label="Comisión de red" value={`≈ ${fmtCurrency(liveQuote.fee, "EUR")}`} />
                 )}
                 {!hasFee && (
-                  <Row label="Frais réseau" value={<span style={{ color: GREEN, fontWeight: 700 }}>Inclus dans le taux</span>} />
+                  <Row label="Comisión de red" value={<span style={{ color: GREEN, fontWeight: 700 }}>Incluida en la tasa</span>} />
                 )}
-                <Row label="Réseau" value={`${country.flag} ${provider} · ${country.name}`} />
-                <Row label="Téléphone" value={form.phone} />
-                <Row label="ID destinataire" value={<code style={{ fontSize: 11, background: "#e5e7eb", borderRadius: 6, padding: "2px 7px" }}>{form.recipientId}</code>} />
-                {form.memo && <Row label="Mémo" value={form.memo} />}
+                <Row label="Red" value={`${country.flag} ${provider} · ${country.name}`} />
+                <Row label="Teléfono" value={form.phone} />
+                <Row label="ID destinatario" value={<code style={{ fontSize: 11, background: "#e5e7eb", borderRadius: 6, padding: "2px 7px" }}>{form.recipientId}</code>} />
+                {form.memo && <Row label="Memo" value={form.memo} />}
               </div>
             </div>
 
@@ -689,7 +689,7 @@ function PayoutFormInner({ onSuccess }: PayoutFormProps) {
               <div style={{ background: "#fffbeb", border: "1px solid #fde68a", borderRadius: 12, padding: "12px 14px", display: "flex", gap: 10, alignItems: "flex-start", marginBottom: 12 }}>
                 <TriangleAlert style={{ width: 16, height: 16, color: "#b45309", flexShrink: 0, marginTop: 1 }} />
                 <p style={{ margin: 0, fontSize: 12, color: "#92400e", lineHeight: 1.6 }}>
-                  <strong>Montant élevé :</strong> Vérifiez soigneusement le numéro et l'ID destinataire.
+                  <strong>Monto alto:</strong> Verifica cuidadosamente el número e ID del destinatario.
                 </p>
               </div>
             )}
@@ -704,14 +704,14 @@ function PayoutFormInner({ onSuccess }: PayoutFormProps) {
                 style={{ flex: 1, background: "#f9fafb", color: "#374151", border: `1.5px solid ${BORDER}`, borderRadius: 14, padding: "13px 0", fontWeight: 600, fontSize: 14, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}
               >
                 <ArrowLeft style={{ width: 15, height: 15 }} />
-                Modifier
+                Editar
               </button>
               <button
                 onClick={submitPayout}
                 style={{ flex: 2, background: ORANGE, color: "#fff", border: "none", borderRadius: 14, padding: "14px 0", fontWeight: 700, fontSize: 14, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: "0 4px 14px rgba(249,115,22,0.35)" }}
               >
                 <Send style={{ width: 16, height: 16 }} />
-                Valider le virement
+                Confirmar transferencia
               </button>
             </div>
           </div>
@@ -731,10 +731,10 @@ function PayoutFormInner({ onSuccess }: PayoutFormProps) {
         <div style={{ width: 72, height: 72, borderRadius: 22, background: "#fff7ed", border: `2px solid #fed7aa`, display: "flex", alignItems: "center", justifyContent: "center" }}>
           <Loader2 style={{ width: 36, height: 36, color: ORANGE, animation: "spin 1s linear infinite" }} />
         </div>
-        <p style={{ fontWeight: 700, fontSize: 16, color: "#111", margin: 0 }}>Traitement en cours…</p>
+        <p style={{ fontWeight: 700, fontSize: 16, color: "#111", margin: 0 }}>Procesando…</p>
         <p style={{ fontSize: 13, color: "#9ca3af", margin: 0, textAlign: "center", lineHeight: 1.6 }}>
-          Création du devis, puis soumission du transfert via Due.
-          <br />Cela prend généralement 3–8 secondes.
+          Creando cotización y enviando la transferencia vía Due.
+          <br />Esto suele tardar 3–8 segundos.
         </p>
       </div>
     );
@@ -777,10 +777,10 @@ function PayoutFormInner({ onSuccess }: PayoutFormProps) {
         <div style={{ background: "#fffbeb", border: "1.5px solid #fde68a", borderRadius: 14, padding: "14px 16px", display: "flex", gap: 10, alignItems: "flex-start" }}>
           <TriangleAlert style={{ width: 16, height: 16, color: "#b45309", flexShrink: 0, marginTop: 1 }} />
           <div style={{ flex: 1 }}>
-            <p style={{ margin: "0 0 4px", fontSize: 13, fontWeight: 700, color: "#92400e" }}>Destinataire introuvable</p>
+            <p style={{ margin: "0 0 4px", fontSize: 13, fontWeight: 700, color: "#92400e" }}>Destinatario no encontrado</p>
             <p style={{ margin: 0, fontSize: 12, color: "#78350f", lineHeight: 1.6 }}>
-              Le destinataire précédent n'existe plus dans le système Due (il a peut-être été créé avec d'anciens identifiants).
-              Sélectionnez ou créez un nouveau destinataire ci-dessous.
+              El destinatario anterior ya no existe en el sistema Due (probablemente fue creado con credenciales antiguas).
+              Selecciona o crea un nuevo destinatario a continuación.
             </p>
           </div>
           <button
@@ -801,27 +801,27 @@ function PayoutFormInner({ onSuccess }: PayoutFormProps) {
             rel="noopener noreferrer"
             style={{ fontSize: 11, color: ORANGE, fontWeight: 700, textDecoration: "none", display: "flex", alignItems: "center", gap: 3 }}
           >
-            Gérer dans Due <ExternalLink style={{ width: 11, height: 11 }} />
+            Gestionar en Due <ExternalLink style={{ width: 11, height: 11 }} />
           </a>
         }
       >
         {recipients === null ? (
           <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "4px 0 2px", color: "#9ca3af" }}>
             <Loader2 style={{ width: 14, height: 14, animation: "spin 1s linear infinite" }} />
-            <span style={{ fontSize: 13 }}>Chargement…</span>
+            <span style={{ fontSize: 13 }}>Cargando…</span>
           </div>
         ) : recipientsError ? (
           <div style={{ padding: "8px 10px", background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 10, display: "flex", alignItems: "flex-start", gap: 8 }}>
             <AlertCircle style={{ width: 14, height: 14, color: "#dc2626", flexShrink: 0, marginTop: 1 }} />
             <div>
-              <span style={{ fontSize: 12, color: "#b91c1c", fontWeight: 600, display: "block" }}>Impossible de charger les destinataires</span>
+              <span style={{ fontSize: 12, color: "#b91c1c", fontWeight: 600, display: "block" }}>No se pudieron cargar los destinatarios</span>
               <span style={{ fontSize: 11, color: "#9ca3af" }}>{recipientsError}</span>
             </div>
           </div>
         ) : recipients.length === 0 ? (
           <div style={{ padding: "8px 0 2px", display: "flex", alignItems: "center", gap: 8, color: "#9ca3af" }}>
             <User style={{ width: 14, height: 14 }} />
-            <span style={{ fontSize: 13 }}>Aucun destinataire enregistré dans Due — <a href="https://app.due.com/recipients" target="_blank" rel="noopener noreferrer" style={{ color: ORANGE, textDecoration: "none", fontWeight: 700 }}>Ajouter ↗</a></span>
+            <span style={{ fontSize: 13 }}>No hay destinatarios registrados en Due — <a href="https://app.due.com/recipients" target="_blank" rel="noopener noreferrer" style={{ color: ORANGE, textDecoration: "none", fontWeight: 700 }}>Agregar ↗</a></span>
           </div>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
@@ -885,7 +885,7 @@ function PayoutFormInner({ onSuccess }: PayoutFormProps) {
       </Card>
 
       {/* ── Provider ────────────────────────────────────────────────────────── */}
-      <Card title={`Réseau mobile · ${country.name}`}>
+      <Card title={`Red móvil · ${country.name}`}>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
           {country.providers.map((p, i) => (
             <button
@@ -954,7 +954,7 @@ function PayoutFormInner({ onSuccess }: PayoutFormProps) {
           <div style={{ marginTop: 10, background: "#fff7ed", border: "1px solid #fed7aa", borderRadius: 12, padding: "12px 16px", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
             <div>
               <span style={{ fontSize: 11, color: "#92400e", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", display: "block", marginBottom: 2 }}>
-                {quoteLoading ? "Calcul en cours…" : estimatedIsLive ? `Taux en direct · ${country.currency}` : `Estimation · ${country.currency}`}
+                {quoteLoading ? "Calculando…" : estimatedIsLive ? `Tasa en vivo · ${country.currency}` : `Estimado · ${country.currency}`}
               </span>
               <span style={{ fontSize: 20, fontWeight: 800, color: ORANGE, display: "flex", alignItems: "center", gap: 6 }}>
                 {quoteLoading
@@ -975,12 +975,12 @@ function PayoutFormInner({ onSuccess }: PayoutFormProps) {
             )}
           </div>
         )}
-        <p style={{ fontSize: 11, color: "#9ca3af", margin: "6px 0 0" }}>Min 5 EUR · Max 200 EUR · Taux confirmé au moment du transfert</p>
+        <p style={{ fontSize: 11, color: "#9ca3af", margin: "6px 0 0" }}>Mín 5 EUR · Máx 200 EUR · Tasa confirmada al momento de la transferencia</p>
       </Card>
 
       {/* ── Recipient ───────────────────────────────────────────────────────── */}
-      <Card title="Destinataire" icon={<Phone style={{ width: 14, height: 14 }} />}>
-        <FieldLabel label="Numéro de téléphone" required />
+      <Card title="Destinatario" icon={<Phone style={{ width: 14, height: 14 }} />}>
+        <FieldLabel label="Número de teléfono" required />
         <div style={{ position: "relative" }}>
           <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", fontSize: 13, color: "#6b7280", fontWeight: 700, pointerEvents: "none", background: "#f3f4f6", borderRight: `1px solid ${BORDER}`, padding: "0 8px 0 0", height: "100%", display: "flex", alignItems: "center" }}>
             {country.dialCode}
@@ -1009,7 +1009,7 @@ function PayoutFormInner({ onSuccess }: PayoutFormProps) {
         {fieldErrors.phone && <ErrMsg msg={fieldErrors.phone} />}
 
         <div style={{ marginTop: 14 }}>
-          <FieldLabel label="ID destinataire Due (rcp_…)" required />
+          <FieldLabel label="ID destinatario Due (rcp_…)" required />
           <input
             type="text"
             placeholder="rcp_xxxxxxxxxxxxxxxx"
@@ -1019,7 +1019,7 @@ function PayoutFormInner({ onSuccess }: PayoutFormProps) {
           />
           {fieldErrors.recipientId
             ? <ErrMsg msg={fieldErrors.recipientId} />
-            : <p style={{ fontSize: 11, color: "#9ca3af", margin: "5px 0 0" }}>Identifiant enregistré dans le tableau de bord Due · <a href="https://app.due.com/recipients" target="_blank" rel="noopener noreferrer" style={{ color: ORANGE, textDecoration: "none", fontWeight: 700 }}>Gérer ↗</a></p>
+            : <p style={{ fontSize: 11, color: "#9ca3af", margin: "5px 0 0" }}>ID registrado en el panel de Due · <a href="https://app.due.com/recipients" target="_blank" rel="noopener noreferrer" style={{ color: ORANGE, textDecoration: "none", fontWeight: 700 }}>Gestionar ↗</a></p>
           }
         </div>
       </Card>
@@ -1049,7 +1049,7 @@ function PayoutFormInner({ onSuccess }: PayoutFormProps) {
 
       {/* ── Credit note ─────────────────────────────────────────────────────── */}
       <InfoBox icon={<Info />} color="#2563eb" bg="#eff6ff" border="#bfdbfe">
-        Le paiement sera crédité sur votre compte MobileMoney Manager une fois reçu et confirmé par notre équipe (généralement sous 24h ouvrées).
+        El pago se acreditará en tu cuenta Gestor de Finanzas una vez recibido y confirmado por nuestro equipo (generalmente en 24h hábiles).
       </InfoBox>
 
       {/* ── Submit ──────────────────────────────────────────────────────────── */}
@@ -1064,7 +1064,7 @@ function PayoutFormInner({ onSuccess }: PayoutFormProps) {
         }}
       >
         <Send style={{ width: 18, height: 18 }} />
-        Continuer → Confirmation
+        Continuar → Confirmación
       </button>
     </div>
   );

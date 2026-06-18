@@ -72,7 +72,7 @@ export function ReferralCard() {
     : "";
 
   const shareText = encodeURIComponent(
-    `Gérez votre Orange Money, Wave et MTN MoMo comme un pro avec MobileMoney Manager — 45 jours gratuits ! ${referralUrl}`
+    `Gestiona tu Mercado Pago, Nequi y OXXO Pay como un pro con Gestor de Finanzas — ¡45 días gratis! ${referralUrl}`
   );
 
   async function handleCopy() {
@@ -96,13 +96,13 @@ export function ReferralCard() {
   }
 
   function shareTelegram() {
-    window.open(`https://t.me/share/url?url=${encodeURIComponent(referralUrl)}&text=${encodeURIComponent("Gérez votre Orange Money, Wave et MTN MoMo comme un pro — 45 jours gratuits !")}`, "_blank");
+    window.open(`https://t.me/share/url?url=${encodeURIComponent(referralUrl)}&text=${encodeURIComponent("Gestiona tu Mercado Pago y Nequi como un pro — ¡45 días gratis!")}`, "_blank");
   }
 
   function shareEmail() {
-    const subject = encodeURIComponent("Je t'invite sur MobileMoney Manager — 1 mois gratuit pour toi !");
+    const subject = encodeURIComponent("Te invito a Gestor de Finanzas — ¡1 mes gratis para ti!");
     const body = encodeURIComponent(
-      `Bonjour,\n\nJ'utilise MobileMoney Manager pour gérer mon activité et je t'invite à l'essayer gratuitement pendant 45 jours.\n\nAvec mon lien, tu obtiens un accès complet — et on gagne tous les deux 1 mois gratuit quand tu t'abonnes !\n\n${referralUrl}\n\nÀ bientôt !`
+      `Hola,\n\nUso Gestor de Finanzas para gestionar mis finanzas y te invito a probarlo gratis durante 45 días.\n\nCon mi enlace obtienes acceso completo — ¡y los dos ganamos 1 mes gratis cuando te suscribas!\n\n${referralUrl}\n\n¡Hasta pronto!`
     );
     window.open(`mailto:?subject=${subject}&body=${body}`, "_blank");
   }
@@ -139,10 +139,10 @@ export function ReferralCard() {
             </div>
             <div>
               <p style={{ margin: 0, fontSize: 11, fontWeight: 700, color: "#fdba74", textTransform: "uppercase", letterSpacing: "0.10em" }}>
-                Programme de parrainage
+                Programa de referidos
               </p>
               <p style={{ margin: "3px 0 0", fontSize: 18, fontWeight: 900, color: "#fff7ed", lineHeight: 1.25 }}>
-                Invitez un ami &rarr; vous gagnez<br />tous les deux 1 mois gratuit 🎁
+                Invita a un amigo &rarr; ambos ganan<br />1 mes gratis 🎁
               </p>
             </div>
           </div>
@@ -155,7 +155,7 @@ export function ReferralCard() {
           }}>
             <span style={{ fontSize: 14 }}>🌍</span>
             <span style={{ fontSize: 12, color: "#fed7aa", fontWeight: 600, lineHeight: 1.3 }}>
-              +500 entrepreneurs parrainent déjà leurs amis
+              +500 emprendedores ya refieren a sus amigos
             </span>
           </div>
         </div>
@@ -166,7 +166,7 @@ export function ReferralCard() {
         {/* ── Referral link ───────────────────────────────────────────────── */}
         <div>
           <p style={{ margin: "0 0 8px", fontSize: 12, fontWeight: 800, color: "#374151", textTransform: "uppercase", letterSpacing: "0.07em" }}>
-            Votre lien personnel
+            Tu enlace personal
           </p>
           {loading ? (
             <div style={{ height: 54, background: "#f3f4f6", borderRadius: 14, animation: "shimmer 1.5s infinite" }} />
@@ -198,8 +198,8 @@ export function ReferralCard() {
                 }}
               >
                 {copied
-                  ? <><Check style={{ width: 15, height: 15 }} /> Copié !</>
-                  : <><Copy style={{ width: 15, height: 15 }} /> Copier</>}
+                  ? <><Check style={{ width: 15, height: 15 }} /> ¡Copiado!</>
+                  : <><Copy style={{ width: 15, height: 15 }} /> Copiar</>}
               </button>
             </div>
           )}
@@ -209,7 +209,7 @@ export function ReferralCard() {
         {!loading && stats && (
           <div>
             <p style={{ margin: "0 0 10px", fontSize: 12, fontWeight: 800, color: "#374151", textTransform: "uppercase", letterSpacing: "0.07em" }}>
-              Partager via
+              Compartir vía
             </p>
             <div style={{ display: "flex", gap: 8 }}>
               {/* WhatsApp */}
@@ -248,7 +248,7 @@ export function ReferralCard() {
               {/* Copy */}
               <ShareButton
                 bg={copied ? "#16a34a" : DARK_ORANGE}
-                label={copied ? "Copié !" : "Copier lien"}
+                label={copied ? "¡Copiado!" : "Copiar enlace"}
                 onClick={handleCopy}
                 icon={
                   copied
@@ -258,7 +258,7 @@ export function ReferralCard() {
               />
             </div>
             <p style={{ margin: "10px 0 0", fontSize: 12, fontWeight: 700, color: ORANGE, textAlign: "center", letterSpacing: "0.01em" }}>
-              🚀 Plus vous partagez, plus vous gagnez !
+              🚀 ¡Cuanto más compartes, más ganas!
             </p>
           </div>
         )}
@@ -266,13 +266,13 @@ export function ReferralCard() {
         {/* ── Comment ça marche ───────────────────────────────────────────── */}
         <div style={{ background: "#fafaf9", border: "1.5px solid #f0ede9", borderRadius: 16, padding: "16px 18px" }}>
           <p style={{ margin: "0 0 13px", fontSize: 12, fontWeight: 800, color: "#374151", textTransform: "uppercase", letterSpacing: "0.07em" }}>
-            Comment ça marche
+            Cómo funciona
           </p>
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             {[
-              { num: "1", emoji: "🔗", title: "Partagez votre lien", desc: "Envoyez-le par WhatsApp, Telegram ou email à vos amis entrepreneurs.", iconBg: "linear-gradient(135deg, #22c55e, #16a34a)", shadow: "rgba(34,197,94,0.30)" },
-              { num: "2", emoji: "✍️", title: "Votre ami s'inscrit et s'abonne", desc: "Il crée son compte via votre lien et choisit un plan payant.", iconBg: "linear-gradient(135deg, #3b82f6, #2563eb)", shadow: "rgba(59,130,246,0.30)" },
-              { num: "3", emoji: "🎁", title: "Vous gagnez 1 mois gratuit chacun", desc: "La récompense est créditée automatiquement sur vos deux comptes.", iconBg: "linear-gradient(135deg, #f97316, #ea580c)", shadow: "rgba(249,115,22,0.30)" },
+              { num: "1", emoji: "🔗", title: "Comparte tu enlace", desc: "Envíalo por WhatsApp, Telegram o email a tus amigos emprendedores.", iconBg: "linear-gradient(135deg, #22c55e, #16a34a)", shadow: "rgba(34,197,94,0.30)" },
+              { num: "2", emoji: "✍️", title: "Tu amigo se registra y se suscribe", desc: "Crea su cuenta con tu enlace y elige un plan de pago.", iconBg: "linear-gradient(135deg, #3b82f6, #2563eb)", shadow: "rgba(59,130,246,0.30)" },
+              { num: "3", emoji: "🎁", title: "Ambos ganan 1 mes gratis", desc: "La recompensa se acredita automáticamente en ambas cuentas.", iconBg: "linear-gradient(135deg, #f97316, #ea580c)", shadow: "rgba(249,115,22,0.30)" },
             ].map((step) => (
               <div key={step.num} style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
                 <div style={{
@@ -304,7 +304,7 @@ export function ReferralCard() {
                 <span style={{ fontSize: 26, fontWeight: 900, color: "#111", lineHeight: 1 }}>{stats.totalReferrals}</span>
               </div>
               <p style={{ margin: 0, fontSize: 11, color: "#6b7280", fontWeight: 600 }}>
-                {stats.totalReferrals}/∞ Ami{stats.totalReferrals !== 1 ? "s" : ""} invité{stats.totalReferrals !== 1 ? "s" : ""}
+                {stats.totalReferrals}/∞ Amigo{stats.totalReferrals !== 1 ? "s" : ""} invitado{stats.totalReferrals !== 1 ? "s" : ""}
               </p>
             </div>
 
@@ -319,7 +319,7 @@ export function ReferralCard() {
                 <span style={{ fontSize: 26, fontWeight: 900, color: stats.rewardsEarned > 0 ? "#16a34a" : "#111", lineHeight: 1 }}>{stats.rewardsEarned}</span>
               </div>
               <p style={{ margin: 0, fontSize: 11, color: "#6b7280", fontWeight: 600 }}>
-                Mois gratuit{stats.rewardsEarned !== 1 ? "s" : ""} gagné{stats.rewardsEarned !== 1 ? "s" : ""}
+                Mes{stats.rewardsEarned !== 1 ? "es" : ""} gratis ganado{stats.rewardsEarned !== 1 ? "s" : ""}
               </p>
             </div>
 
@@ -329,7 +329,7 @@ export function ReferralCard() {
                 background: "#fffbeb", border: "1.5px solid #fde68a", textAlign: "center",
               }}>
                 <span style={{ fontSize: 26, fontWeight: 900, color: "#b45309", lineHeight: 1, display: "block", marginBottom: 5 }}>{stats.pendingReferrals}</span>
-                <p style={{ margin: 0, fontSize: 11, color: "#92400e", fontWeight: 600 }}>En attente</p>
+                <p style={{ margin: 0, fontSize: 11, color: "#92400e", fontWeight: 600 }}>Pendiente</p>
               </div>
             )}
           </div>
@@ -337,8 +337,8 @@ export function ReferralCard() {
 
         {/* ── Bottom CTA copy ──────────────────────────────────────────────── */}
         <p style={{ margin: 0, fontSize: 12, color: "#6b7280", textAlign: "center", lineHeight: 1.6 }}>
-          Partagez et gagnez 1 mois gratuit pour chaque ami qui s'abonne.
-          <br />La récompense est créditée dès que votre ami active son abonnement.
+          Comparte y gana 1 mes gratis por cada amigo que se suscriba.
+          <br />La recompensa se acredita cuando tu amigo activa su suscripción.
         </p>
 
       </div>
