@@ -570,6 +570,11 @@ function ClerkProviderWithRoutes() {
       appearance={clerkAppearance}
       localization={{
         ...esES,
+        unstable__errors: {
+          ...(esES as Record<string, unknown>)?.["unstable__errors"] as object,
+          passwordFoundInBreach: "Esta contraseña ha sido encontrada en una filtración de datos en línea. Por tu seguridad, usa una contraseña diferente.",
+          form_password_pwned: "Esta contraseña ha sido encontrada en una filtración de datos en línea. Por tu seguridad, usa una contraseña diferente.",
+        },
         signIn: {
           ...esES.signIn,
           start: {
