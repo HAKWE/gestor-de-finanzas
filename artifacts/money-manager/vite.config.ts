@@ -5,27 +5,15 @@ import path from "path";
 
 import { VitePWA } from "vite-plugin-pwa";
 
+// PORT is only used by the Vite dev server — Vercel/static builds don't need it.
 const rawPort = process.env.PORT;
-
-if (!rawPort) {
-  throw new Error(
-    "PORT environment variable is required but was not provided.",
-  );
-}
-
-const port = Number(rawPort);
-
-if (Number.isNaN(port) || port <= 0) {
+const port = rawPort ? Number(rawPort) : 3000;
+if (rawPort && (Number.isNaN(port) || port <= 0)) {
   throw new Error(`Invalid PORT value: "${rawPort}"`);
 }
 
-const basePath = process.env.BASE_PATH;
-
-if (!basePath) {
-  throw new Error(
-    "BASE_PATH environment variable is required but was not provided.",
-  );
-}
+// BASE_PATH is set by Replit's proxy; for standalone deployments (Vercel) default to "/".
+const basePath = process.env.BASE_PATH ?? "/";
 
 // In production VITE_CLERK_PROXY_URL is auto-populated by Replit.
 // In dev the Clerk FAPI host has SSL issues from the Replit preview browser, so

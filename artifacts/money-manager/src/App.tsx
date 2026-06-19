@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, Component } from "react";
 import type { ErrorInfo, ReactNode } from "react";
+import { setBaseUrl } from "@workspace/api-client-react";
 import { ClerkProvider, Show, useClerk, useAuth, useUser } from '@clerk/react';
 import { esES } from '@clerk/localizations';
 import { Switch, Route, useLocation, Router as WouterRouter, Redirect } from 'wouter';
@@ -37,6 +38,11 @@ import NotFound from "@/pages/not-found";
 const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 const clerkProxyUrl = import.meta.env.VITE_CLERK_PROXY_URL;
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
+
+// When deployed separately (e.g. Vercel frontend + Replit API), set VITE_API_BASE_URL
+// to the Replit API origin so relative /api/* calls are routed correctly.
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL as string | undefined;
+if (apiBaseUrl) setBaseUrl(apiBaseUrl);
 
 function stripBase(path: string): string {
   return basePath && path.startsWith(basePath)
