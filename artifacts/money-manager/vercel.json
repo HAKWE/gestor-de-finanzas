@@ -4,6 +4,10 @@
   "buildCommand": "BASE_PATH=/ pnpm run build",
   "outputDirectory": "dist/public",
   "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "https://mobile-money-manager-latam.replit.app/api/$1"
+    },
     { "handle": "filesystem" },
     { "src": "/(.*)", "dest": "/index.html" }
   ]
