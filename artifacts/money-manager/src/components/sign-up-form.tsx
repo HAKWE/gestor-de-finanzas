@@ -8,6 +8,31 @@ import { Eye, EyeOff, Loader2, CheckCircle2, XCircle } from "lucide-react";
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
+const CLERK_ERROR_ES: Record<string, string> = {
+  form_password_pwned:
+    "Esta contraseña ha sido encontrada en una filtración de datos. Por tu seguridad, usa una contraseña diferente.",
+  form_password_not_strong_enough:
+    "Tu contraseña no es lo suficientemente segura.",
+  form_password_length_too_short:
+    "La contraseña es demasiado corta. Mínimo 8 caracteres.",
+  form_identifier_exists:
+    "Ya existe una cuenta con este correo. Inicia sesión en su lugar.",
+  form_param_format_invalid:
+    "El formato del correo electrónico no es válido.",
+  form_password_incorrect: "Contraseña incorrecta.",
+};
+
+function translateClerkError(err: any): string {
+  const code: string = err?.errors?.[0]?.code ?? "";
+  if (code && CLERK_ERROR_ES[code]) return CLERK_ERROR_ES[code];
+  return (
+    err?.errors?.[0]?.longMessage ||
+    err?.errors?.[0]?.message ||
+    err?.message ||
+    "No se pudo crear la cuenta. Inténtalo de nuevo."
+  );
+}
+
 function getPasswordStrength(password: string): {
   score: number;
   label: string;
@@ -141,12 +166,7 @@ export function SignUpForm({
         setStep("verify");
       }
     } catch (err: any) {
-      const msg =
-        err?.errors?.[0]?.longMessage ||
-        err?.errors?.[0]?.message ||
-        err?.message ||
-        "No se pudo crear la cuenta. Inténtalo de nuevo.";
-      setErrors({ global: msg });
+      setErrors({ global: translateClerkError(err) });
     } finally {
       setSubmitting(false);
     }
