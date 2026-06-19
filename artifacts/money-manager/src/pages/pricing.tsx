@@ -167,7 +167,7 @@ export default function Pricing() {
             Volver al inicio
           </Link>
           <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
-            <img src="/logo.svg" alt="MobileMoney" style={{ width: 24, height: 24 }} />
+            <img src="/logo.svg" alt="Gestor de Finanzas" style={{ width: 24, height: 24 }} />
             <span style={{ fontWeight: 700, fontSize: 14, color: "#111" }}>Gestor de Finanzas</span>
           </div>
           {isLoaded && !isSignedIn && (

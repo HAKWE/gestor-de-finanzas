@@ -30,7 +30,7 @@ export default function Legal() {
             }}>
               <span style={{ fontSize: 14 }}>💰</span>
             </div>
-            <span style={{ fontWeight: 800, fontSize: 15, color: "#111" }}>MobileMoney</span>
+            <span style={{ fontWeight: 800, fontSize: 15, color: "#111" }}>Gestor de Finanzas</span>
           </div>
         </div>
       </header>
@@ -42,29 +42,28 @@ export default function Legal() {
           {/* Page title */}
           <div style={{ marginBottom: 40 }}>
             <h1 style={{ fontSize: "clamp(26px,4vw,38px)", fontWeight: 900, color: "#111", margin: "0 0 10px", letterSpacing: "-0.02em" }}>
-              {fr ? "Mentions Légales" : "Legal Notice"}
+              {fr ? "Aviso Legal" : "Legal Notice"}
             </h1>
             <p style={{ fontSize: 14, color: "#9ca3af", margin: 0 }}>
-              {fr ? "Dernière mise à jour : 27 avril 2026" : "Last updated: April 27, 2026"}
+              {fr ? "Última actualización: 27 de abril de 2026" : "Last updated: April 27, 2026"}
             </p>
           </div>
 
           {/* 1 — Éditeur */}
           <section style={{ marginBottom: 36 }}>
             <h2 style={{ fontSize: 18, fontWeight: 800, color: "#111", margin: "0 0 12px", paddingBottom: 10, borderBottom: "2px solid #f0ede9" }}>
-              {fr ? "1. Éditeur du site" : "1. Publisher"}
+              {fr ? "1. Editor del sitio" : "1. Publisher"}
             </h2>
             <div style={{
               background: "#fff", border: "1.5px solid #f0ede9", borderRadius: 16,
               padding: "18px 22px", display: "flex", flexDirection: "column", gap: 4,
             }}>
-              <p style={{ margin: 0, fontWeight: 800, fontSize: 15, color: "#111" }}>MobileMoney Manager</p>
+              <p style={{ margin: 0, fontWeight: 800, fontSize: 15, color: "#111" }}>Gestor de Finanzas</p>
               <p style={{ margin: 0, fontSize: 14, color: "#374151", lineHeight: 1.7 }}>
-                SASU MobileMoney Manager<br />
-                Luxembourg
+                Gestor de Finanzas
               </p>
-              <a href="mailto:support@mobilemoneymanager.africa" style={{ fontSize: 14, color: ORANGE, fontWeight: 700, textDecoration: "none", marginTop: 4 }}>
-                support@mobilemoneymanager.africa
+              <a href="mailto:soporte@gestordefinanzas.app" style={{ fontSize: 14, color: ORANGE, fontWeight: 700, textDecoration: "none", marginTop: 4 }}>
+                soporte@gestordefinanzas.app
               </a>
             </div>
           </section>
@@ -72,7 +71,7 @@ export default function Legal() {
           {/* 2 — Hébergement */}
           <section style={{ marginBottom: 36 }}>
             <h2 style={{ fontSize: 18, fontWeight: 800, color: "#111", margin: "0 0 12px", paddingBottom: 10, borderBottom: "2px solid #f0ede9" }}>
-              {fr ? "2. Hébergement" : "2. Hosting"}
+              {fr ? "2. Alojamiento" : "2. Hosting"}
             </h2>
             <div style={{
               background: "#fff", border: "1.5px solid #f0ede9", borderRadius: 16,
@@ -80,8 +79,8 @@ export default function Legal() {
             }}>
               <p style={{ margin: 0, fontSize: 14, color: "#374151", lineHeight: 1.7 }}>
                 {fr
-                  ? "L'application est hébergée par un prestataire de services professionnel situé aux États-Unis, conforme aux standards de sécurité européens."
-                  : "The application is hosted by a professional service provider based in the United States, compliant with European security standards."
+                  ? "La aplicación está alojada por un proveedor de servicios profesional en la nube, con altos estándares de seguridad internacionales."
+                  : "The application is hosted by a professional cloud service provider with high international security standards."
                 }
               </p>
             </div>
@@ -90,17 +89,17 @@ export default function Legal() {
           {/* 3 — Propriété intellectuelle */}
           <section style={{ marginBottom: 36 }}>
             <h2 style={{ fontSize: 18, fontWeight: 800, color: "#111", margin: "0 0 12px", paddingBottom: 10, borderBottom: "2px solid #f0ede9" }}>
-              {fr ? "3. Propriété intellectuelle" : "3. Intellectual property"}
+              {fr ? "3. Propiedad intelectual" : "3. Intellectual property"}
             </h2>
             <p style={{ fontSize: 14, color: "#374151", lineHeight: 1.7, margin: "0 0 10px" }}>
               {fr
-                ? "L'ensemble du contenu de l'application MobileMoney Manager (structure, design, logos, textes, graphiques, base de données, etc.) est la propriété exclusive de l'éditeur."
-                : "All content of the MobileMoney Manager application (structure, design, logos, texts, graphics, database, etc.) is the exclusive property of the publisher."
+                ? "Todo el contenido de la aplicación Gestor de Finanzas (estructura, diseño, logotipos, textos, gráficos, base de datos, etc.) es propiedad exclusiva del editor."
+                : "All content of the Gestor de Finanzas application (structure, design, logos, texts, graphics, database, etc.) is the exclusive property of the publisher."
               }
             </p>
             <p style={{ fontSize: 14, color: "#374151", lineHeight: 1.7, margin: 0 }}>
               {fr
-                ? "Toute reproduction, représentation, modification ou adaptation totale ou partielle est strictement interdite sans autorisation écrite préalable."
+                ? "Cualquier reproducción, representación, modificación o adaptación total o parcial está estrictamente prohibida sin autorización escrita previa."
                 : "Any total or partial reproduction, representation, modification or adaptation is strictly prohibited without prior written authorisation."
               }
             </p>
@@ -109,20 +108,20 @@ export default function Legal() {
           {/* 4 — Données personnelles */}
           <section style={{ marginBottom: 36 }}>
             <h2 style={{ fontSize: 18, fontWeight: 800, color: "#111", margin: "0 0 12px", paddingBottom: 10, borderBottom: "2px solid #f0ede9" }}>
-              {fr ? "4. Données personnelles" : "4. Personal data"}
+              {fr ? "4. Datos personales" : "4. Personal data"}
             </h2>
             <p style={{ fontSize: 14, color: "#374151", lineHeight: 1.7, margin: 0 }}>
               {fr
-                ? <>Le traitement des données personnelles est régi par notre{" "}
+                ? <>El tratamiento de los datos personales se rige por nuestra{" "}
                     <Link href="/confidentialite" style={{ color: ORANGE, fontWeight: 700, textDecoration: "none" }}>
-                      Politique de Confidentialité
+                      Política de Privacidad
                     </Link>
-                    . Conformément au RGPD, vous disposez d'un droit d'accès, de rectification, d'effacement et d'opposition à vos données.</>
+                    . Tienes derecho a acceder, rectificar, suprimir y oponerte al tratamiento de tus datos.</>
                 : <>The processing of personal data is governed by our{" "}
                     <Link href="/confidentialite" style={{ color: ORANGE, fontWeight: 700, textDecoration: "none" }}>
                       Privacy Policy
                     </Link>
-                    . In accordance with the GDPR, you have the right to access, rectify, erase and object to your data.</>
+                    . You have the right to access, rectify, erase and object to your data.</>
               }
             </p>
           </section>
@@ -130,26 +129,26 @@ export default function Legal() {
           {/* 5 — Limitation de responsabilité */}
           <section style={{ marginBottom: 36 }}>
             <h2 style={{ fontSize: 18, fontWeight: 800, color: "#111", margin: "0 0 12px", paddingBottom: 10, borderBottom: "2px solid #f0ede9" }}>
-              {fr ? "5. Limitation de responsabilité" : "5. Limitation of liability"}
+              {fr ? "5. Limitación de responsabilidad" : "5. Limitation of liability"}
             </h2>
             <p style={{ fontSize: 14, color: "#374151", lineHeight: 1.7, margin: "0 0 10px" }}>
               {fr
-                ? "MobileMoney Manager est un outil d'aide à la gestion financière. L'éditeur ne saurait être tenu responsable :"
-                : "MobileMoney Manager is a financial management assistance tool. The publisher cannot be held liable for:"
+                ? "Gestor de Finanzas es una herramienta de apoyo a la gestión financiera. El editor no puede ser responsable de:"
+                : "Gestor de Finanzas is a financial management assistance tool. The publisher cannot be held liable for:"
               }
             </p>
             <ul style={{ margin: 0, paddingLeft: 20, display: "flex", flexDirection: "column", gap: 8 }}>
               {(fr
                 ? [
-                    "Des erreurs ou omissions dans les données saisies par l'utilisateur",
-                    "Des pertes financières résultant de l'utilisation de l'application",
-                    "Des dysfonctionnements liés aux services des opérateurs mobiles (Orange Money, Wave, MTN MoMo, etc.)",
-                    "Des interruptions de service dues à des cas de force majeure",
+                    "Errores u omisiones en los datos introducidos por el usuario",
+                    "Pérdidas financieras derivadas del uso de la aplicación",
+                    "Disfunciones relacionadas con servicios de pago digital (Mercado Pago, Nequi, OXXO Pay, etc.)",
+                    "Interrupciones del servicio debidas a causas de fuerza mayor",
                   ]
                 : [
                     "Errors or omissions in data entered by the user",
                     "Financial losses resulting from use of the application",
-                    "Malfunctions related to mobile operator services (Orange Money, Wave, MTN MoMo, etc.)",
+                    "Malfunctions related to digital payment services (Mercado Pago, Nequi, OXXO Pay, etc.)",
                     "Service interruptions due to force majeure",
                   ]
               ).map(item => (
@@ -161,12 +160,12 @@ export default function Legal() {
           {/* 6 — Droit applicable */}
           <section style={{ marginBottom: 36 }}>
             <h2 style={{ fontSize: 18, fontWeight: 800, color: "#111", margin: "0 0 12px", paddingBottom: 10, borderBottom: "2px solid #f0ede9" }}>
-              {fr ? "6. Droit applicable" : "6. Governing law"}
+              {fr ? "6. Ley aplicable" : "6. Governing law"}
             </h2>
             <p style={{ fontSize: 14, color: "#374151", lineHeight: 1.7, margin: 0 }}>
               {fr
-                ? "Les présentes mentions légales sont régies par le droit luxembourgeois. Tout litige sera soumis aux tribunaux compétents de la ville de Luxembourg."
-                : "These legal notices are governed by Luxembourg law. Any dispute shall be submitted to the competent courts of the city of Luxembourg."
+                ? "El presente aviso legal se rige por la legislación aplicable. Cualquier disputa se someterá a los tribunales competentes."
+                : "These legal notices are governed by applicable law. Any dispute shall be submitted to the competent courts."
               }
             </p>
           </section>
@@ -181,14 +180,14 @@ export default function Legal() {
             </p>
             <p style={{ margin: "0 0 8px", fontSize: 14, color: "#6b7280" }}>
               {fr
-                ? "Pour toute question relative à ces mentions légales ou à l'application :"
+                ? "Para cualquier consulta sobre este aviso legal o la aplicación:"
                 : "For any questions about these legal notices or the application:"
               }
             </p>
-            <a href="mailto:support@mobilemoneymanager.africa" style={{
+            <a href="mailto:soporte@gestordefinanzas.app" style={{
               fontSize: 15, fontWeight: 700, color: ORANGE, textDecoration: "none",
             }}>
-              support@mobilemoneymanager.africa
+              soporte@gestordefinanzas.app
             </a>
           </div>
         </div>
@@ -197,7 +196,7 @@ export default function Legal() {
       {/* ─── FOOTER ─── */}
       <footer style={{ borderTop: "1px solid #f0ede9", padding: "20px 24px", textAlign: "center" }}>
         <p style={{ margin: 0, fontSize: 12, color: "#9ca3af" }}>
-          © 2026 MobileMoney Manager — {fr ? "Tous droits réservés" : "All rights reserved"} · Luxembourg
+          © 2026 Gestor de Finanzas — {fr ? "Todos los derechos reservados" : "All rights reserved"}
         </p>
       </footer>
     </div>

@@ -146,14 +146,14 @@ export default function NewTransaction() {
         </Link>
 
         <h1 style={{ fontSize: 26, fontWeight: 700, color: TEXT, marginBottom: 28, letterSpacing: "-0.02em" }}>
-          Nouvelle transaction
+          Nueva transacción
         </h1>
 
         <div className="nt-sections" style={{ display: "flex", flexDirection: "column", gap: 24 }}>
 
           {/* ── 1 · Type ── */}
           <section>
-            <SectionLabel>Type</SectionLabel>
+            <SectionLabel>Tipo</SectionLabel>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
               {([
                 { val: "income"  as const, label: "Ingreso", Icon: TrendingUp   },

@@ -35,64 +35,64 @@ export default function Privacy() {
   const sections: Section[] = fr
     ? [
         {
-          title: "1. Introduction",
-          prose: "Nous nous engageons à protéger votre vie privée et la sécurité de vos données financières. Cette Politique de Confidentialité explique comment nous collectons, utilisons, partageons et protégeons vos informations.",
+          title: "1. Introducción",
+          prose: "Nos comprometemos a proteger tu privacidad y la seguridad de tus datos financieros. Esta Política de Privacidad explica cómo recopilamos, usamos, compartimos y protegemos tu información.",
         },
         {
-          title: "2. Informations que nous collectons",
+          title: "2. Información que recopilamos",
           items: [
-            { label: "Informations de compte", text: "Nom, prénom, adresse email, numéro de téléphone, mot de passe" },
-            { label: "Données financières", text: "Transactions (montant, date, catégorie, moyen de paiement : Orange Money, Wave, MTN MoMo, etc.)" },
-            { label: "Données d'utilisation", text: "Fréquence d'utilisation, pages visitées, appareils utilisés" },
-            { label: "Données de paiement", text: "Gérées par Stripe (nous ne stockons pas les numéros de carte)" },
+            { label: "Información de cuenta", text: "Nombre, apellido, correo electrónico, número de teléfono, contraseña" },
+            { label: "Datos financieros", text: "Transacciones (monto, fecha, categoría, método de pago: Mercado Pago, Nequi, OXXO Pay, etc.)" },
+            { label: "Datos de uso", text: "Frecuencia de uso, páginas visitadas, dispositivos utilizados" },
+            { label: "Datos de pago", text: "Gestionados por Stripe (no almacenamos números de tarjeta)" },
           ],
         },
         {
-          title: "3. Base légale du traitement",
-          intro: "Nous traitons vos données sur la base de :",
+          title: "3. Base legal del tratamiento",
+          intro: "Tratamos tus datos sobre la base de:",
           items: [
-            "L'exécution du contrat (fourniture du service)",
-            "Notre intérêt légitime (amélioration du service et sécurité)",
-            "Votre consentement (pour les communications marketing)",
+            "Ejecución del contrato (prestación del servicio)",
+            "Nuestro interés legítimo (mejora del servicio y seguridad)",
+            "Tu consentimiento (para comunicaciones de marketing)",
           ],
         },
         {
-          title: "4. Utilisation de vos données",
-          intro: "Nous utilisons vos données pour :",
+          title: "4. Uso de tus datos",
+          intro: "Usamos tus datos para:",
           items: [
-            "Fournir, maintenir et améliorer l'Application",
-            "Générer des rapports, graphiques et export PDF",
-            "Assurer la sécurité du compte et prévenir la fraude",
-            "Vous envoyer des notifications importantes (vérification, mises à jour)",
-            "Respecter nos obligations légales",
+            "Proveer, mantener y mejorar la Aplicación",
+            "Generar reportes, gráficos y exportaciones PDF",
+            "Garantizar la seguridad de la cuenta y prevenir fraudes",
+            "Enviarte notificaciones importantes (verificación, actualizaciones)",
+            "Cumplir con nuestras obligaciones legales",
           ],
         },
         {
-          title: "5. Partage des données",
-          intro: "Nous ne vendons pas vos données. Nous pouvons les partager avec :",
+          title: "5. Compartición de datos",
+          intro: "No vendemos tus datos. Podemos compartirlos con:",
           items: [
-            "Stripe (pour le traitement des paiements)",
-            "Clerk (pour l'authentification)",
-            "Prestataires d'hébergement et outils analytiques",
-            "Autorités compétentes si requis par la loi",
+            "Stripe (para el procesamiento de pagos)",
+            "Clerk (para la autenticación)",
+            "Proveedores de alojamiento y herramientas analíticas",
+            "Autoridades competentes si lo exige la ley",
           ],
         },
         {
-          title: "6. Sécurité des données",
-          prose: "Nous mettons en œuvre des mesures techniques et organisationnelles appropriées (chiffrement, accès restreint, audits réguliers). Cependant, aucune transmission sur Internet n'est 100% sécurisée.",
+          title: "6. Seguridad de los datos",
+          prose: "Implementamos medidas técnicas y organizativas adecuadas (cifrado, acceso restringido, auditorías regulares). Sin embargo, ninguna transmisión por Internet es 100% segura.",
         },
         {
-          title: "7. Vos droits (RGPD)",
-          intro: "Vous disposez des droits suivants :",
+          title: "7. Tus derechos",
+          intro: "Tienes los siguientes derechos:",
           items: [
-            "Droit d'accès, de rectification, d'effacement",
-            "Droit d'opposition et de limitation du traitement",
-            "Droit à la portabilité des données",
+            "Derecho de acceso, rectificación y supresión",
+            "Derecho de oposición y limitación del tratamiento",
+            "Derecho a la portabilidad de los datos",
           ],
         },
         {
-          title: "8. Conservation des données",
-          prose: "Nous conservons vos données aussi longtemps que nécessaire pour fournir le service ou respecter nos obligations légales.",
+          title: "8. Conservación de datos",
+          prose: "Conservamos tus datos durante el tiempo necesario para prestar el servicio o cumplir con nuestras obligaciones legales.",
         },
       ]
     : [
@@ -180,7 +180,7 @@ export default function Privacy() {
             }}>
               <span style={{ fontSize: 14 }}>💰</span>
             </div>
-            <span style={{ fontWeight: 800, fontSize: 15, color: "#111" }}>MobileMoney</span>
+            <span style={{ fontWeight: 800, fontSize: 15, color: "#111" }}>Gestor de Finanzas</span>
           </div>
         </div>
       </header>
@@ -192,10 +192,10 @@ export default function Privacy() {
           {/* Page title */}
           <div style={{ marginBottom: 32 }}>
             <h1 style={{ fontSize: "clamp(26px,4vw,38px)", fontWeight: 900, color: "#111", margin: "0 0 10px", letterSpacing: "-0.02em" }}>
-              {fr ? "Politique de Confidentialité" : "Privacy Policy"}
+              {fr ? "Política de Privacidad" : "Privacy Policy"}
             </h1>
             <p style={{ fontSize: 14, color: "#9ca3af", margin: 0 }}>
-              {fr ? "Dernière mise à jour : 27 avril 2026" : "Last updated: April 27, 2026"}
+              {fr ? "Última actualización: 27 de abril de 2026" : "Last updated: April 27, 2026"}
             </p>
           </div>
 
@@ -206,8 +206,8 @@ export default function Privacy() {
           }}>
             <p style={{ margin: 0, fontSize: 14, color: "#374151", lineHeight: 1.7 }}>
               {fr
-                ? <><strong>MobileMoney Manager</strong> (ci-après « l'Application » ou « nous ») est exploitée par une entreprise individuelle basée au Luxembourg.</>
-                : <><strong>MobileMoney Manager</strong> (hereinafter "the Application" or "we") is operated by an individual business based in Luxembourg.</>
+                ? <><strong>Gestor de Finanzas</strong> (en adelante «la Aplicación» o «nosotros») es una herramienta diseñada para emprendedores y micronegocios latinoamericanos.</>
+                : <><strong>Gestor de Finanzas</strong> (hereinafter "the Application" or "we") is a tool designed for Latin American entrepreneurs and micro-businesses.</>
               }
             </p>
           </div>
@@ -238,8 +238,8 @@ export default function Privacy() {
           {/* GDPR rights contact note */}
           <p style={{ fontSize: 14, color: "#374151", lineHeight: 1.7, marginBottom: 28 }}>
             {fr
-              ? <>Pour exercer ces droits, contactez-nous à : <strong>support@mobilemoneymanager.africa</strong></>
-              : <>To exercise these rights, contact us at: <strong>support@mobilemoneymanager.africa</strong></>
+              ? <>Para ejercer estos derechos, contáctenos en: <strong>soporte@gestordefinanzas.app</strong></>
+              : <>To exercise these rights, contact us at: <strong>soporte@gestordefinanzas.app</strong></>
             }
           </p>
 
@@ -249,12 +249,12 @@ export default function Privacy() {
             padding: "20px 24px",
           }}>
             <p style={{ margin: "0 0 6px", fontSize: 14, color: "#6b7280" }}>
-              {fr ? "Pour toute question :" : "For any questions:"}
+              {fr ? "Para cualquier consulta:" : "For any questions:"}
             </p>
-            <a href="mailto:support@mobilemoneymanager.africa" style={{
+            <a href="mailto:soporte@gestordefinanzas.app" style={{
               fontSize: 15, fontWeight: 700, color: ORANGE, textDecoration: "none",
             }}>
-              support@mobilemoneymanager.africa
+              soporte@gestordefinanzas.app
             </a>
           </div>
         </div>
@@ -263,7 +263,7 @@ export default function Privacy() {
       {/* ─── FOOTER ─── */}
       <footer style={{ borderTop: "1px solid #f0ede9", padding: "20px 24px", textAlign: "center" }}>
         <p style={{ margin: 0, fontSize: 12, color: "#9ca3af" }}>
-          © 2026 MobileMoney Manager · Luxembourg
+          © 2026 Gestor de Finanzas — {fr ? "Todos los derechos reservados" : "All rights reserved"}
         </p>
       </footer>
     </div>

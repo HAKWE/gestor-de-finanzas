@@ -18,68 +18,68 @@ export default function Terms() {
   const sections: Section[] = fr
     ? [
         {
-          title: "1. Objet",
-          prose: "Les présentes Conditions Générales d'Utilisation (CGU) régissent l'utilisation de l'application MobileMoney Manager.",
+          title: "1. Objeto",
+          prose: "Los presentes Términos y Condiciones de Uso rigen la utilización de la aplicación Gestor de Finanzas.",
         },
         {
-          title: "2. Description du Service",
-          prose: "MobileMoney Manager est une plateforme SaaS permettant aux micro-entrepreneurs de suivre leurs transactions mobiles (Orange Money, Wave, MTN MoMo, etc.), générer des rapports et exporter des données.",
+          title: "2. Descripción del Servicio",
+          prose: "Gestor de Finanzas es una plataforma SaaS que permite a emprendedores y micronegocios latinoamericanos llevar el control de sus transacciones digitales (Mercado Pago, Nequi, OXXO Pay, Yape, Efectivo, etc.), generar reportes y exportar datos.",
         },
         {
-          title: "3. Inscription et Compte",
+          title: "3. Registro y Cuenta",
           items: [
-            "Vous devez avoir au moins 18 ans pour utiliser le service",
-            "Vous vous engagez à fournir des informations exactes et à jour",
-            "Vous êtes responsable de la confidentialité de votre mot de passe",
+            "Debes tener al menos 18 años para usar el servicio",
+            "Te comprometes a proporcionar información exacta y actualizada",
+            "Eres responsable de la confidencialidad de tu contraseña",
           ],
         },
         {
-          title: "4. Abonnements et Paiements",
+          title: "4. Suscripciones y Pagos",
           items: [
-            "Les abonnements sont renouvelés automatiquement à la fin de chaque période",
-            "Vous pouvez annuler votre abonnement à tout moment depuis « Mon abonnement »",
-            "Les paiements sont traités par Stripe",
-            "Aucun remboursement n'est effectué pour les périodes déjà commencées",
+            "Las suscripciones se renuevan automáticamente al final de cada período",
+            "Puedes cancelar tu suscripción en cualquier momento desde «Mi suscripción»",
+            "Los pagos son procesados por Stripe",
+            "No se realizan reembolsos por períodos ya iniciados",
           ],
         },
         {
-          title: "5. Obligations de l'Utilisateur",
+          title: "5. Obligaciones del Usuario",
           items: [
-            "Utiliser le service de manière licite",
-            "Ne pas tenter de contourner les mesures de sécurité",
-            "Ne pas utiliser l'application pour des activités frauduleuses ou illégales",
+            "Usar el servicio de forma lícita",
+            "No intentar eludir las medidas de seguridad",
+            "No usar la aplicación para actividades fraudulentas o ilegales",
           ],
         },
         {
-          title: "6. Propriété Intellectuelle",
-          prose: "L'application et son contenu sont la propriété exclusive de MobileMoney Manager. Toute reproduction ou utilisation non autorisée est interdite.",
+          title: "6. Propiedad Intelectual",
+          prose: "La aplicación y su contenido son propiedad exclusiva de Gestor de Finanzas. Cualquier reproducción o uso no autorizado está prohibido.",
         },
         {
-          title: "7. Limitation de Responsabilité",
-          intro: "L'Application est fournie « en l'état ». Nous ne pouvons être tenus responsables des :",
+          title: "7. Limitación de Responsabilidad",
+          intro: "La Aplicación se proporciona «tal cual». No podemos ser responsables de:",
           items: [
-            "Erreurs de saisie de vos données",
-            "Pertes financières résultant de l'utilisation du service",
-            "Problèmes techniques liés à vos opérateurs mobiles",
+            "Errores en la introducción de tus datos",
+            "Pérdidas financieras derivadas del uso del servicio",
+            "Problemas técnicos relacionados con tus servicios de pago digital",
           ],
         },
         {
-          title: "8. Résiliation",
-          prose: "Nous pouvons suspendre ou supprimer votre compte en cas de violation grave des CGU.",
+          title: "8. Rescisión",
+          prose: "Podemos suspender o eliminar tu cuenta en caso de incumplimiento grave de estos Términos.",
         },
         {
-          title: "9. Droit applicable et juridiction",
-          prose: "Les présentes CGU sont régies par le droit luxembourgeois. Tout litige sera soumis aux tribunaux compétents de Luxembourg.",
+          title: "9. Ley aplicable y jurisdicción",
+          prose: "Los presentes Términos se rigen por la legislación aplicable. Cualquier disputa se someterá a los tribunales competentes.",
         },
       ]
     : [
         {
           title: "1. Purpose",
-          prose: "These General Terms of Use govern the use of the MobileMoney Manager application.",
+          prose: "These General Terms of Use govern the use of the Gestor de Finanzas application.",
         },
         {
           title: "2. Service description",
-          prose: "MobileMoney Manager is a SaaS platform enabling micro-entrepreneurs to track their mobile transactions (Orange Money, Wave, MTN MoMo, etc.), generate reports and export data.",
+          prose: "Gestor de Finanzas is a SaaS platform enabling Latin American entrepreneurs to track their digital transactions (Mercado Pago, Nequi, OXXO Pay, etc.), generate reports and export data.",
         },
         {
           title: "3. Registration and account",
@@ -108,7 +108,7 @@ export default function Terms() {
         },
         {
           title: "6. Intellectual property",
-          prose: "The application and its content are the exclusive property of MobileMoney Manager. Any unauthorised reproduction or use is prohibited.",
+          prose: "The application and its content are the exclusive property of Gestor de Finanzas. Any unauthorised reproduction or use is prohibited.",
         },
         {
           title: "7. Limitation of liability",
@@ -125,7 +125,7 @@ export default function Terms() {
         },
         {
           title: "9. Governing law and jurisdiction",
-          prose: "These Terms are governed by Luxembourg law. Any dispute shall be submitted to the competent courts of Luxembourg.",
+          prose: "These Terms are governed by applicable law. Any dispute shall be submitted to the competent courts.",
         },
       ];
 
@@ -151,7 +151,7 @@ export default function Terms() {
             }}>
               <span style={{ fontSize: 14 }}>💰</span>
             </div>
-            <span style={{ fontWeight: 800, fontSize: 15, color: "#111" }}>MobileMoney</span>
+            <span style={{ fontWeight: 800, fontSize: 15, color: "#111" }}>Gestor de Finanzas</span>
           </div>
         </div>
       </header>
@@ -163,10 +163,10 @@ export default function Terms() {
           {/* Page title */}
           <div style={{ marginBottom: 40 }}>
             <h1 style={{ fontSize: "clamp(26px,4vw,38px)", fontWeight: 900, color: "#111", margin: "0 0 10px", letterSpacing: "-0.02em" }}>
-              {fr ? "Conditions Générales d'Utilisation" : "Terms of Service"}
+              {fr ? "Términos y Condiciones de Uso" : "Terms of Service"}
             </h1>
             <p style={{ fontSize: 14, color: "#9ca3af", margin: 0 }}>
-              {fr ? "Dernière mise à jour : 27 avril 2026" : "Last updated: April 27, 2026"}
+              {fr ? "Última actualización: 27 de abril de 2026" : "Last updated: April 27, 2026"}
             </p>
           </div>
 
@@ -201,12 +201,12 @@ export default function Terms() {
             padding: "20px 24px", marginTop: 8,
           }}>
             <p style={{ margin: "0 0 6px", fontSize: 14, color: "#6b7280" }}>
-              {fr ? "10. Contact — Pour toute question :" : "10. Contact — For any questions:"}
+              {fr ? "10. Contacto — Para cualquier consulta:" : "10. Contact — For any questions:"}
             </p>
-            <a href="mailto:support@mobilemoneymanager.africa" style={{
+            <a href="mailto:soporte@gestordefinanzas.app" style={{
               fontSize: 15, fontWeight: 700, color: ORANGE, textDecoration: "none",
             }}>
-              support@mobilemoneymanager.africa
+              soporte@gestordefinanzas.app
             </a>
           </div>
         </div>
@@ -215,7 +215,7 @@ export default function Terms() {
       {/* ─── FOOTER ─── */}
       <footer style={{ borderTop: "1px solid #f0ede9", padding: "20px 24px", textAlign: "center" }}>
         <p style={{ margin: 0, fontSize: 12, color: "#9ca3af" }}>
-          © 2026 MobileMoney Manager · Luxembourg
+          © 2026 Gestor de Finanzas — {fr ? "Todos los derechos reservados" : "All rights reserved"}
         </p>
       </footer>
     </div>

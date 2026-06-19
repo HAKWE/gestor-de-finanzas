@@ -907,7 +907,7 @@ function PayoutFormInner({ onSuccess }: PayoutFormProps) {
       </Card>
 
       {/* ── Amount ──────────────────────────────────────────────────────────── */}
-      <Card title="Montant" icon={<Zap style={{ width: 14, height: 14 }} />}>
+      <Card title="Monto" icon={<Zap style={{ width: 14, height: 14 }} />}>
         {/* Quick amounts */}
         <div style={{ display: "flex", gap: 6, marginBottom: 12 }}>
           {QUICK_AMOUNTS.map(amt => (

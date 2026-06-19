@@ -170,7 +170,7 @@ function AddTransactionModal({ onClose }: { onClose: () => void }) {
           borderBottom: "1px solid #e5e7eb",
         }}>
           <span style={{ fontSize: 17, fontWeight: 700, color: "#111" }}>
-            Nouvelle transaction
+            Nueva transacción
           </span>
           <button
             onClick={onClose}
@@ -447,8 +447,8 @@ export default function Transactions() {
               onClick={() => setShowModal(true)}
             >
               <Plus className="w-4 h-4" />
-              <span className="hidden sm:inline">Nouvelle transaction</span>
-              <span className="sm:hidden">Ajouter</span>
+              <span className="hidden sm:inline">Nueva transacción</span>
+              <span className="sm:hidden">Agregar</span>
             </Button>
           </div>
         </div>
