@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, Component } from "react";
 import type { ErrorInfo, ReactNode } from "react";
-import { setBaseUrl } from "@workspace/api-client-react";
+import { setBaseUrl, setAuthTokenGetter } from "@workspace/api-client-react";
 import { ClerkProvider, Show, useClerk, useAuth, useUser } from '@clerk/react';
 import { esES } from '@clerk/localizations';
 import { Switch, Route, useLocation, Router as WouterRouter, Redirect } from 'wouter';
@@ -526,6 +526,22 @@ function AdminGuard() {
   return <AdminPage />;
 }
 
+// Registers Clerk's getToken with the API client so every request sends
+// Authorization: Bearer <token> — required when API and frontend are on different domains.
+function ClerkTokenBridge() {
+  const { getToken, isSignedIn } = useAuth();
+
+  useEffect(() => {
+    if (isSignedIn) {
+      setAuthTokenGetter(() => getToken());
+    } else {
+      setAuthTokenGetter(null);
+    }
+  }, [isSignedIn, getToken]);
+
+  return null;
+}
+
 function ClerkQueryClientCacheInvalidator() {
   const { addListener } = useClerk();
   const qc = useQueryClient();
@@ -596,6 +612,7 @@ function ClerkProviderWithRoutes() {
       routerReplace={(to) => setLocation(stripBase(to), { replace: true })}
     >
       <QueryClientProvider client={queryClient}>
+        <ClerkTokenBridge />
         <ClerkQueryClientCacheInvalidator />
 
         {/* The admin subdomain redirects to /admin at module level before rendering */}

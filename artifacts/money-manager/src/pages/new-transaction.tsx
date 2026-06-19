@@ -278,7 +278,7 @@ export default function NewTransaction() {
               fontSize: 13, fontWeight: 600, color: LABEL, marginBottom: 8, marginTop: 0,
               display: "flex", alignItems: "center", gap: 6,
             }}>
-              <CalendarDays size={14} color={MUTED} /> Date
+              <CalendarDays size={14} color={MUTED} /> Fecha
             </p>
             <Input
               type="date" value={form.date}
