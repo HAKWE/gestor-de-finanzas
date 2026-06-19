@@ -1,6 +1,58 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
-  <circle cx="100" cy="100" r="90" fill="#f97316"/>
-  <path d="M100 40 L160 100 L100 160 L40 100 Z" fill="#facc15" />
-  <circle cx="100" cy="100" r="30" fill="#14532d"/>
-  <text x="100" y="108" font-family="sans-serif" font-size="24" font-weight="bold" fill="#ffffff" text-anchor="middle">MM</text>
+  <defs>
+    <radialGradient id="bg" cx="38%" cy="35%" r="65%">
+      <stop offset="0%" stop-color="#34d399"/>
+      <stop offset="100%" stop-color="#064e3b"/>
+    </radialGradient>
+    <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="rgba(255,255,255,0.55)"/>
+      <stop offset="100%" stop-color="rgba(255,255,255,0.15)"/>
+    </linearGradient>
+    <clipPath id="circle">
+      <circle cx="100" cy="100" r="94"/>
+    </clipPath>
+  </defs>
+
+  <!-- Background -->
+  <circle cx="100" cy="100" r="94" fill="url(#bg)"/>
+
+  <!-- Subtle geometric ring accent (inspired by pre-Columbian motifs) -->
+  <circle cx="100" cy="100" r="82" fill="none" stroke="rgba(255,255,255,0.07)" stroke-width="12"/>
+
+  <!-- Rising bar chart (clipped inside circle) -->
+  <g clip-path="url(#circle)" opacity="0.9">
+    <rect x="30"  y="148" width="13" height="22" rx="3" fill="url(#chartGrad)"/>
+    <rect x="49"  y="138" width="13" height="32" rx="3" fill="url(#chartGrad)"/>
+    <rect x="68"  y="124" width="13" height="46" rx="3" fill="url(#chartGrad)"/>
+    <rect x="87"  y="132" width="13" height="38" rx="3" fill="url(#chartGrad)"/>
+    <rect x="106" y="115" width="13" height="55" rx="3" fill="url(#chartGrad)"/>
+    <rect x="125" y="104" width="13" height="66" rx="3" fill="url(#chartGrad)"/>
+    <rect x="144" y="118" width="13" height="52" rx="3" fill="url(#chartGrad)"/>
+  </g>
+
+  <!-- Trend line over bars -->
+  <polyline
+    points="36,144 55,133 74,118 93,126 112,109 131,98 150,112"
+    fill="none"
+    stroke="rgba(255,255,255,0.6)"
+    stroke-width="2.5"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    clip-path="url(#circle)"/>
+
+  <!-- G monogram -->
+  <text
+    x="102" y="90"
+    font-family="'Georgia', 'Times New Roman', serif"
+    font-size="88"
+    font-weight="700"
+    fill="white"
+    text-anchor="middle"
+    dominant-baseline="middle"
+    opacity="0.97">G</text>
+
+  <!-- Currency dot accent top-right -->
+  <circle cx="148" cy="52" r="13" fill="rgba(255,255,255,0.18)"/>
+  <text x="148" y="57" font-family="Arial, sans-serif" font-size="15" font-weight="700"
+        fill="rgba(255,255,255,0.85)" text-anchor="middle">$</text>
 </svg>
