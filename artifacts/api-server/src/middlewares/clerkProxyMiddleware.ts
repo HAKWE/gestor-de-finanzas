@@ -177,9 +177,10 @@ export function clerkProxyMiddleware(): RequestHandler {
 
   return async (req, res, next) => {
     // npm CDN paths: frontend-api.clerk.dev redirects to the npm CDN.
-    // In the Replit dev sandbox the browser can't follow those redirects
-    // due to SSL issues on the Clerk FAPI host, so we follow server-side.
-    if (!isProduction && req.path.startsWith("/npm/")) {
+    // Always follow these redirects server-side so the browser never has to
+    // make a cross-origin request to the npm CDN (which may lack CORS headers
+    // for the originating domain — e.g. a Vercel-hosted frontend).
+    if (req.path.startsWith("/npm/")) {
       const cdnPath = req.path.replace(/^\/npm/, "");
       const fapiUrl = `${CLERK_FAPI}/npm${cdnPath}`;
       try {
