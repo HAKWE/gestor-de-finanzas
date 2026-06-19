@@ -6,3 +6,9 @@ id = "wr0KwgEKLBqo4Vn4qklmW"
 uri = "file://tools/admin-dashboard.tar.gz"
 type = "unspecified"
 title = "Admin Dashboard — admin-dashboard.html"
+
+[[outputs]]
+id = "udgETbV3S0rb82m-gkKcz"
+uri = "file://artifacts/money-manager/public/gestor-logo.png"
+type = "image"
+title = "Gestor de Finanzas Logo (PNG)"
