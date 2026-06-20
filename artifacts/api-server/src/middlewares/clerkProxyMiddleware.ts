@@ -82,11 +82,18 @@ function getEffectiveProxyUrl(req: {
  * verification. Must match the `Clerk-Proxy-Url` header sent by the proxy
  * middleware — Clerk uses this to verify the JWT `iss` claim.
  *
- * Production: derived from REPLIT_DOMAINS (the registered production domain).
- * Dev: derived from APP_DOMAIN env var (same production domain).
- * Returns undefined when no proxy URL can be determined.
+ * Resolution order:
+ *   1. VITE_CLERK_PROXY_URL / CLERK_PROXY_URL env var (explicit override — covers
+ *      the case where test keys are used on a deployed instance with a proxy URL).
+ *   2. Derived from REPLIT_DOMAINS (registered production domain, live keys only).
+ *   3. APP_DOMAIN env var (dev fallback).
+ *   4. undefined (no proxy URL — skip iss check).
  */
 export function buildProxyUrl(): string | undefined {
+  // Explicit override takes priority — handles test-key deployments with a proxy.
+  const explicit = process.env.VITE_CLERK_PROXY_URL ?? process.env.CLERK_PROXY_URL;
+  if (explicit) return explicit;
+
   const secretKey = process.env.CLERK_SECRET_KEY;
   if (!secretKey || secretKey.startsWith("sk_test_")) return undefined;
 
