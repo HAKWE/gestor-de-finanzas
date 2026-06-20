@@ -54,14 +54,26 @@ export function getClerkProxyHost(req: {
 /**
  * Returns the Clerk proxy URL to use for this environment.
  *
- * Production: derived from the request host (supports custom domains).
- * Dev: derived from APP_DOMAIN env var (the production app domain), so
- *   the registered Clerk proxy URL is sent to FAPI even in dev.
- * Falls back to undefined when neither can be determined.
+ * Resolution order:
+ *   1. VITE_CLERK_PROXY_URL / CLERK_PROXY_URL env var — authoritative override.
+ *      This MUST be used when a reverse proxy (e.g. Vercel) sits in front of
+ *      this server, because x-forwarded-host will reflect the client-facing
+ *      domain (gestordefinanzas.app) rather than the Replit domain registered
+ *      as the Clerk proxy URL. Using the explicit env var ensures the
+ *      Clerk-Proxy-Url header sent to FAPI matches what buildProxyUrl() returns
+ *      for JWT `iss` validation — they MUST be identical.
+ *   2. Production: derived from the request host (covers single-domain setups).
+ *   3. Dev: derived from APP_DOMAIN env var.
+ *   4. undefined — no proxy header sent.
  */
 function getEffectiveProxyUrl(req: {
   headers: IncomingHttpHeaders;
 }): string | undefined {
+  // Explicit env var is authoritative — prevents x-forwarded-host mismatch
+  // when a front-proxy (Vercel, Cloudflare, etc.) sits in front of this server.
+  const explicit = process.env.VITE_CLERK_PROXY_URL ?? process.env.CLERK_PROXY_URL;
+  if (explicit) return explicit;
+
   const isProduction = process.env.NODE_ENV === "production";
 
   if (isProduction) {
