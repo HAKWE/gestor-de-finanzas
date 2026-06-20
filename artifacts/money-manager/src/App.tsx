@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, Component } from "react";
 import type { ErrorInfo, ReactNode } from "react";
-import { setBaseUrl, setAuthTokenGetter } from "@workspace/api-client-react";
+import { setBaseUrl, setAuthTokenGetter, customFetch, ApiError } from "@workspace/api-client-react";
 import { ClerkProvider, Show, useClerk, useAuth, useUser } from '@clerk/react';
 import { esES } from '@clerk/localizations';
 import { Switch, Route, useLocation, Router as WouterRouter, Redirect } from 'wouter';
@@ -100,10 +100,12 @@ function HomeRedirect() {
 }
 
 async function fetchProfile() {
-  const res = await fetch(`${basePath}/api/profile`, { credentials: "include" });
-  if (res.status === 404) return null;
-  if (!res.ok) throw new Error("Failed to fetch profile");
-  return res.json();
+  try {
+    return await customFetch<unknown>("/api/profile", { credentials: "include" });
+  } catch (err) {
+    if (err instanceof ApiError && err.status === 404) return null;
+    throw err;
+  }
 }
 
 function ProtectedRoute({ component: Component }: { component: any }) {

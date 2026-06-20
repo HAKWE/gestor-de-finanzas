@@ -69,6 +69,11 @@ export function getClerkProxyHost(req: {
 function getEffectiveProxyUrl(req: {
   headers: IncomingHttpHeaders;
 }): string | undefined {
+  // Test keys: Clerk FAPI ignores Clerk-Proxy-Url for sk_test_ instances.
+  // Sending it anyway causes JWT iss mismatch — skip entirely for test keys.
+  const secretKey = process.env.CLERK_SECRET_KEY;
+  if (!secretKey || secretKey.startsWith("sk_test_")) return undefined;
+
   // Explicit env var is authoritative — prevents x-forwarded-host mismatch
   // when a front-proxy (Vercel, Cloudflare, etc.) sits in front of this server.
   const explicit = process.env.VITE_CLERK_PROXY_URL ?? process.env.CLERK_PROXY_URL;
@@ -102,12 +107,15 @@ function getEffectiveProxyUrl(req: {
  *   4. undefined (no proxy URL — skip iss check).
  */
 export function buildProxyUrl(): string | undefined {
-  // Explicit override takes priority — handles test-key deployments with a proxy.
+  const secretKey = process.env.CLERK_SECRET_KEY;
+  // Test keys: FAPI ignores Clerk-Proxy-Url, so JWTs always carry the standard
+  // FAPI iss (not the proxy URL). Returning a proxyUrl here would make every
+  // JWT verification fail — skip proxy URL validation entirely for test keys.
+  if (!secretKey || secretKey.startsWith("sk_test_")) return undefined;
+
+  // Live keys: explicit override takes priority — handles custom domain setups.
   const explicit = process.env.VITE_CLERK_PROXY_URL ?? process.env.CLERK_PROXY_URL;
   if (explicit) return explicit;
-
-  const secretKey = process.env.CLERK_SECRET_KEY;
-  if (!secretKey || secretKey.startsWith("sk_test_")) return undefined;
 
   const domains = process.env.REPLIT_DOMAINS;
   const primary = domains?.split(",")[0]?.trim();
