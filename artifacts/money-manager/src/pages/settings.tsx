@@ -1,17 +1,74 @@
+import { useState, useEffect } from "react";
 import { useLanguage } from "../lib/language-context";
 import { Layout } from "../components/layout";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { usePwaInstall } from "../hooks/use-pwa-install";
-import { Smartphone, CheckCircle2 } from "lucide-react";
+import { Smartphone, CheckCircle2, Loader2 } from "lucide-react";
 import { ReferralCard } from "../components/referral-card";
+import { useQueryClient } from "@tanstack/react-query";
 
 const ORANGE = "#f97316";
+const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
+
+const CURRENCIES = [
+  { code: "MXN", name: "Peso mexicano", flag: "🇲🇽" },
+  { code: "COP", name: "Peso colombiano", flag: "🇨🇴" },
+  { code: "ARS", name: "Peso argentino", flag: "🇦🇷" },
+  { code: "BRL", name: "Real brasileño", flag: "🇧🇷" },
+  { code: "PEN", name: "Sol peruano", flag: "🇵🇪" },
+  { code: "CLP", name: "Peso chileno", flag: "🇨🇱" },
+  { code: "VES", name: "Bolívar venezolano", flag: "🇻🇪" },
+  { code: "BOB", name: "Boliviano", flag: "🇧🇴" },
+  { code: "PYG", name: "Guaraní paraguayo", flag: "🇵🇾" },
+  { code: "UYU", name: "Peso uruguayo", flag: "🇺🇾" },
+  { code: "DOP", name: "Peso dominicano", flag: "🇩🇴" },
+  { code: "GTQ", name: "Quetzal guatemalteco", flag: "🇬🇹" },
+  { code: "USD", name: "Dólar estadounidense", flag: "🇺🇸" },
+  { code: "EUR", name: "Euro", flag: "🇪🇺" },
+];
 
 export default function Settings() {
   const { t, language, setLanguage } = useLanguage();
   const { canInstall, isInstalled, install } = usePwaInstall();
   const fr = language !== "en";
+  const queryClient = useQueryClient();
+
+  const [currency, setCurrency] = useState<string>("");
+  const [currencySaving, setCurrencySaving] = useState(false);
+  const [currencySaved, setCurrencySaved] = useState(false);
+
+  useEffect(() => {
+    fetch(`${basePath}/api/profile`, { credentials: "include" })
+      .then((r) => r.ok ? r.json() : null)
+      .then((profile) => {
+        if (profile?.currency) setCurrency(profile.currency);
+      })
+      .catch(() => {});
+  }, []);
+
+  async function saveCurrency(newCurrency: string) {
+    setCurrency(newCurrency);
+    setCurrencySaving(true);
+    setCurrencySaved(false);
+    try {
+      const res = await fetch(`${basePath}/api/profile`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ currency: newCurrency }),
+      });
+      if (res.ok) {
+        await queryClient.invalidateQueries({ queryKey: ["profile"] });
+        await queryClient.invalidateQueries({ queryKey: ["/api/profile"] });
+        setCurrencySaved(true);
+        setTimeout(() => setCurrencySaved(false), 2000);
+      }
+    } catch {
+    } finally {
+      setCurrencySaving(false);
+    }
+  }
 
   return (
     <Layout>
@@ -33,23 +90,58 @@ export default function Settings() {
               {fr ? "Preferencias" : "Preferences"}
             </div>
             <div style={{ fontSize: 13, color: "#9ca3af", marginTop: 2 }}>
-              {fr ? "Gestiona el idioma y la visualización." : "Manage language and display."}
+              {fr ? "Gestiona el idioma y la moneda." : "Manage language and currency."}
             </div>
           </div>
-          <div style={{ padding: "20px" }}>
-            <Label style={{ fontSize: 13, fontWeight: 600, color: "#374151" }}>
-              {fr ? "Idioma de la aplicación" : "App language"}
-            </Label>
-            <div style={{ marginTop: 8 }}>
-              <Select value={language} onValueChange={(val: "es" | "en") => setLanguage(val)}>
-                <SelectTrigger>
-                  <SelectValue placeholder={fr ? "Elige el idioma" : "Choose language"} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="es">🇪🇸 Español</SelectItem>
-                  <SelectItem value="en">🇬🇧 English</SelectItem>
-                </SelectContent>
-              </Select>
+          <div style={{ padding: "20px", display: "flex", flexDirection: "column", gap: 20 }}>
+            <div>
+              <Label style={{ fontSize: 13, fontWeight: 600, color: "#374151" }}>
+                {fr ? "Idioma de la aplicación" : "App language"}
+              </Label>
+              <div style={{ marginTop: 8 }}>
+                <Select value={language} onValueChange={(val: "es" | "en") => setLanguage(val)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder={fr ? "Elige el idioma" : "Choose language"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="es">🇪🇸 Español</SelectItem>
+                    <SelectItem value="en">🇬🇧 English</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div>
+              <Label style={{ fontSize: 13, fontWeight: 600, color: "#374151" }}>
+                {fr ? "Moneda principal" : "Primary currency"}
+              </Label>
+              <div style={{ marginTop: 8, display: "flex", alignItems: "center", gap: 10 }}>
+                <div style={{ flex: 1 }}>
+                  <Select
+                    value={currency}
+                    onValueChange={saveCurrency}
+                    disabled={!currency || currencySaving}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder={fr ? "Cargando…" : "Loading…"} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {CURRENCIES.map((c) => (
+                        <SelectItem key={c.code} value={c.code}>
+                          {c.flag} {c.name} ({c.code})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                {currencySaving && <Loader2 style={{ width: 18, height: 18, color: ORANGE, animation: "spin 1s linear infinite", flexShrink: 0 }} />}
+                {currencySaved && <CheckCircle2 style={{ width: 18, height: 18, color: "#16a34a", flexShrink: 0 }} />}
+              </div>
+              <p style={{ fontSize: 12, color: "#9ca3af", marginTop: 6 }}>
+                {fr
+                  ? "Se aplica a todos los saldos y transacciones nuevas."
+                  : "Applied to all balances and new transactions."}
+              </p>
             </div>
           </div>
         </div>

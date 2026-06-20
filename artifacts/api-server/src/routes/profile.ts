@@ -60,7 +60,7 @@ router.post("/profile", requireAuth, async (req: any, res): Promise<void> => {
       .values({
         userId,
         accountType: accountType ?? "personal",
-        currency: currency ?? "XOF",
+        currency: currency ?? "MXN",
         mobileMoneyProvider: mobileMoneyProvider ?? null,
         onboardingCompleted: onboardingCompleted ?? false,
         trialEndsAt: new Date(Date.now() + 45 * 24 * 60 * 60 * 1000),
